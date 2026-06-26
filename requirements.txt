@@ -1,0 +1,25 @@
+# Core symbolic reasoning
+clingo>=5.6.0
+
+# LLM APIs (install only what you use)
+openai>=1.0.0
+anthropic>=0.20.0
+
+# Local model inference
+transformers>=4.40.0
+accelerate>=0.28.0
+bitsandbytes>=0.43.0     # QLoRA 4-bit quantisation
+
+# Fine-tuning
+peft>=0.10.0
+trl>=0.8.0
+datasets>=2.18.0
+
+# Evaluation & visualisation
+matplotlib>=3.8.0
+numpy>=1.26.0
+scikit-learn>=1.4.0      # logistic regression overlay (optional)
+networkx>=3.2.0          # QBAF graph visualisation (optional)
+
+# Utilities
+torch>=2.2.0             # needed by transformers / peft

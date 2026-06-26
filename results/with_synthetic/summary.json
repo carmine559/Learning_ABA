@@ -1,0 +1,52 @@
+{
+  "direct": {
+    "n_problems": 23,
+    "parse_rate": 1.0,
+    "fit_at_1": 0.797,
+    "gen_at_1": 0.623,
+    "fit_at_k": 0.87,
+    "gen_at_k": 0.739,
+    "gen_score_mean": 0.761,
+    "mean_overfit_gap": 0.036,
+    "intensional_rate": 0.319,
+    "degenerate_rate": 0.043,
+    "error_breakdown": {
+      "generalization_error": 20,
+      "none": 35,
+      "soundness_error": 8,
+      "both_errors": 3,
+      "completeness_error": 3
+    }
+  },
+  "cot": {
+    "n_problems": 23,
+    "parse_rate": 0.667,
+    "fit_at_1": 0.464,
+    "gen_at_1": 0.275,
+    "fit_at_k": 0.609,
+    "gen_at_k": 0.391,
+    "gen_score_mean": 0.428,
+    "mean_overfit_gap": 0.036,
+    "intensional_rate": 0.246,
+    "degenerate_rate": 0.109,
+    "error_breakdown": {
+      "generalization_error": 19,
+      "none": 13,
+      "soundness_error": 9,
+      "completeness_error": 4,
+      "both_errors": 1,
+      "llm_error": 23
+    }
+  },
+  "symbolic_baseline": {
+    "n_problems": 23,
+    "parse_rate": 1.0,
+    "fit_at_1": 1.0,
+    "gen_at_1": 1.0,
+    "fit_at_k": 1.0,
+    "gen_at_k": 1.0,
+    "intensional_rate": 1.0,
+    "degenerate_rate": 0.0,
+    "mean_overfit_gap": 0.0
+  }
+}

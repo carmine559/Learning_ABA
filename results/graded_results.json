@@ -1,0 +1,393 @@
+{
+  "source": "llm_elicited",
+  "n_problems": 8,
+  "overall_agreement": 0.854,
+  "problems": [
+    {
+      "problem_id": "nixon_diamond",
+      "strength_source": "llm_elicited",
+      "n_assumptions": 5,
+      "assumption_scores": {
+        "votes_dem": 0.2,
+        "votes_rep": 0.6,
+        "normal_quaker": 0.4,
+        "alpha_0": 0.4
+      },
+      "agreement_rate": 0.4,
+      "queries": [
+        {
+          "query": "pacifist(a)",
+          "crisp_entailed": true,
+          "graded_strength": 0.304,
+          "agree": false,
+          "explanation": "pacifist(a)  base=0.00 \u03c3=0.30\n  +support:\n    body_of(pacifist(a))  base=1.00 \u03c3=0.30\n      +support:\n        quaker(a) [fact] base=1.00 \u03c3=1.00\n      +support:\n        normal_quaker(a) [asm] base=0.40 \u03c3=0.30\n          -attack:\n            abnormal_quaker(a)  base=0.00 \u03c3=0.24\n              +support:\n                body_of(abnormal_quaker(a))  base=1.00 \u03c3=0.24\n                  +support:\n                    quaker(a) [fact] base=1.00 \u03c3=1.00\n                  +support:\n                    alpha_0(a) [asm] base=0.40 \u03c3=0.24\n                      -attack:\n                        c_alpha_0(a)  base=0.00 \u03c3=0.40\n                          +support:\n                            body_of(c_alpha_0(a))  base=1.00 \u03c3=0.40\n                              +support:\n                                quaker(a) [fact] base=1.00 \u03c3=1.00\n                              +support:\n                                normal_quaker(a) [asm] base=0.40 \u03c3=0.40\n  +support:\n    body_of(pacifist(a))  base=1.00 \u03c3=0.00\n      +support:\n        democrat(a)  base=0.00 \u03c3=0.00\n          +support:\n            body_of(democrat(a))  base=1.00 \u03c3=0.00\n              +support:\n                person(a)  base=0.00 \u03c3=1.00\n                  +support:\n                    person(a)<-rule [fact] base=1.00 \u03c3=1.00\n              +support:\n                votes_dem(a) [asm] base=0.20 \u03c3=0.00\n                  -attack:\n                    republican(a) [fact] base=1.00 \u03c3=1.00"
+        },
+        {
+          "query": "pacifist(c)",
+          "crisp_entailed": true,
+          "graded_strength": 1.0,
+          "agree": true,
+          "explanation": "pacifist(c)  base=0.00 \u03c3=1.00\n  +support:\n    body_of(pacifist(c))  base=1.00 \u03c3=0.00\n      +support:\n        quaker(c)  base=0.00 \u03c3=0.00\n      +support:\n        normal_quaker(c) [asm] base=0.40 \u03c3=0.40\n  +support:\n    body_of(pacifist(c))  base=1.00 \u03c3=1.00\n      +support:\n        democrat(c) [fact] base=1.00 \u03c3=1.00"
+        },
+        {
+          "query": "pacifist(e)",
+          "crisp_entailed": true,
+          "graded_strength": 0.36,
+          "agree": false,
+          "explanation": "pacifist(e)  base=0.00 \u03c3=0.36\n  +support:\n    body_of(pacifist(e))  base=1.00 \u03c3=0.30\n      +support:\n        quaker(e) [fact] base=1.00 \u03c3=1.00\n      +support:\n        normal_quaker(e) [asm] base=0.40 \u03c3=0.30\n          -attack:\n            abnormal_quaker(e)  base=0.00 \u03c3=0.24\n              +support:\n                body_of(abnormal_quaker(e))  base=1.00 \u03c3=0.24\n                  +support:\n                    quaker(e) [fact] base=1.00 \u03c3=1.00\n                  +support:\n                    alpha_0(e) [asm] base=0.40 \u03c3=0.24\n                      -attack:\n                        c_alpha_0(e)  base=0.00 \u03c3=0.40\n                          +support:\n                            body_of(c_alpha_0(e))  base=1.00 \u03c3=0.40\n                              +support:\n                                quaker(e) [fact] base=1.00 \u03c3=1.00\n                              +support:\n                                normal_quaker(e) [asm] base=0.40 \u03c3=0.40\n  +support:\n    body_of(pacifist(e))  base=1.00 \u03c3=0.08\n      +support:\n        democrat(e)  base=0.00 \u03c3=0.08\n          +support:\n            body_of(democrat(e))  base=1.00 \u03c3=0.08\n              +support:\n                person(e)  base=0.00 \u03c3=1.00\n                  +support:\n                    person(e)<-rule [fact] base=1.00 \u03c3=1.00\n              +support:\n                votes_dem(e) [asm] base=0.20 \u03c3=0.08\n                  -attack:\n                    republican(e)  base=0.00 \u03c3=0.60\n                      +support:\n                        body_of(republican(e))  base=1.00 \u03c3=0.60\n                          +support:\n                            person(e)  base=0.00 \u03c3=1.00\n                              +support:\n                                person(e)<-rule [fact] base=1.00 \u03c3=1.00\n                          +support:\n                            votes_rep(e) [asm] base=0.60 \u03c3=0.60"
+        },
+        {
+          "query": "pacifist(b)",
+          "crisp_entailed": true,
+          "graded_strength": 0.304,
+          "agree": false,
+          "explanation": "pacifist(b)  base=0.00 \u03c3=0.30\n  +support:\n    body_of(pacifist(b))  base=1.00 \u03c3=0.30\n      +support:\n        quaker(b) [fact] base=1.00 \u03c3=1.00\n      +support:\n        normal_quaker(b) [asm] base=0.40 \u03c3=0.30\n          -attack:\n            abnormal_quaker(b)  base=0.00 \u03c3=0.24\n              +support:\n                body_of(abnormal_quaker(b))  base=1.00 \u03c3=0.24\n                  +support:\n                    quaker(b) [fact] base=1.00 \u03c3=1.00\n                  +support:\n                    alpha_0(b) [asm] base=0.40 \u03c3=0.24\n                      -attack:\n                        c_alpha_0(b)  base=0.00 \u03c3=0.40\n                          +support:\n                            body_of(c_alpha_0(b))  base=1.00 \u03c3=0.40\n                              +support:\n                                quaker(b) [fact] base=1.00 \u03c3=1.00\n                              +support:\n                                normal_quaker(b) [asm] base=0.40 \u03c3=0.40\n  +support:\n    body_of(pacifist(b))  base=1.00 \u03c3=0.00\n      +support:\n        democrat(b)  base=0.00 \u03c3=0.00\n          +support:\n            body_of(democrat(b))  base=1.00 \u03c3=0.00\n              +support:\n                person(b)  base=0.00 \u03c3=1.00\n                  +support:\n                    person(b)<-rule [fact] base=1.00 \u03c3=1.00\n              +support:\n                votes_dem(b) [asm] base=0.20 \u03c3=0.00\n                  -attack:\n                    republican(b) [fact] base=1.00 \u03c3=1.00"
+        },
+        {
+          "query": "pacifist(d)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "pacifist(d)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(pacifist(d))  base=1.00 \u03c3=0.00\n      +support:\n        quaker(d)  base=0.00 \u03c3=0.00\n      +support:\n        normal_quaker(d) [asm] base=0.40 \u03c3=0.40\n  +support:\n    body_of(pacifist(d))  base=1.00 \u03c3=0.00\n      +support:\n        democrat(d)  base=0.00 \u03c3=0.00\n          +support:\n            body_of(democrat(d))  base=1.00 \u03c3=0.00\n              +support:\n                person(d)  base=0.00 \u03c3=1.00\n                  +support:\n                    person(d)<-rule [fact] base=1.00 \u03c3=1.00\n              +support:\n                votes_dem(d) [asm] base=0.20 \u03c3=0.00\n                  -attack:\n                    republican(d) [fact] base=1.00 \u03c3=1.00"
+        }
+      ]
+    },
+    {
+      "problem_id": "flies",
+      "strength_source": "llm_elicited",
+      "n_assumptions": 2,
+      "assumption_scores": {
+        "normal_bird": 1.0,
+        "alpha_0": 0.33
+      },
+      "agreement_rate": 0.667,
+      "queries": [
+        {
+          "query": "flies(tweety)",
+          "crisp_entailed": true,
+          "graded_strength": 0.33,
+          "agree": false,
+          "explanation": "flies(tweety)  base=0.00 \u03c3=0.33\n  +support:\n    body_of(flies(tweety))  base=1.00 \u03c3=0.33\n      +support:\n        bird(tweety) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(tweety) [asm] base=0.33 \u03c3=0.33"
+        },
+        {
+          "query": "flies(sam)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "flies(sam)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(flies(sam))  base=1.00 \u03c3=0.00\n      +support:\n        bird(sam) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(sam) [asm] base=0.33 \u03c3=0.00\n          -attack:\n            c_alpha_0(sam)  base=0.00 \u03c3=1.00\n              +support:\n                body_of(c_alpha_0(sam))  base=1.00 \u03c3=1.00\n                  +support:\n                    penguin(sam) [fact] base=1.00 \u03c3=1.00"
+        },
+        {
+          "query": "flies(opus)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "flies(opus)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(flies(opus))  base=1.00 \u03c3=0.00\n      +support:\n        bird(opus) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(opus) [asm] base=0.33 \u03c3=0.00\n          -attack:\n            c_alpha_0(opus)  base=0.00 \u03c3=1.00\n              +support:\n                body_of(c_alpha_0(opus))  base=1.00 \u03c3=1.00\n                  +support:\n                    penguin(opus) [fact] base=1.00 \u03c3=1.00"
+        }
+      ]
+    },
+    {
+      "problem_id": "tax_law",
+      "strength_source": "llm_elicited",
+      "n_assumptions": 3,
+      "assumption_scores": {
+        "normal_taxpayer": 1.0,
+        "alpha_0": 0.33,
+        "alpha_2": 0.33
+      },
+      "agreement_rate": 0.333,
+      "queries": [
+        {
+          "query": "taxable(alice)",
+          "crisp_entailed": true,
+          "graded_strength": 0.257,
+          "agree": false,
+          "explanation": "taxable(alice)  base=0.00 \u03c3=0.26\n  +support:\n    body_of(taxable(alice))  base=1.00 \u03c3=0.26\n      +support:\n        employed(alice) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(alice) [asm] base=0.33 \u03c3=0.26\n          -attack:\n            c_alpha_0(alice)  base=0.00 \u03c3=0.22\n              +support:\n                body_of(c_alpha_0(alice))  base=1.00 \u03c3=0.22\n                  +support:\n                    employed(alice) [fact] base=1.00 \u03c3=1.00\n                  +support:\n                    alpha_2(alice) [asm] base=0.33 \u03c3=0.22\n                      -attack:\n                        c_alpha_2(alice)  base=0.00 \u03c3=0.33\n                          +support:\n                            body_of(c_alpha_2(alice))  base=1.00 \u03c3=0.33\n                              +support:\n                                employed(alice) [fact] base=1.00 \u03c3=1.00\n                              +support:\n                                alpha_0(alice) [asm] base=0.33 \u03c3=0.33\n  +support:\n    body_of(taxable(alice))  base=1.00 \u03c3=0.00\n      +support:\n        self_employed(alice)  base=0.00 \u03c3=0.00"
+        },
+        {
+          "query": "taxable(carol)",
+          "crisp_entailed": true,
+          "graded_strength": 1.0,
+          "agree": true,
+          "explanation": "taxable(carol)  base=0.00 \u03c3=1.00\n  +support:\n    body_of(taxable(carol))  base=1.00 \u03c3=0.00\n      +support:\n        employed(carol)  base=0.00 \u03c3=0.00\n      +support:\n        alpha_0(carol) [asm] base=0.33 \u03c3=0.33\n  +support:\n    body_of(taxable(carol))  base=1.00 \u03c3=1.00\n      +support:\n        self_employed(carol) [fact] base=1.00 \u03c3=1.00"
+        },
+        {
+          "query": "taxable(bob)",
+          "crisp_entailed": true,
+          "graded_strength": 0.257,
+          "agree": false,
+          "explanation": "taxable(bob)  base=0.00 \u03c3=0.26\n  +support:\n    body_of(taxable(bob))  base=1.00 \u03c3=0.26\n      +support:\n        employed(bob) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(bob) [asm] base=0.33 \u03c3=0.26\n          -attack:\n            c_alpha_0(bob)  base=0.00 \u03c3=0.22\n              +support:\n                body_of(c_alpha_0(bob))  base=1.00 \u03c3=0.22\n                  +support:\n                    employed(bob) [fact] base=1.00 \u03c3=1.00\n                  +support:\n                    alpha_2(bob) [asm] base=0.33 \u03c3=0.22\n                      -attack:\n                        c_alpha_2(bob)  base=0.00 \u03c3=0.33\n                          +support:\n                            body_of(c_alpha_2(bob))  base=1.00 \u03c3=0.33\n                              +support:\n                                employed(bob) [fact] base=1.00 \u03c3=1.00\n                              +support:\n                                alpha_0(bob) [asm] base=0.33 \u03c3=0.33\n  +support:\n    body_of(taxable(bob))  base=1.00 \u03c3=0.00\n      +support:\n        self_employed(bob)  base=0.00 \u03c3=0.00"
+        }
+      ]
+    },
+    {
+      "problem_id": "synthetic_0000",
+      "strength_source": "llm_elicited",
+      "n_assumptions": 2,
+      "assumption_scores": {
+        "normal_dangerous": 0.83,
+        "alpha_0": 0.83
+      },
+      "agreement_rate": 1.0,
+      "queries": [
+        {
+          "query": "dangerous(c4)",
+          "crisp_entailed": true,
+          "graded_strength": 0.83,
+          "agree": true,
+          "explanation": "dangerous(c4)  base=0.00 \u03c3=0.83\n  +support:\n    body_of(dangerous(c4))  base=1.00 \u03c3=0.83\n      +support:\n        swims(c4) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c4) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "dangerous(c2)",
+          "crisp_entailed": true,
+          "graded_strength": 0.83,
+          "agree": true,
+          "explanation": "dangerous(c2)  base=0.00 \u03c3=0.83\n  +support:\n    body_of(dangerous(c2))  base=1.00 \u03c3=0.83\n      +support:\n        swims(c2) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c2) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "dangerous(c0)",
+          "crisp_entailed": true,
+          "graded_strength": 0.83,
+          "agree": true,
+          "explanation": "dangerous(c0)  base=0.00 \u03c3=0.83\n  +support:\n    body_of(dangerous(c0))  base=1.00 \u03c3=0.83\n      +support:\n        swims(c0) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c0) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "dangerous(c3)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "dangerous(c3)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(dangerous(c3))  base=1.00 \u03c3=0.00\n      +support:\n        swims(c3) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c3) [asm] base=0.83 \u03c3=0.00\n          -attack:\n            c_alpha_0(c3)  base=0.00 \u03c3=1.00\n              +support:\n                body_of(c_alpha_0(c3))  base=1.00 \u03c3=1.00\n                  +support:\n                    exc_dangerous(c3) [fact] base=1.00 \u03c3=1.00"
+        },
+        {
+          "query": "dangerous(c5)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "dangerous(c5)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(dangerous(c5))  base=1.00 \u03c3=0.00\n      +support:\n        swims(c5)  base=0.00 \u03c3=0.00\n      +support:\n        alpha_0(c5) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "dangerous(c1)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "dangerous(c1)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(dangerous(c1))  base=1.00 \u03c3=0.00\n      +support:\n        swims(c1)  base=0.00 \u03c3=0.00\n      +support:\n        alpha_0(c1) [asm] base=0.83 \u03c3=0.83"
+        }
+      ]
+    },
+    {
+      "problem_id": "synthetic_0001",
+      "strength_source": "llm_elicited",
+      "n_assumptions": 2,
+      "assumption_scores": {
+        "normal_nocturnal": 0.83,
+        "alpha_0": 0.83
+      },
+      "agreement_rate": 1.0,
+      "queries": [
+        {
+          "query": "nocturnal(c2)",
+          "crisp_entailed": true,
+          "graded_strength": 0.83,
+          "agree": true,
+          "explanation": "nocturnal(c2)  base=0.00 \u03c3=0.83\n  +support:\n    body_of(nocturnal(c2))  base=1.00 \u03c3=0.83\n      +support:\n        prey(c2) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c2) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "nocturnal(c0)",
+          "crisp_entailed": true,
+          "graded_strength": 0.83,
+          "agree": true,
+          "explanation": "nocturnal(c0)  base=0.00 \u03c3=0.83\n  +support:\n    body_of(nocturnal(c0))  base=1.00 \u03c3=0.83\n      +support:\n        prey(c0) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c0) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "nocturnal(c3)",
+          "crisp_entailed": true,
+          "graded_strength": 0.83,
+          "agree": true,
+          "explanation": "nocturnal(c3)  base=0.00 \u03c3=0.83\n  +support:\n    body_of(nocturnal(c3))  base=1.00 \u03c3=0.83\n      +support:\n        prey(c3) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c3) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "nocturnal(c4)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "nocturnal(c4)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(nocturnal(c4))  base=1.00 \u03c3=0.00\n      +support:\n        prey(c4) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c4) [asm] base=0.83 \u03c3=0.00\n          -attack:\n            c_alpha_0(c4)  base=0.00 \u03c3=1.00\n              +support:\n                body_of(c_alpha_0(c4))  base=1.00 \u03c3=1.00\n                  +support:\n                    exc_nocturnal(c4) [fact] base=1.00 \u03c3=1.00"
+        },
+        {
+          "query": "nocturnal(c5)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "nocturnal(c5)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(nocturnal(c5))  base=1.00 \u03c3=0.00\n      +support:\n        prey(c5)  base=0.00 \u03c3=0.00\n      +support:\n        alpha_0(c5) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "nocturnal(c1)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "nocturnal(c1)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(nocturnal(c1))  base=1.00 \u03c3=0.00\n      +support:\n        prey(c1)  base=0.00 \u03c3=0.00\n      +support:\n        alpha_0(c1) [asm] base=0.83 \u03c3=0.83"
+        }
+      ]
+    },
+    {
+      "problem_id": "synthetic_0002",
+      "strength_source": "llm_elicited",
+      "n_assumptions": 2,
+      "assumption_scores": {
+        "normal_dangerous": 0.83,
+        "alpha_0": 0.83
+      },
+      "agreement_rate": 1.0,
+      "queries": [
+        {
+          "query": "dangerous(c5)",
+          "crisp_entailed": true,
+          "graded_strength": 0.83,
+          "agree": true,
+          "explanation": "dangerous(c5)  base=0.00 \u03c3=0.83\n  +support:\n    body_of(dangerous(c5))  base=1.00 \u03c3=0.83\n      +support:\n        eats(c5) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c5) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "dangerous(c2)",
+          "crisp_entailed": true,
+          "graded_strength": 0.83,
+          "agree": true,
+          "explanation": "dangerous(c2)  base=0.00 \u03c3=0.83\n  +support:\n    body_of(dangerous(c2))  base=1.00 \u03c3=0.83\n      +support:\n        eats(c2) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c2) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "dangerous(c3)",
+          "crisp_entailed": true,
+          "graded_strength": 0.83,
+          "agree": true,
+          "explanation": "dangerous(c3)  base=0.00 \u03c3=0.83\n  +support:\n    body_of(dangerous(c3))  base=1.00 \u03c3=0.83\n      +support:\n        eats(c3) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c3) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "dangerous(c4)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "dangerous(c4)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(dangerous(c4))  base=1.00 \u03c3=0.00\n      +support:\n        eats(c4) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c4) [asm] base=0.83 \u03c3=0.00\n          -attack:\n            c_alpha_0(c4)  base=0.00 \u03c3=1.00\n              +support:\n                body_of(c_alpha_0(c4))  base=1.00 \u03c3=1.00\n                  +support:\n                    exc_dangerous(c4) [fact] base=1.00 \u03c3=1.00"
+        },
+        {
+          "query": "dangerous(c1)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "dangerous(c1)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(dangerous(c1))  base=1.00 \u03c3=0.00\n      +support:\n        eats(c1)  base=0.00 \u03c3=0.00\n      +support:\n        alpha_0(c1) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "dangerous(c0)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "dangerous(c0)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(dangerous(c0))  base=1.00 \u03c3=0.00\n      +support:\n        eats(c0)  base=0.00 \u03c3=0.00\n      +support:\n        alpha_0(c0) [asm] base=0.83 \u03c3=0.83"
+        }
+      ]
+    },
+    {
+      "problem_id": "synthetic_0003",
+      "strength_source": "llm_elicited",
+      "n_assumptions": 2,
+      "assumption_scores": {
+        "normal_eats": 0.83,
+        "alpha_0": 0.83
+      },
+      "agreement_rate": 1.0,
+      "queries": [
+        {
+          "query": "eats(c1)",
+          "crisp_entailed": true,
+          "graded_strength": 0.83,
+          "agree": true,
+          "explanation": "eats(c1)  base=0.00 \u03c3=0.83\n  +support:\n    body_of(eats(c1))  base=1.00 \u03c3=0.83\n      +support:\n        flies(c1) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c1) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "eats(c3)",
+          "crisp_entailed": true,
+          "graded_strength": 0.83,
+          "agree": true,
+          "explanation": "eats(c3)  base=0.00 \u03c3=0.83\n  +support:\n    body_of(eats(c3))  base=1.00 \u03c3=0.83\n      +support:\n        flies(c3) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c3) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "eats(c5)",
+          "crisp_entailed": true,
+          "graded_strength": 0.83,
+          "agree": true,
+          "explanation": "eats(c5)  base=0.00 \u03c3=0.83\n  +support:\n    body_of(eats(c5))  base=1.00 \u03c3=0.83\n      +support:\n        flies(c5) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c5) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "eats(c4)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "eats(c4)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(eats(c4))  base=1.00 \u03c3=0.00\n      +support:\n        flies(c4) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c4) [asm] base=0.83 \u03c3=0.00\n          -attack:\n            c_alpha_0(c4)  base=0.00 \u03c3=1.00\n              +support:\n                body_of(c_alpha_0(c4))  base=1.00 \u03c3=1.00\n                  +support:\n                    exc_eats(c4) [fact] base=1.00 \u03c3=1.00"
+        },
+        {
+          "query": "eats(c2)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "eats(c2)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(eats(c2))  base=1.00 \u03c3=0.00\n      +support:\n        flies(c2)  base=0.00 \u03c3=0.00\n      +support:\n        alpha_0(c2) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "eats(c0)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "eats(c0)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(eats(c0))  base=1.00 \u03c3=0.00\n      +support:\n        flies(c0)  base=0.00 \u03c3=0.00\n      +support:\n        alpha_0(c0) [asm] base=0.83 \u03c3=0.83"
+        }
+      ]
+    },
+    {
+      "problem_id": "synthetic_0004",
+      "strength_source": "llm_elicited",
+      "n_assumptions": 2,
+      "assumption_scores": {
+        "normal_swims": 0.83,
+        "alpha_0": 0.83
+      },
+      "agreement_rate": 1.0,
+      "queries": [
+        {
+          "query": "swims(c0)",
+          "crisp_entailed": true,
+          "graded_strength": 0.83,
+          "agree": true,
+          "explanation": "swims(c0)  base=0.00 \u03c3=0.83\n  +support:\n    body_of(swims(c0))  base=1.00 \u03c3=0.83\n      +support:\n        runs(c0) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c0) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "swims(c1)",
+          "crisp_entailed": true,
+          "graded_strength": 0.83,
+          "agree": true,
+          "explanation": "swims(c1)  base=0.00 \u03c3=0.83\n  +support:\n    body_of(swims(c1))  base=1.00 \u03c3=0.83\n      +support:\n        runs(c1) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c1) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "swims(c2)",
+          "crisp_entailed": true,
+          "graded_strength": 0.83,
+          "agree": true,
+          "explanation": "swims(c2)  base=0.00 \u03c3=0.83\n  +support:\n    body_of(swims(c2))  base=1.00 \u03c3=0.83\n      +support:\n        runs(c2) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c2) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "swims(c4)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "swims(c4)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(swims(c4))  base=1.00 \u03c3=0.00\n      +support:\n        runs(c4) [fact] base=1.00 \u03c3=1.00\n      +support:\n        alpha_0(c4) [asm] base=0.83 \u03c3=0.00\n          -attack:\n            c_alpha_0(c4)  base=0.00 \u03c3=1.00\n              +support:\n                body_of(c_alpha_0(c4))  base=1.00 \u03c3=1.00\n                  +support:\n                    exc_swims(c4) [fact] base=1.00 \u03c3=1.00"
+        },
+        {
+          "query": "swims(c3)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "swims(c3)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(swims(c3))  base=1.00 \u03c3=0.00\n      +support:\n        runs(c3)  base=0.00 \u03c3=0.00\n      +support:\n        alpha_0(c3) [asm] base=0.83 \u03c3=0.83"
+        },
+        {
+          "query": "swims(c5)",
+          "crisp_entailed": false,
+          "graded_strength": 0.0,
+          "agree": true,
+          "explanation": "swims(c5)  base=0.00 \u03c3=0.00\n  +support:\n    body_of(swims(c5))  base=1.00 \u03c3=0.00\n      +support:\n        runs(c5)  base=0.00 \u03c3=0.00\n      +support:\n        alpha_0(c5) [asm] base=0.83 \u03c3=0.83"
+        }
+      ]
+    }
+  ]
+}
