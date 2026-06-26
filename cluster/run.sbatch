@@ -8,7 +8,7 @@
 #SBATCH --job-name=tesi
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=carmine.santella@studio.unibo.it     # <-- EDIT
-#SBATCH --time=04:00:00
+#SBATCH --time=03:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=4                      # l40 = 8 cores; for rtx2080 use 4
