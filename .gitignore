@@ -1,5 +1,5 @@
-venv/
+.venv/
 .vscode/
 .claude/
-__pycahche__/
-
+__pycache__/
+venv/
