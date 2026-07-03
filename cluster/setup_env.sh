@@ -14,7 +14,6 @@ set -euo pipefail
 
 SCRATCH="/scratch.hpc/$USER"
 PROJ="$SCRATCH/Learning_aba"
-mkdir -p "$SCRATCH/hf_cache"
 cd "$PROJ"
 
 python3 -m venv venv
