@@ -27,7 +27,7 @@
 # ---------------------------------------------------------------------------
 #SBATCH --job-name=aba-bench
 #SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=carmine.santella@studio.unibo.it     # <-- EDIT
+#SBATCH --mail-user=carmine.santella@studio.unibo.it    
 #SBATCH --time=24:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
