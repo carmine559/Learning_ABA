@@ -53,6 +53,7 @@ def _save_name_maps(ds: ABADataset, output_dir: str) -> None:
 def build_dataset(
     n_synthetic: int = 0,
     n_complex: int = 0,
+    benchmark_per_tier: int = 0,
     synthetic_seed: int = 42,
     solve_symbolic: bool = True,
     anonymize: bool = True,
@@ -64,6 +65,12 @@ def build_dataset(
     # Built-in benchmarks (always included)
     ds.load_builtin_benchmarks(solve=solve_symbolic)
     print(f"  Loaded {len(ds)} built-in benchmark problems.")
+
+    # Stratified benchmark suite (massive testing: one tier per capability)
+    if benchmark_per_tier > 0:
+        ds.add_benchmark_suite(n_per_tier=benchmark_per_tier,
+                               seed=synthetic_seed, solve=solve_symbolic)
+        print(f"  After benchmark suite: {len(ds)} problems.")
 
     # Synthetic (single-path)
     if n_synthetic > 0:
@@ -344,6 +351,31 @@ def run_graded_analysis(
 # Reporting
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _tier_breakdown(
+    results_by_mode: Dict[str, List[ProblemResult]],
+) -> Dict[str, Dict[str, Dict]]:
+    """Aggregate results per benchmark tier: mode -> tier -> metrics.
+
+    Tier is read from the problem-id prefix (t1_mono_0007[_anon] -> t1_mono);
+    non-benchmark problems (nixon_diamond, flies, ...) are grouped as 'builtin'.
+    Returns {} when no benchmark problems are present, so the report section
+    only appears for --benchmark runs.
+    """
+    import re
+    tier_re = re.compile(r"^(t\d+_[a-z]+)_\d+")
+    out: Dict[str, Dict[str, Dict]] = {}
+    any_tier = False
+    for mode, results in results_by_mode.items():
+        groups: Dict[str, List[ProblemResult]] = {}
+        for pr in results:
+            m = tier_re.match(pr.problem_id)
+            tier = m.group(1) if m else "builtin"
+            any_tier = any_tier or bool(m)
+            groups.setdefault(tier, []).append(pr)
+        out[mode] = {tier: aggregate_results(prs) for tier, prs in groups.items()}
+    return out if any_tier else {}
+
+
 def generate_report(
     results_by_mode: Dict[str, List[ProblemResult]],
     symbolic_results: Optional[Dict],
@@ -370,6 +402,12 @@ def generate_report(
             "mean_overfit_gap":    0.0,
         }
 
+    # Per-tier breakdown (benchmark suite): WHICH capability does the LLM
+    # replicate? Problem ids carry the tier prefix, e.g. t2_defeas_0003[_anon].
+    by_tier = _tier_breakdown(results_by_mode)
+    if by_tier:
+        summary["by_tier"] = by_tier
+
     # Save summary JSON
     summary_path = os.path.join(output_dir, "summary.json")
     with open(summary_path, "w") as f:
@@ -385,12 +423,27 @@ def generate_report(
     print(header)
     print("-" * len(header))
     for name, agg in summary.items():
+        if name == "by_tier":
+            continue
         row = f"{name:<20}"
         for m in metrics:
             v = agg.get(m, 0)
             cell = f"{v:.1%}" if "rate" in m else f"{v:.2f}"
             row += f"{cell:>18}"
         print(row)
+
+    if by_tier:
+        print("\n=== Per-tier breakdown (gen@k = algorithm capability replicated) ===")
+        tiers = sorted({t for mode_t in by_tier.values() for t in mode_t})
+        header = f"{'Mode':<12}" + "".join(f"{t:>14}" for t in tiers)
+        print(header)
+        print("-" * len(header))
+        for mode, tier_aggs in by_tier.items():
+            row = f"{mode:<12}"
+            for t in tiers:
+                agg = tier_aggs.get(t)
+                row += f"{agg['gen_at_k']:>13.0%} " if agg else f"{'-':>14}"
+            print(row)
 
     # Generate figures
     try:
@@ -619,6 +672,12 @@ def parse_args() -> argparse.Namespace:
 
     # ── Dataset ──────────────────────────────────────────────────────────────
     g_data = p.add_argument_group("Dataset")
+    g_data.add_argument("--benchmark", type=int, default=0, metavar="N",
+                        help="Massive testing: add the stratified benchmark suite "
+                             "with N problems per tier (t1_mono, t2_defeas, "
+                             "t3_noise, t4_domain, t5_twopath). The per-tier "
+                             "breakdown in the report shows WHICH part of the "
+                             "algorithm the LLM replicates.")
     g_data.add_argument("--n-synthetic", type=int, default=0,
                         help="Number of single-path synthetic problems to add.")
     g_data.add_argument("--n-complex", type=int, default=0,
@@ -721,6 +780,7 @@ def main() -> None:
     ds = build_dataset(
         n_synthetic=args.n_synthetic,
         n_complex=args.n_complex,
+        benchmark_per_tier=args.benchmark,
         solve_symbolic=True,
         anonymize=args.anonymize,
         anonymize_scheme=args.anonymize_scheme,

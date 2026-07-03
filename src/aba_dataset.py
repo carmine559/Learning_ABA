@@ -262,6 +262,28 @@ BUILTIN_PROBLEMS = {
 # Synthetic problem generator
 # ---------------------------------------------------------------------------
 
+# Stratified difficulty tiers for the massive-testing benchmark suite.
+# Each tier isolates one capability of the ABA-learning algorithm.
+BENCHMARK_TIERS: List[Dict] = [
+    {"name": "t1_mono",    "kind": "single",
+     "kwargs": dict(n_constants=6, with_exceptions=False),
+     "tests": "folding only, monotonic rule suffices"},
+    {"name": "t2_defeas",  "kind": "single",
+     "kwargs": dict(n_constants=6, with_exceptions=True),
+     "tests": "assumption introduction, one exception"},
+    {"name": "t3_noise",   "kind": "single",
+     "kwargs": dict(n_constants=8, with_exceptions=True, n_predicates=6),
+     "tests": "distractor robustness, extra noise predicates"},
+    {"name": "t4_domain",  "kind": "single",
+     "kwargs": dict(n_constants=12, with_exceptions=True,
+                    n_positive=4, n_negative=4),
+     "tests": "domain-size scaling, 12 constants"},
+    {"name": "t5_twopath", "kind": "complex",
+     "kwargs": dict(n_constants=8),
+     "tests": "two independent defeasible derivation paths"},
+]
+
+
 class SyntheticGenerator:
     """
     Generate random ABA learning problems by:
@@ -277,29 +299,16 @@ class SyntheticGenerator:
             "predator", "prey", "domestic", "wild",
             "friendly", "dangerous", "nocturnal", "fast",
         ]
-        # A larger constant pool so problems can have enough examples on both
-        # sides (need >=2 positive AND >=2 negative -> >=4 constants minimum).
-        self.constants = [f"c{i}" for i in range(8)]   # c0..c7
 
-    def _random_atom(self, pred: str, arity: int = 1) -> str:
-        if arity == 0:
-            return pred
-        vars_or_consts = [self.rng.choice(self.constants) for _ in range(arity)]
-        return f"{pred}({'_'.join(vars_or_consts)})"
-
-    def _random_rule(
-        self, head_pred: str, body_preds: List[str], use_var: bool = True
-    ) -> Rule:
-        var = "X" if use_var else self.rng.choice(self.constants)
-        head = f"{head_pred}({var})"
-        body = [f"{p}({var})" for p in body_preds]
-        return Rule(head=head, body=body)
+    @staticmethod
+    def _make_constants(n: int) -> List[str]:
+        """Constant pool of exactly n symbols (c0..c{n-1}); no hidden cap."""
+        return [f"c{i}" for i in range(n)]
 
     def generate_one(
         self,
         n_predicates: int = 4,
         n_constants: int = 6,
-        n_rules: int = 5,
         n_positive: int = 3,
         n_negative: int = 3,
         with_exceptions: bool = True,
@@ -322,7 +331,7 @@ class SyntheticGenerator:
         """
         n_constants = max(n_constants, 6)          # need room for >=2 each side
         preds = self.rng.sample(self.pred_names, min(n_predicates, len(self.pred_names)))
-        consts = self.constants[:n_constants]
+        consts = self._make_constants(n_constants)
         target_pred = preds[0]
         support_preds = preds[1:]
         key_support = support_preds[0]
@@ -480,7 +489,7 @@ class SyntheticGenerator:
         contrary_a = f"ab_a_{target_pred}(X)"
         contrary_b = f"ab_b_{target_pred}(X)"
 
-        consts = self.constants[:n_constants]
+        consts = self._make_constants(n_constants)
         shuffled = list(consts)
         self.rng.shuffle(shuffled)
 
@@ -699,6 +708,46 @@ class ABADataset:
             self.entries.append(DatasetEntry(
                 problem=p, solution=sol, source="synthetic_complex"
             ))
+
+    def add_benchmark_suite(
+        self,
+        n_per_tier: int = 10,
+        seed: int = 42,
+        solve: bool = True,
+    ) -> None:
+        """
+        Generate the stratified benchmark suite for massive Task-1 testing.
+
+        Each tier isolates ONE capability of the ABA-learning algorithm, so the
+        per-tier gen@k breakdown tells you *which part* of the algorithm the LLM
+        can replicate, not just an overall average:
+
+          t1_mono     folding only — no exceptions, a monotonic rule suffices
+          t2_defeas   assumption introduction — one exception must be defeated
+          t3_noise    distractor robustness — extra irrelevant predicates
+          t4_domain   domain-size scaling — 12 constants instead of 6
+          t5_twopath  multiple derivation paths — two defeasible rules needed
+
+        Problem ids carry the tier prefix (e.g. t2_defeas_0003) so results can
+        be grouped per tier downstream. Each tier draws from an independently
+        seeded generator, so tiers are reproducible in isolation.
+        """
+        for t_idx, tier in enumerate(BENCHMARK_TIERS):
+            gen = SyntheticGenerator(seed=seed + 1000 * t_idx)
+            if tier["kind"] == "complex":
+                problems = gen.generate_complex_batch(n_per_tier, **tier["kwargs"])
+            else:
+                problems = gen.generate_batch(n_per_tier, **tier["kwargs"])
+            for i, p in enumerate(problems):
+                p.problem_id = f"{tier['name']}_{i:04d}"
+                sol = None
+                if solve:
+                    sol = self._solve_with_role(p)
+                self.entries.append(DatasetEntry(
+                    problem=p, solution=sol, source=f"benchmark_{tier['name']}"
+                ))
+            print(f"  tier {tier['name']}: {len(problems)}/{n_per_tier} problems "
+                  f"({tier['tests']})")
 
     # ---- Anonymisation -----------------------------------------------------
 

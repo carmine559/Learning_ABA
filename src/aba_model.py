@@ -409,14 +409,19 @@ class GoogleAIBackend(LLMBackend):
 # ─────────────────────────────────────────────────────────────────────────────
 
 LOCAL_MODELS: Dict[str, str] = {
-    # alias        : HuggingFace model id  (instruct/chat variants)
-    "qwen2.5-7b":  "Qwen/Qwen2.5-7B-Instruct",
-    "qwen2.5-14b": "Qwen/Qwen2.5-14B-Instruct",
-    "qwen2.5-32b": "Qwen/Qwen2.5-32B-Instruct",
-    "llama3-8b":   "meta-llama/Llama-3.1-8B-Instruct",
-    "mistral-7b":  "mistralai/Mistral-7B-Instruct-v0.3",
-    "gemma2-9b":   "google/gemma-2-9b-it",
-    "phi3-mini":   "microsoft/Phi-3.5-mini-instruct",
+    # alias         : HuggingFace model id  (instruct/chat variants)
+    # -- small: fit the 11 GB RTX 2080 Ti (use these on partition rtx2080) --
+    "qwen2.5-0.5b": "Qwen/Qwen2.5-0.5B-Instruct",
+    "qwen2.5-1.5b": "Qwen/Qwen2.5-1.5B-Instruct",
+    "qwen2.5-3b":   "Qwen/Qwen2.5-3B-Instruct",
+    "phi3-mini":    "microsoft/Phi-3.5-mini-instruct",     # 3.8B
+    # -- 7B+: comfortable on the 48 GB L40 (partition l40) --
+    "qwen2.5-7b":   "Qwen/Qwen2.5-7B-Instruct",
+    "qwen2.5-14b":  "Qwen/Qwen2.5-14B-Instruct",
+    "qwen2.5-32b":  "Qwen/Qwen2.5-32B-Instruct",
+    "llama3-8b":    "meta-llama/Llama-3.1-8B-Instruct",
+    "mistral-7b":   "mistralai/Mistral-7B-Instruct-v0.3",
+    "gemma2-9b":    "google/gemma-2-9b-it",
 }
 
 
@@ -458,7 +463,13 @@ class LocalHFBackend(LLMBackend):
         if tok.pad_token_id is None:
             tok.pad_token = tok.eos_token
 
-        load_kwargs: Dict[str, Any] = {"token": token}
+        # Keep peak memory low: stream weights (low_cpu_mem_usage) and pin the
+        # whole model to the single visible GPU. We deliberately AVOID
+        # device_map="auto": its accelerate dispatch hooks can trigger a
+        # copy.deepcopy of large parameters during generation, which on a small
+        # card (e.g. the 11 GB RTX 2080 Ti) cloning the ~1 GB embedding tips it
+        # into CUDA OOM.
+        load_kwargs: Dict[str, Any] = {"token": token, "low_cpu_mem_usage": True}
         if load_4bit:
             from transformers import BitsAndBytesConfig
             load_kwargs["quantization_config"] = BitsAndBytesConfig(
@@ -467,12 +478,15 @@ class LocalHFBackend(LLMBackend):
                 bnb_4bit_use_double_quant=True,
                 bnb_4bit_compute_dtype=torch.bfloat16,
             )
-            load_kwargs["device_map"] = "auto"
+            # bitsandbytes needs an explicit device map; pin to GPU 0 (under
+            # SLURM --gres=gpu:1 the assigned GPU is always cuda:0).
+            load_kwargs["device_map"] = {"": 0}
+            model_obj = AutoModelForCausalLM.from_pretrained(self.model_id, **load_kwargs)
         else:
             load_kwargs["torch_dtype"] = getattr(torch, dtype)
-            load_kwargs["device_map"] = device
+            model_obj = AutoModelForCausalLM.from_pretrained(self.model_id, **load_kwargs)
+            model_obj = model_obj.to(device)      # plain .to(), no accelerate hooks
 
-        model_obj = AutoModelForCausalLM.from_pretrained(self.model_id, **load_kwargs)
         model_obj.eval()
 
         self._torch = torch
@@ -508,7 +522,7 @@ class LocalHFBackend(LLMBackend):
             gen_kwargs.update(temperature=temperature, top_p=0.95)
 
         t0 = time.time()
-        with torch.no_grad():
+        with torch.inference_mode():
             out = self.model.generate(input_ids, **gen_kwargs)
         completion = out[0][input_ids.shape[-1]:]
         text = self.tok.decode(completion, skip_special_tokens=True)

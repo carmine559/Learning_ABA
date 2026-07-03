@@ -49,6 +49,36 @@ sbatch cluster/run_sweep.sbatch     # a job array: qwen2.5-7b, llama3-8b, mistra
 
 Each array task takes one GPU, so with four L40s the four models run in parallel.
 
+## 3b. MASSIVE testing — the stratified benchmark suite
+
+```bash
+sbatch cluster/run_benchmark.sbatch   # 4 models x 103 anonymised problems x 4 modes
+```
+
+This is the headline Task-1 experiment: `--benchmark N` generates **N problems
+per tier**, where each tier isolates one capability of the ASP-ABAlearnB
+algorithm (all anonymised, so the LLM cannot use world knowledge):
+
+| Tier | Isolates | Structure |
+| --- | --- | --- |
+| `t1_mono` | Folding only | no exceptions, monotonic rule suffices |
+| `t2_defeas` | Assumption introduction | one exception to defeat |
+| `t3_noise` | Distractor robustness | extra irrelevant predicates |
+| `t4_domain` | Domain-size scaling | 12 constants |
+| `t5_twopath` | Multiple derivation paths | two defeasible rules needed |
+
+`summary.json` then contains a **per-tier gen@k breakdown** (also printed as a
+table), so the result is not "the LLM scores 40%" but "*it can fold but fails
+at assumption introduction*" — the explainable answer to whether it replicates
+the algorithm. Per-problem narratives are in `explanations.md`, every learned
+framework (mechanism-tagged, de-anonymisable via `name_maps.json`) in
+`frameworks.md`. Every generated problem is validated at generation time:
+symbolically solvable, ≥2 examples per side, no E+/E− overlap, no duplicates.
+
+Runtime scales as `5·N + 3` problems × modes × samples; with `BENCH_N=20`,
+`--n-samples 3`, 4 modes → ~1236 calls ≈ 6–10 h per model on an L40 (7B). Trim
+`BENCH_N` or the mode list for a faster pass.
+
 ## 4. Monitor
 
 ```bash
@@ -60,15 +90,30 @@ scancel <jobid>                 # cancel
 
 ## Model ↔ GPU fit (one GPU per job)
 
-| Partition | GPU | VRAM | Fits in bf16 | With `--load-4bit` |
+| Partition | GPU | VRAM | Recommended model | `--load-4bit` |
 | --- | --- | --- | --- | --- |
-| `l40` | Nvidia L40 | 48 GB | 7B–14B | up to ~32B |
-| `rtx2080` | RTX 2080 Ti | 11 GB | — | 7B (nf4) only |
+| `l40` | Nvidia L40 | 48 GB | 7B–14B (bf16); 32B in 4-bit | for ≥32B |
+| `rtx2080` | RTX 2080 Ti | 11 GB | **≤ 3B** (`qwen2.5-3b`, `1.5b`, `phi3-mini`) | yes |
 
-On `rtx2080`, add `--load-4bit` **and** set `#SBATCH --cpus-per-task=4` (quad-core
-nodes). Model aliases (`qwen2.5-7b/14b/32b`, `llama3-8b`, `mistral-7b`,
-`gemma2-9b`, `phi3-mini`) are defined in `src/aba_model.py` (`LOCAL_MODELS`); any
-full HF id also works.
+> A **7B does NOT fit the rtx2080**, even in 4-bit: the 4-bit weights (~5.5 GB) +
+> CUDA context (~1.5 GB) + the long `algorithm` prompt + KV cache leave no room,
+> and a transient ~1 GB copy of the embedding tips it into **CUDA OutOfMemory**.
+> Use a ≤3B model on `rtx2080`, or run 7B+ on `l40`.
+
+On `rtx2080` use `#SBATCH --cpus-per-task=4` (quad-core nodes); on `l40` use 8.
+Model aliases (`qwen2.5-0.5b/1.5b/3b/7b/14b/32b`, `phi3-mini`, `llama3-8b`,
+`mistral-7b`, `gemma2-9b`) are in `src/aba_model.py` (`LOCAL_MODELS`); any full HF
+id also works.
+
+### CUDA out of memory?
+
+1. Smaller model (`qwen2.5-3b` → `1.5b` → `0.5b`) or move to `l40`.
+2. Lower `--max-tokens` (e.g. 768) — KV cache scales with prompt + output length.
+3. Lower `--n-samples`.
+4. Keep `--load-4bit` on `rtx2080`. The loader already sets
+   `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` and pins the model to one
+   GPU (no `device_map="auto"` hooks) to minimise fragmentation and avoid the
+   parameter deepcopy.
 
 ## Gated models (Llama, Gemma)
 
@@ -79,7 +124,8 @@ before the `python3` call:
 export HF_TOKEN=hf_xxxxxxxx      # or run `huggingface-cli login` once on giano
 ```
 
-Qwen and Mistral are ungated — easiest to start with `--model qwen2.5-7b`.
+Qwen, Mistral and Phi are ungated — easiest to start with `--model qwen2.5-3b`
+(rtx2080) or `--model qwen2.5-7b` (l40).
 
 ## How the flags map to the experiments
 
