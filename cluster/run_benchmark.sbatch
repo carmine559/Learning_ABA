@@ -35,7 +35,6 @@
 #SBATCH --mem=32G
 #SBATCH --partition=l40
 #SBATCH --gres=gpu:1
-#SBATCH --array=0-3
 #SBATCH --output=slurm-%x-%a-%j.out
 
 set -euo pipefail
