@@ -134,8 +134,12 @@ def evaluate_one_sample(
     try:
         resp = backend.generate(prompt, temperature=temperature, max_tokens=max_tokens)
     except Exception as exc:
+        import traceback
         r.error_type = "llm_error"
-        r.raw_output = f"[LLM ERROR] {type(exc).__name__}: {exc}"
+        # Keep the full traceback: an opaque "AttributeError:" with no frames
+        # cost us a cluster run to diagnose. This lands in results_<mode>.jsonl.
+        r.raw_output = (f"[LLM ERROR] {type(exc).__name__}: {exc}\n"
+                        + traceback.format_exc())
         return r
     r.llm_latency_s     = resp.latency_s
     r.raw_output        = resp.text
@@ -311,19 +315,25 @@ def evaluate_dataset(
             print(f"gen@1={pr.gen_at_1:.0%} gen@k={'yes' if pr.gen_at_k else 'no'} "
                   f"fit@1={pr.fit_at_1:.0%} parse={pr.parse_rate:.0%}")
 
-        # Surface the actual API error the first time it happens — otherwise an
-        # invalid model id or expired key looks like a silent parse failure.
+        # Surface the actual LLM error the first time it happens — otherwise an
+        # invalid model id or a backend bug looks like a silent parse failure.
         if not _api_error_shown:
             llm_errs = [s for s in pr.samples if s.error_type == "llm_error"]
             if llm_errs:
                 _api_error_shown = True
-                print("\n  [!] API ERROR DETECTED - the LLM call is failing, "
-                      "not the parser.")
+                backend_name = type(backend).__name__
+                print(f"\n  [!] LLM ERROR DETECTED (backend={backend_name}) - "
+                      "the generate() call is failing, not the parser.")
                 print(f"     {llm_errs[0].raw_output}")
-                print("     Common causes: deprecated/invalid --model id, "
-                      "missing or expired API key, or rate limiting.")
-                print("     Check current model ids at "
-                      "https://console.groq.com/docs/models\n")
+                if backend_name == "GroqBackend":
+                    print("     Check model ids at "
+                          "https://console.groq.com/docs/models\n")
+                elif backend_name == "LocalHFBackend":
+                    print("     Check the HF model id / VRAM fit; "
+                          "full traceback above.\n")
+                else:
+                    print("     Common causes: invalid --model id, missing or "
+                          "expired API key, or rate limiting.\n")
     return results
 
 

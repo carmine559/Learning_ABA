@@ -483,15 +483,25 @@ class LocalHFBackend(LLMBackend):
             load_kwargs["device_map"] = {"": 0}
             model_obj = AutoModelForCausalLM.from_pretrained(self.model_id, **load_kwargs)
         else:
-            load_kwargs["torch_dtype"] = getattr(torch, dtype)
-            model_obj = AutoModelForCausalLM.from_pretrained(self.model_id, **load_kwargs)
+            # transformers >=4.56 renamed torch_dtype -> dtype; support both.
+            try:
+                model_obj = AutoModelForCausalLM.from_pretrained(
+                    self.model_id, dtype=getattr(torch, dtype), **load_kwargs)
+            except TypeError:
+                model_obj = AutoModelForCausalLM.from_pretrained(
+                    self.model_id, torch_dtype=getattr(torch, dtype), **load_kwargs)
             model_obj = model_obj.to(device)      # plain .to(), no accelerate hooks
 
         model_obj.eval()
 
         self._torch = torch
         self.tok = tok
-        self.model = model_obj
+        self._model = model_obj
+        # NOTE: `.model` must stay a STRING. The evaluation layer reads
+        # getattr(backend, "model") as the model NAME (all API backends store
+        # the id string there) and serialises it into results JSONL — storing
+        # the torch module here made every SampleResult unserialisable.
+        self.model = self.model_id
         print(f"[local] loaded {self.model_id} "
               f"({'4-bit nf4' if load_4bit else dtype}) on {model_obj.device}")
 
@@ -502,15 +512,24 @@ class LocalHFBackend(LLMBackend):
         max_tokens: int = 1024,
     ) -> ModelResponse:
         torch = self._torch
+        device = self._model.device
         messages = [{"role": "user", "content": prompt}]
+
+        # apply_chat_template's return type changed across transformers versions
+        # (tensor vs BatchEncoding dict; accessing .shape on a BatchEncoding
+        # raises a bare AttributeError). Request the dict form explicitly and
+        # extract the tensors ourselves — works on all versions >= 4.41.
         try:
-            input_ids = self.tok.apply_chat_template(
-                messages, add_generation_prompt=True, return_tensors="pt"
-            ).to(self.model.device)
-        except Exception:
-            input_ids = self.tok(prompt, return_tensors="pt").input_ids.to(
-                self.model.device
+            enc = self.tok.apply_chat_template(
+                messages, add_generation_prompt=True,
+                return_tensors="pt", return_dict=True,
             )
+        except Exception:
+            enc = self.tok(prompt, return_tensors="pt")
+        input_ids = enc["input_ids"].to(device)
+        attention_mask = enc.get("attention_mask")
+        if attention_mask is not None:
+            attention_mask = attention_mask.to(device)
 
         do_sample = bool(temperature and temperature > 0)
         gen_kwargs: Dict[str, Any] = dict(
@@ -518,12 +537,14 @@ class LocalHFBackend(LLMBackend):
             do_sample=do_sample,
             pad_token_id=self.tok.pad_token_id,
         )
+        if attention_mask is not None:
+            gen_kwargs["attention_mask"] = attention_mask
         if do_sample:
             gen_kwargs.update(temperature=temperature, top_p=0.95)
 
         t0 = time.time()
         with torch.inference_mode():
-            out = self.model.generate(input_ids, **gen_kwargs)
+            out = self._model.generate(input_ids=input_ids, **gen_kwargs)
         completion = out[0][input_ids.shape[-1]:]
         text = self.tok.decode(completion, skip_special_tokens=True)
         return ModelResponse(
