@@ -41,18 +41,33 @@ This one job runs **Task 1** (LLM learning, all four modes, anonymised) +
 `results/<model>/`. You get e-mails at start/end/error; logs stream to
 `slurm-<job>-<id>.out`.
 
-## 3. Run several models at once (4× L40)
+## 3. MASSIVE testing — the stratified benchmark suite
+
+> **Cluster limits**: no job arrays, and only **one running L40 job per user**
+> at a time. So multi-model runs cannot be parallel — they run one after
+> another, either as a *chain of jobs* (preferred) or as a *loop inside one job*.
+
+**(a) Chained jobs** — one job per model, linked with `--dependency=afterany`
+so each starts when the previous ends and gets its **own full 24 h** budget:
 
 ```bash
-sbatch cluster/run_sweep.sbatch     # a job array: qwen2.5-7b, llama3-8b, mistral-7b, gemma2-9b
+bash cluster/submit_benchmarks.sh   # qwen2.5-3b -> 7b -> mistral-7b -> 14b
 ```
 
-Each array task takes one GPU, so with four L40s the four models run in parallel.
+Waiting jobs show as `PENDING (Dependency)` in `squeue` — that is normal.
 
-## 3b. MASSIVE testing — the stratified benchmark suite
+**(b) One sequential job** — pass a space-separated model list; all models
+share a single job's `--time` (use for short runs or few models):
 
 ```bash
-sbatch cluster/run_benchmark.sbatch   # 4 models x 103 anonymised problems x 4 modes
+sbatch --export=ALL,MODEL="qwen2.5-3b qwen2.5-7b" cluster/run_benchmark.sbatch
+```
+
+**(c) Single model / fast trial:**
+
+```bash
+sbatch --export=ALL,MODEL=qwen2.5-7b cluster/run_benchmark.sbatch
+sbatch --export=ALL,MODEL=qwen2.5-3b,BENCH_N=5,N_SAMPLES=1 cluster/run_benchmark.sbatch  # ~1 h trial
 ```
 
 This is the headline Task-1 experiment: `--benchmark N` generates **N problems
@@ -83,7 +98,7 @@ Runtime scales as `5·N + 3` problems × modes × samples; with `BENCH_N=20`,
 
 ```bash
 squeue -u $USER                 # queued / running jobs
-tail -f slurm-aba-learn-*.out   # live log
+tail -f slurm-bench-*.out       # live logs (one file per model job)
 sacct -j <jobid> --format=JobID,State,Elapsed,MaxRSS   # after it finishes
 scancel <jobid>                 # cancel
 ```

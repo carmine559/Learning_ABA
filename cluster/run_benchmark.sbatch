@@ -2,32 +2,28 @@
 # ---------------------------------------------------------------------------
 # MASSIVE TESTING: can an LLM replicate the ABA-learning algorithm?
 #
-# Job array: one model per GPU (4x L40 -> all four run in parallel).
-# Each task runs the full stratified benchmark suite, anonymised (default):
-#   t1_mono     folding only (monotonic rule suffices)
-#   t2_defeas   assumption introduction (one exception)
-#   t3_noise    distractor robustness (extra noise predicates)
-#   t4_domain   domain-size scaling (12 constants)
-#   t5_twopath  two independent defeasible derivation paths
+# CLUSTER CONSTRAINT: no job arrays AND only ONE running L40 job per user.
+# Two ways to cover several models:
 #
-# With BENCH_N=20: 5x20 + 3 builtin = 103 problems x 4 modes x 3 samples
-# = ~1236 LLM calls per model  (~6-10 h on an L40 with a 7B model).
+#   (a) CHAINED JOBS (preferred) - one job per model, linked with SLURM
+#       dependencies so they run strictly one-after-another, each with its
+#       own 24 h budget:        bash cluster/submit_benchmarks.sh
 #
-# Explainable outputs per model, under results/bench_<model>/:
-#   summary.json       overall + per-mode metrics AND per-tier breakdown
-#   results_<mode>.jsonl   every sample: raw LLM output + error class
-#   explanations.md    per-problem narrative of HOW the model generalised
-#   frameworks.{md,jsonl}  every learned framework, mechanism-tagged
-#   defeasibility.csv  flat table for stats
-#   name_maps.json     anonymisation maps (de-anonymise for reading)
+#   (b) ONE SEQUENTIAL JOB - MODEL may be a space-separated list; the models
+#       run in a loop INSIDE this single job (all must fit in --time):
+#       sbatch --export=ALL,MODEL="qwen2.5-3b qwen2.5-7b" cluster/run_benchmark.sbatch
 #
-# Submit from giano.cs.unibo.it:
-#     cd /scratch.hpc/$USER/Learning_aba
-#     sbatch cluster/run_benchmark.sbatch
+# With no MODEL given, defaults to qwen2.5-7b.
+#
+# Each job runs the full stratified benchmark suite, anonymised (default):
+#   t1_mono / t2_defeas / t3_noise / t4_domain / t5_twopath
+# Explainable outputs land in results/bench_<model>/ :
+#   summary.json (with per-tier breakdown), results_<mode>.jsonl,
+#   explanations.md, frameworks.{md,jsonl}, defeasibility.csv, name_maps.json
 # ---------------------------------------------------------------------------
 #SBATCH --job-name=aba-bench
 #SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=carmine.santella@studio.unibo.it    
+#SBATCH --mail-user=carmine.santella@studio.unibo.it
 #SBATCH --time=24:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -35,7 +31,7 @@
 #SBATCH --mem=32G
 #SBATCH --partition=l40
 #SBATCH --gres=gpu:1
-#SBATCH --output=slurm-%x-%a-%j.out
+#SBATCH --output=slurm-%x-%j.out
 
 set -euo pipefail
 
@@ -47,26 +43,30 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 cd "/scratch.hpc/$USER/Learning_aba"
 source venv/bin/activate
 
-# Ungated models spanning a size axis (does capability scale with size?).
-MODELS=(qwen2.5-3b qwen2.5-7b mistral-7b qwen2.5-14b)
-MODEL="${MODELS[$SLURM_ARRAY_TASK_ID]}"
+MODEL="${MODEL:-qwen2.5-7b}"     # single model OR space-separated list
+BENCH_N="${BENCH_N:-20}"         # problems PER TIER (5 tiers)
+N_SAMPLES="${N_SAMPLES:-3}"      # LLM samples per problem (pass@k)
 
-BENCH_N=20            # problems PER TIER (5 tiers). Lower for a faster pass.
-N_SAMPLES=3           # LLM samples per problem (pass@k)
-OUT="results/bench_${MODEL}"
-
-echo "[array $SLURM_ARRAY_TASK_ID] model=$MODEL bench_n=$BENCH_N samples=$N_SAMPLES"
 python3 -c "import torch; print('GPU:', torch.cuda.get_device_name(0))"
 
-python3 main.py \
-    --backend local --model "$MODEL" \
-    --benchmark "$BENCH_N" \
-    --modes direct cot guided algorithm \
-    --n-samples "$N_SAMPLES" --max-tokens 1536 \
-    --export \
-    --output "$OUT"
+for m in $MODEL; do
+    OUT="results/bench_${m}"
+    echo "[job $SLURM_JOB_ID] model=$m bench_n=$BENCH_N samples=$N_SAMPLES"
+
+    # A failure on one model must not kill the remaining ones (set -e).
+    if python3 main.py \
+        --backend local --model "$m" \
+        --benchmark "$BENCH_N" \
+        --modes direct cot guided algorithm \
+        --n-samples "$N_SAMPLES" --max-tokens 1536 \
+        --export \
+        --output "$OUT"
+    then
+        echo "DONE $m -> $OUT"
+    else
+        echo "FAILED $m (exit $?) - continuing with the next model"
+    fi
+done
 
 # Optional Task-2 pass on the same suite (adds graded BSAF/BAF columns):
 #   append   --graded   (uniform base scores, no extra LLM calls)
-
-echo "DONE $MODEL -> $OUT"
