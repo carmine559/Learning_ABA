@@ -1,0 +1,592 @@
+GPU: NVIDIA L40
+[job 67497] model=qwen2.5-7b bench_n=20 samples=3
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+============================================================
+ABA Framework Learning - Thesis Experiments
+============================================================
+
+[1/4] Building dataset...
+  Loaded 3 built-in benchmark problems.
+  tier t1_mono: 20/20 problems (folding only, monotonic rule suffices)
+  tier t2_defeas: 20/20 problems (assumption introduction, one exception)
+  tier t3_noise: 20/20 problems (distractor robustness, extra noise predicates)
+  tier t4_domain: 20/20 problems (domain-size scaling, 12 constants)
+  tier t5_twopath: 20/20 problems (two independent defeasible derivation paths)
+  After benchmark suite: 103 problems.
+  Anonymised all problems (scheme=letters).
+  Anonymisation maps saved to results/bench_qwen2.5-7b/name_maps.json
+  Solved: 103/103  avg_bg_rules=15.52
+
+[2/4] Symbolic baseline (ASP-ABAlearnB)...
+
+=== Symbolic baseline (ASP-ABAlearnB) ===
+  nixon_diamond_anon: OK intensional
+  flies_anon: OK intensional
+  tax_law_anon: OK intensional
+  t1_mono_0000_anon: OK intensional
+  t1_mono_0001_anon: OK intensional
+  t1_mono_0002_anon: OK intensional
+  t1_mono_0003_anon: OK intensional
+  t1_mono_0004_anon: OK intensional
+  t1_mono_0005_anon: OK intensional
+  t1_mono_0006_anon: OK intensional
+  t1_mono_0007_anon: OK intensional
+  t1_mono_0008_anon: OK intensional
+  t1_mono_0009_anon: OK intensional
+  t1_mono_0010_anon: OK intensional
+  t1_mono_0011_anon: OK intensional
+  t1_mono_0012_anon: OK intensional
+  t1_mono_0013_anon: OK intensional
+  t1_mono_0014_anon: OK intensional
+  t1_mono_0015_anon: OK intensional
+  t1_mono_0016_anon: OK intensional
+  t1_mono_0017_anon: OK intensional
+  t1_mono_0018_anon: OK intensional
+  t1_mono_0019_anon: OK intensional
+  t2_defeas_0000_anon: OK intensional
+  t2_defeas_0001_anon: OK intensional
+  t2_defeas_0002_anon: OK intensional
+  t2_defeas_0003_anon: OK intensional
+  t2_defeas_0004_anon: OK intensional
+  t2_defeas_0005_anon: OK intensional
+  t2_defeas_0006_anon: OK intensional
+  t2_defeas_0007_anon: OK intensional
+  t2_defeas_0008_anon: OK intensional
+  t2_defeas_0009_anon: OK intensional
+  t2_defeas_0010_anon: OK intensional
+  t2_defeas_0011_anon: OK intensional
+  t2_defeas_0012_anon: OK intensional
+  t2_defeas_0013_anon: OK intensional
+  t2_defeas_0014_anon: OK intensional
+  t2_defeas_0015_anon: OK intensional
+  t2_defeas_0016_anon: OK intensional
+  t2_defeas_0017_anon: OK intensional
+  t2_defeas_0018_anon: OK intensional
+  t2_defeas_0019_anon: OK intensional
+  t3_noise_0000_anon: OK intensional
+  t3_noise_0001_anon: OK intensional
+  t3_noise_0002_anon: OK intensional
+  t3_noise_0003_anon: OK intensional
+  t3_noise_0004_anon: OK intensional
+  t3_noise_0005_anon: OK intensional
+  t3_noise_0006_anon: OK intensional
+  t3_noise_0007_anon: OK intensional
+  t3_noise_0008_anon: OK intensional
+  t3_noise_0009_anon: OK intensional
+  t3_noise_0010_anon: OK intensional
+  t3_noise_0011_anon: OK intensional
+  t3_noise_0012_anon: OK intensional
+  t3_noise_0013_anon: OK intensional
+  t3_noise_0014_anon: OK intensional
+  t3_noise_0015_anon: OK intensional
+  t3_noise_0016_anon: OK intensional
+  t3_noise_0017_anon: OK intensional
+  t3_noise_0018_anon: OK intensional
+  t3_noise_0019_anon: OK intensional
+  t4_domain_0000_anon: OK intensional
+  t4_domain_0001_anon: OK intensional
+  t4_domain_0002_anon: OK intensional
+  t4_domain_0003_anon: OK intensional
+  t4_domain_0004_anon: OK intensional
+  t4_domain_0005_anon: OK intensional
+  t4_domain_0006_anon: OK intensional
+  t4_domain_0007_anon: OK intensional
+  t4_domain_0008_anon: OK intensional
+  t4_domain_0009_anon: OK intensional
+  t4_domain_0010_anon: OK intensional
+  t4_domain_0011_anon: OK intensional
+  t4_domain_0012_anon: OK intensional
+  t4_domain_0013_anon: OK intensional
+  t4_domain_0014_anon: OK intensional
+  t4_domain_0015_anon: OK intensional
+  t4_domain_0016_anon: OK intensional
+  t4_domain_0017_anon: OK intensional
+  t4_domain_0018_anon: OK intensional
+  t4_domain_0019_anon: OK intensional
+  t5_twopath_0000_anon: OK intensional
+  t5_twopath_0001_anon: OK intensional
+  t5_twopath_0002_anon: OK intensional
+  t5_twopath_0003_anon: OK intensional
+  t5_twopath_0004_anon: OK intensional
+  t5_twopath_0005_anon: OK intensional
+  t5_twopath_0006_anon: OK intensional
+  t5_twopath_0007_anon: OK intensional
+  t5_twopath_0008_anon: OK intensional
+  t5_twopath_0009_anon: OK intensional
+  t5_twopath_0010_anon: OK intensional
+  t5_twopath_0011_anon: OK intensional
+  t5_twopath_0012_anon: OK intensional
+  t5_twopath_0013_anon: OK intensional
+  t5_twopath_0014_anon: OK intensional
+  t5_twopath_0015_anon: OK intensional
+  t5_twopath_0016_anon: OK intensional
+  t5_twopath_0017_anon: OK intensional
+  t5_twopath_0018_anon: OK intensional
+  t5_twopath_0019_anon: OK intensional
+
+Symbolic: 103/103 solved, 103/103 intensional
+
+[3/4] LLM experiments (backend=local, model=qwen2.5-7b)...
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   4%|▎         | 12/339 [00:00<00:02, 116.34it/s]Loading weights:   7%|▋         | 24/339 [00:00<00:04, 64.77it/s] Loading weights:   9%|▉         | 32/339 [00:00<00:05, 60.90it/s]Loading weights:  14%|█▍        | 47/339 [00:00<00:03, 78.84it/s]Loading weights:  21%|██        | 71/339 [00:00<00:02, 121.90it/s]Loading weights:  25%|██▌       | 86/339 [00:00<00:02, 109.66it/s]Loading weights:  29%|██▉       | 99/339 [00:01<00:02, 85.14it/s] Loading weights:  33%|███▎      | 111/339 [00:01<00:02, 91.83it/s]Loading weights:  37%|███▋      | 125/339 [00:01<00:02, 100.38it/s]Loading weights:  40%|████      | 137/339 [00:01<00:02, 98.53it/s] Loading weights:  44%|████▎     | 148/339 [00:01<00:02, 82.33it/s]Loading weights:  49%|████▊     | 165/339 [00:01<00:01, 90.04it/s]Loading weights:  52%|█████▏    | 176/339 [00:01<00:01, 93.13it/s]Loading weights:  56%|█████▋    | 191/339 [00:02<00:01, 105.35it/s]Loading weights:  60%|█████▉    | 203/339 [00:02<00:01, 92.15it/s] Loading weights:  64%|██████▍   | 218/339 [00:02<00:01, 104.08it/s]Loading weights:  68%|██████▊   | 230/339 [00:02<00:01, 107.76it/s]Loading weights:  71%|███████▏  | 242/339 [00:02<00:01, 76.33it/s] Loading weights:  75%|███████▌  | 255/339 [00:02<00:01, 77.45it/s]Loading weights:  79%|███████▉  | 267/339 [00:02<00:00, 79.49it/s]Loading weights:  81%|████████▏ | 276/339 [00:03<00:00, 80.75it/s]Loading weights:  84%|████████▍ | 285/339 [00:03<00:00, 79.93it/s]Loading weights:  89%|████████▉ | 302/339 [00:03<00:00, 100.98it/s]Loading weights:  92%|█████████▏| 313/339 [00:03<00:00, 89.63it/s] Loading weights:  95%|█████████▌| 323/339 [00:03<00:00, 70.13it/s]Loading weights: 100%|██████████| 339/339 [00:03<00:00, 89.68it/s]
+[local] loaded Qwen/Qwen2.5-7B-Instruct (bfloat16) on cuda:0
+
+=== Mode: direct ===
+  [1/103] nixon_diamond_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [2/103] flies_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [3/103] tax_law_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [4/103] t1_mono_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [5/103] t1_mono_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [6/103] t1_mono_0002_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [7/103] t1_mono_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [8/103] t1_mono_0004_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [9/103] t1_mono_0005_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [10/103] t1_mono_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [11/103] t1_mono_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [12/103] t1_mono_0008_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [13/103] t1_mono_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [14/103] t1_mono_0010_anon (k=3) ... gen@1=67% gen@k=yes fit@1=33% parse=100%
+  [15/103] t1_mono_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [16/103] t1_mono_0012_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [17/103] t1_mono_0013_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [18/103] t1_mono_0014_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [19/103] t1_mono_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [20/103] t1_mono_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [21/103] t1_mono_0017_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [22/103] t1_mono_0018_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [23/103] t1_mono_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [24/103] t2_defeas_0000_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [25/103] t2_defeas_0001_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [26/103] t2_defeas_0002_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [27/103] t2_defeas_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [28/103] t2_defeas_0004_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [29/103] t2_defeas_0005_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [30/103] t2_defeas_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [31/103] t2_defeas_0007_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [32/103] t2_defeas_0008_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [33/103] t2_defeas_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=67% parse=100%
+  [34/103] t2_defeas_0010_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [35/103] t2_defeas_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [36/103] t2_defeas_0012_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [37/103] t2_defeas_0013_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [38/103] t2_defeas_0014_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [39/103] t2_defeas_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [40/103] t2_defeas_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [41/103] t2_defeas_0017_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [42/103] t2_defeas_0018_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [43/103] t2_defeas_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [44/103] t3_noise_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [45/103] t3_noise_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [46/103] t3_noise_0002_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [47/103] t3_noise_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [48/103] t3_noise_0004_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [49/103] t3_noise_0005_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [50/103] t3_noise_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [51/103] t3_noise_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [52/103] t3_noise_0008_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [53/103] t3_noise_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [54/103] t3_noise_0010_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [55/103] t3_noise_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [56/103] t3_noise_0012_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [57/103] t3_noise_0013_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [58/103] t3_noise_0014_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [59/103] t3_noise_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [60/103] t3_noise_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [61/103] t3_noise_0017_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [62/103] t3_noise_0018_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [63/103] t3_noise_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [64/103] t4_domain_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [65/103] t4_domain_0001_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [66/103] t4_domain_0002_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [67/103] t4_domain_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [68/103] t4_domain_0004_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [69/103] t4_domain_0005_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [70/103] t4_domain_0006_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [71/103] t4_domain_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [72/103] t4_domain_0008_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [73/103] t4_domain_0009_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [74/103] t4_domain_0010_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [75/103] t4_domain_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [76/103] t4_domain_0012_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [77/103] t4_domain_0013_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [78/103] t4_domain_0014_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [79/103] t4_domain_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [80/103] t4_domain_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [81/103] t4_domain_0017_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [82/103] t4_domain_0018_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [83/103] t4_domain_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [84/103] t5_twopath_0000_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [85/103] t5_twopath_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [86/103] t5_twopath_0002_anon (k=3) ... gen@1=100% gen@k=yes fit@1=33% parse=100%
+  [87/103] t5_twopath_0003_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [88/103] t5_twopath_0004_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [89/103] t5_twopath_0005_anon (k=3) ... gen@1=100% gen@k=yes fit@1=33% parse=100%
+  [90/103] t5_twopath_0006_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [91/103] t5_twopath_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [92/103] t5_twopath_0008_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [93/103] t5_twopath_0009_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [94/103] t5_twopath_0010_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [95/103] t5_twopath_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [96/103] t5_twopath_0012_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [97/103] t5_twopath_0013_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [98/103] t5_twopath_0014_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [99/103] t5_twopath_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [100/103] t5_twopath_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [101/103] t5_twopath_0017_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [102/103] t5_twopath_0018_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [103/103] t5_twopath_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  -> gen@1=26.2%  gen@k=36.9%  fit@1=4.2%  degenerate=0.0%
+
+=== Mode: cot ===
+  [1/103] nixon_diamond_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [2/103] flies_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [3/103] tax_law_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=67%
+  [4/103] t1_mono_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [5/103] t1_mono_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=67%
+  [6/103] t1_mono_0002_anon (k=3) ... gen@1=33% gen@k=yes fit@1=67% parse=100%
+  [7/103] t1_mono_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [8/103] t1_mono_0004_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [9/103] t1_mono_0005_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [10/103] t1_mono_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [11/103] t1_mono_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [12/103] t1_mono_0008_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=33%
+  [13/103] t1_mono_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=33%
+  [14/103] t1_mono_0010_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [15/103] t1_mono_0011_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=33%
+  [16/103] t1_mono_0012_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [17/103] t1_mono_0013_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [18/103] t1_mono_0014_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [19/103] t1_mono_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [20/103] t1_mono_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [21/103] t1_mono_0017_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [22/103] t1_mono_0018_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [23/103] t1_mono_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [24/103] t2_defeas_0000_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=67%
+  [25/103] t2_defeas_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=33%
+  [26/103] t2_defeas_0002_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [27/103] t2_defeas_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=67% parse=100%
+  [28/103] t2_defeas_0004_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [29/103] t2_defeas_0005_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [30/103] t2_defeas_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [31/103] t2_defeas_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [32/103] t2_defeas_0008_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=67%
+  [33/103] t2_defeas_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=67%
+  [34/103] t2_defeas_0010_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [35/103] t2_defeas_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [36/103] t2_defeas_0012_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [37/103] t2_defeas_0013_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
+  [38/103] t2_defeas_0014_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=33%
+  [39/103] t2_defeas_0015_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=67%
+  [40/103] t2_defeas_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=33%
+  [41/103] t2_defeas_0017_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [42/103] t2_defeas_0018_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=33%
+  [43/103] t2_defeas_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [44/103] t3_noise_0000_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [45/103] t3_noise_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [46/103] t3_noise_0002_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [47/103] t3_noise_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [48/103] t3_noise_0004_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [49/103] t3_noise_0005_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [50/103] t3_noise_0006_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [51/103] t3_noise_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [52/103] t3_noise_0008_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [53/103] t3_noise_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [54/103] t3_noise_0010_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=67%
+  [55/103] t3_noise_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [56/103] t3_noise_0012_anon (k=3) ... gen@1=67% gen@k=yes fit@1=33% parse=67%
+  [57/103] t3_noise_0013_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [58/103] t3_noise_0014_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [59/103] t3_noise_0015_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [60/103] t3_noise_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=67%
+  [61/103] t3_noise_0017_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [62/103] t3_noise_0018_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [63/103] t3_noise_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [64/103] t4_domain_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [65/103] t4_domain_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [66/103] t4_domain_0002_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [67/103] t4_domain_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [68/103] t4_domain_0004_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=33%
+  [69/103] t4_domain_0005_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [70/103] t4_domain_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [71/103] t4_domain_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [72/103] t4_domain_0008_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [73/103] t4_domain_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [74/103] t4_domain_0010_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [75/103] t4_domain_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [76/103] t4_domain_0012_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [77/103] t4_domain_0013_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [78/103] t4_domain_0014_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [79/103] t4_domain_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [80/103] t4_domain_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [81/103] t4_domain_0017_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=67%
+  [82/103] t4_domain_0018_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=67%
+  [83/103] t4_domain_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [84/103] t5_twopath_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [85/103] t5_twopath_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [86/103] t5_twopath_0002_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [87/103] t5_twopath_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [88/103] t5_twopath_0004_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [89/103] t5_twopath_0005_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [90/103] t5_twopath_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [91/103] t5_twopath_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=33%
+  [92/103] t5_twopath_0008_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [93/103] t5_twopath_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [94/103] t5_twopath_0010_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [95/103] t5_twopath_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=33%
+  [96/103] t5_twopath_0012_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [97/103] t5_twopath_0013_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [98/103] t5_twopath_0014_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [99/103] t5_twopath_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=33%
+  [100/103] t5_twopath_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [101/103] t5_twopath_0017_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [102/103] t5_twopath_0018_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
+  [103/103] t5_twopath_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  -> gen@1=13.3%  gen@k=29.1%  fit@1=7.4%  degenerate=12.1%
+
+=== Mode: guided ===
+  [1/103] nixon_diamond_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [2/103] flies_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [3/103] tax_law_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [4/103] t1_mono_0000_anon (k=3) ... gen@1=100% gen@k=yes fit@1=100% parse=100%
+  [5/103] t1_mono_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [6/103] t1_mono_0002_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [7/103] t1_mono_0003_anon (k=3) ... gen@1=67% gen@k=yes fit@1=67% parse=100%
+  [8/103] t1_mono_0004_anon (k=3) ... gen@1=100% gen@k=yes fit@1=100% parse=100%
+  [9/103] t1_mono_0005_anon (k=3) ... gen@1=100% gen@k=yes fit@1=100% parse=100%
+  [10/103] t1_mono_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [11/103] t1_mono_0007_anon (k=3) ... gen@1=100% gen@k=yes fit@1=33% parse=100%
+  [12/103] t1_mono_0008_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [13/103] t1_mono_0009_anon (k=3) ... gen@1=33% gen@k=yes fit@1=100% parse=100%
+  [14/103] t1_mono_0010_anon (k=3) ... gen@1=100% gen@k=yes fit@1=100% parse=100%
+  [15/103] t1_mono_0011_anon (k=3) ... gen@1=67% gen@k=yes fit@1=67% parse=100%
+  [16/103] t1_mono_0012_anon (k=3) ... gen@1=100% gen@k=yes fit@1=100% parse=100%
+  [17/103] t1_mono_0013_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [18/103] t1_mono_0014_anon (k=3) ... gen@1=100% gen@k=yes fit@1=100% parse=100%
+  [19/103] t1_mono_0015_anon (k=3) ... gen@1=100% gen@k=yes fit@1=100% parse=100%
+  [20/103] t1_mono_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [21/103] t1_mono_0017_anon (k=3) ... gen@1=100% gen@k=yes fit@1=100% parse=100%
+  [22/103] t1_mono_0018_anon (k=3) ... gen@1=67% gen@k=yes fit@1=67% parse=100%
+  [23/103] t1_mono_0019_anon (k=3) ... gen@1=67% gen@k=yes fit@1=67% parse=100%
+  [24/103] t2_defeas_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [25/103] t2_defeas_0001_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [26/103] t2_defeas_0002_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [27/103] t2_defeas_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [28/103] t2_defeas_0004_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [29/103] t2_defeas_0005_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [30/103] t2_defeas_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [31/103] t2_defeas_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [32/103] t2_defeas_0008_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [33/103] t2_defeas_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=67% parse=100%
+  [34/103] t2_defeas_0010_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [35/103] t2_defeas_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [36/103] t2_defeas_0012_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [37/103] t2_defeas_0013_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [38/103] t2_defeas_0014_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [39/103] t2_defeas_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [40/103] t2_defeas_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [41/103] t2_defeas_0017_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [42/103] t2_defeas_0018_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [43/103] t2_defeas_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [44/103] t3_noise_0000_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [45/103] t3_noise_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [46/103] t3_noise_0002_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [47/103] t3_noise_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [48/103] t3_noise_0004_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [49/103] t3_noise_0005_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [50/103] t3_noise_0006_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [51/103] t3_noise_0007_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [52/103] t3_noise_0008_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [53/103] t3_noise_0009_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [54/103] t3_noise_0010_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [55/103] t3_noise_0011_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [56/103] t3_noise_0012_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [57/103] t3_noise_0013_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [58/103] t3_noise_0014_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [59/103] t3_noise_0015_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [60/103] t3_noise_0016_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [61/103] t3_noise_0017_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [62/103] t3_noise_0018_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [63/103] t3_noise_0019_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [64/103] t4_domain_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [65/103] t4_domain_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [66/103] t4_domain_0002_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [67/103] t4_domain_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [68/103] t4_domain_0004_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [69/103] t4_domain_0005_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [70/103] t4_domain_0006_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [71/103] t4_domain_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [72/103] t4_domain_0008_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [73/103] t4_domain_0009_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [74/103] t4_domain_0010_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [75/103] t4_domain_0011_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [76/103] t4_domain_0012_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [77/103] t4_domain_0013_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [78/103] t4_domain_0014_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [79/103] t4_domain_0015_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [80/103] t4_domain_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [81/103] t4_domain_0017_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [82/103] t4_domain_0018_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [83/103] t4_domain_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [84/103] t5_twopath_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=67% parse=100%
+  [85/103] t5_twopath_0001_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [86/103] t5_twopath_0002_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [87/103] t5_twopath_0003_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [88/103] t5_twopath_0004_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [89/103] t5_twopath_0005_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [90/103] t5_twopath_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [91/103] t5_twopath_0007_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [92/103] t5_twopath_0008_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [93/103] t5_twopath_0009_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [94/103] t5_twopath_0010_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [95/103] t5_twopath_0011_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [96/103] t5_twopath_0012_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [97/103] t5_twopath_0013_anon (k=3) ... gen@1=0% gen@k=no fit@1=100% parse=100%
+  [98/103] t5_twopath_0014_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [99/103] t5_twopath_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [100/103] t5_twopath_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [101/103] t5_twopath_0017_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [102/103] t5_twopath_0018_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [103/103] t5_twopath_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  -> gen@1=46.9%  gen@k=61.2%  fit@1=14.9%  degenerate=1.9%
+
+=== Mode: algorithm ===
+  [1/103] nixon_diamond_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [2/103] flies_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [3/103] tax_law_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [4/103] t1_mono_0000_anon (k=3) ... gen@1=67% gen@k=yes fit@1=67% parse=100%
+  [5/103] t1_mono_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [6/103] t1_mono_0002_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [7/103] t1_mono_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [8/103] t1_mono_0004_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [9/103] t1_mono_0005_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [10/103] t1_mono_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [11/103] t1_mono_0007_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [12/103] t1_mono_0008_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [13/103] t1_mono_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=67% parse=100%
+  [14/103] t1_mono_0010_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [15/103] t1_mono_0011_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [16/103] t1_mono_0012_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [17/103] t1_mono_0013_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [18/103] t1_mono_0014_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [19/103] t1_mono_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [20/103] t1_mono_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [21/103] t1_mono_0017_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [22/103] t1_mono_0018_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [23/103] t1_mono_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [24/103] t2_defeas_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [25/103] t2_defeas_0001_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [26/103] t2_defeas_0002_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [27/103] t2_defeas_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [28/103] t2_defeas_0004_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [29/103] t2_defeas_0005_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [30/103] t2_defeas_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [31/103] t2_defeas_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [32/103] t2_defeas_0008_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [33/103] t2_defeas_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [34/103] t2_defeas_0010_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [35/103] t2_defeas_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [36/103] t2_defeas_0012_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [37/103] t2_defeas_0013_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [38/103] t2_defeas_0014_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [39/103] t2_defeas_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [40/103] t2_defeas_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [41/103] t2_defeas_0017_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [42/103] t2_defeas_0018_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [43/103] t2_defeas_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [44/103] t3_noise_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [45/103] t3_noise_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=67% parse=100%
+  [46/103] t3_noise_0002_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [47/103] t3_noise_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [48/103] t3_noise_0004_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [49/103] t3_noise_0005_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [50/103] t3_noise_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=100% parse=100%
+  [51/103] t3_noise_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [52/103] t3_noise_0008_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [53/103] t3_noise_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [54/103] t3_noise_0010_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [55/103] t3_noise_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [56/103] t3_noise_0012_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [57/103] t3_noise_0013_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [58/103] t3_noise_0014_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [59/103] t3_noise_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=67%
+  [60/103] t3_noise_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [61/103] t3_noise_0017_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [62/103] t3_noise_0018_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [63/103] t3_noise_0019_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [64/103] t4_domain_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [65/103] t4_domain_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [66/103] t4_domain_0002_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [67/103] t4_domain_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [68/103] t4_domain_0004_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [69/103] t4_domain_0005_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [70/103] t4_domain_0006_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [71/103] t4_domain_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [72/103] t4_domain_0008_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=67%
+  [73/103] t4_domain_0009_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [74/103] t4_domain_0010_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [75/103] t4_domain_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [76/103] t4_domain_0012_anon (k=3) ... gen@1=100% gen@k=yes fit@1=0% parse=100%
+  [77/103] t4_domain_0013_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [78/103] t4_domain_0014_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [79/103] t4_domain_0015_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [80/103] t4_domain_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [81/103] t4_domain_0017_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [82/103] t4_domain_0018_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  [83/103] t4_domain_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [84/103] t5_twopath_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [85/103] t5_twopath_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [86/103] t5_twopath_0002_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [87/103] t5_twopath_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [88/103] t5_twopath_0004_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [89/103] t5_twopath_0005_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [90/103] t5_twopath_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [91/103] t5_twopath_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [92/103] t5_twopath_0008_anon (k=3) ... gen@1=33% gen@k=yes fit@1=0% parse=100%
+  [93/103] t5_twopath_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [94/103] t5_twopath_0010_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [95/103] t5_twopath_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [96/103] t5_twopath_0012_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [97/103] t5_twopath_0013_anon (k=3) ... gen@1=0% gen@k=no fit@1=33% parse=100%
+  [98/103] t5_twopath_0014_anon (k=3) ... gen@1=33% gen@k=yes fit@1=33% parse=100%
+  [99/103] t5_twopath_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [100/103] t5_twopath_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [101/103] t5_twopath_0017_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=100%
+  [102/103] t5_twopath_0018_anon (k=3) ... gen@1=67% gen@k=yes fit@1=0% parse=100%
+  [103/103] t5_twopath_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=67%
+  -> gen@1=13.9%  gen@k=30.1%  fit@1=9.1%  degenerate=12.8%
+
+[4/4] Generating report and figures...
+
+Summary saved to results/bench_qwen2.5-7b/summary.json
+
+=== Results table ===
+Config                        gen_at_1          gen_at_k          fit_at_1  intensional_rate   degenerate_rate        parse_rate
+--------------------------------------------------------------------------------------------------------------------------------
+direct                            0.26              0.37              0.04             11.7%              0.0%            100.0%
+cot                               0.13              0.29              0.07              7.3%             12.1%             78.0%
+guided                            0.47              0.61              0.15             16.3%              1.9%            100.0%
+algorithm                         0.14              0.30              0.09              5.8%             12.8%             98.4%
+symbolic_baseline                 1.00              1.00              1.00            100.0%              0.0%            100.0%
+
+=== Per-tier breakdown (gen@k = algorithm capability replicated) ===
+Mode               builtin       t1_mono     t2_defeas      t3_noise     t4_domain    t5_twopath
+------------------------------------------------------------------------------------------------
+direct                67%           30%           35%            5%           50%           60% 
+cot                  100%           25%           35%           40%           25%           10% 
+guided                33%           80%           25%           80%           60%           65% 
+algorithm             33%           25%           20%           35%           40%           30% 
+Saved results/bench_qwen2.5-7b/figures/validity_by_mode.pdf
+Saved results/bench_qwen2.5-7b/figures/error_breakdown.pdf
+Saved results/bench_qwen2.5-7b/figures/heatmap.pdf
+Saved results/bench_qwen2.5-7b/figures/comparison_table.pdf
+Saved results/bench_qwen2.5-7b/figures/complexity_vs_validity.pdf
+Explanations saved to results/bench_qwen2.5-7b/explanations.md
+
+[Optional] Exporting frameworks...
+
+=== Exporting 1266 framework record(s) ===
+  jsonl: results/bench_qwen2.5-7b/frameworks.jsonl
+  md: results/bench_qwen2.5-7b/frameworks.md
+  csv: results/bench_qwen2.5-7b/defeasibility.csv
+
+Done.
+DONE qwen2.5-7b -> results/bench_qwen2.5-7b
