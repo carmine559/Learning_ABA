@@ -208,6 +208,12 @@ class ProblemResult:
     # pass@k — success if ANY sample succeeds
     fit_at_k:  bool  = False
     gen_at_k:  bool  = False
+    # STRICT success (the ABA-Learning definition): the sample fits ALL
+    # training examples AND generalises to held-out AND is stable AND is not
+    # degenerate — i.e. error_type == "none". gen@k alone flatters solutions
+    # that violate the training negatives (e.g. 80% gen@k with 0% fit on t3).
+    clean_at_1: float = 0.0
+    clean_at_k: bool  = False
     # variability
     gen_score_mean: float = 0.0
     gen_score_std:  float = 0.0
@@ -226,6 +232,9 @@ class ProblemResult:
         self.gen_at_1   = sum(s.gen_valid for s in self.samples) / n
         self.fit_at_k   = any(s.fit_valid for s in self.samples)
         self.gen_at_k   = any(s.gen_valid for s in self.samples)
+        clean = [s.error_type == "none" for s in self.samples]
+        self.clean_at_1 = sum(clean) / n
+        self.clean_at_k = any(clean)
         scores = [s.generalization_score for s in self.samples]
         self.gen_score_mean = statistics.mean(scores)
         self.gen_score_std  = statistics.pstdev(scores) if n > 1 else 0.0
@@ -361,6 +370,8 @@ def aggregate_results(results: List[ProblemResult]) -> Dict:
         "gen_at_1":          round(_mean("gen_at_1"), 3),
         "fit_at_k":          round(sum(r.fit_at_k for r in results) / n, 3),
         "gen_at_k":          round(sum(r.gen_at_k for r in results) / n, 3),
+        "clean_at_1":        round(_mean("clean_at_1"), 3),
+        "clean_at_k":        round(sum(r.clean_at_k for r in results) / n, 3),
         "gen_score_mean":    round(_mean("gen_score_mean"), 3),
         "mean_overfit_gap":  round(_mean("mean_overfit_gap"), 3),
         "intensional_rate":  round(_mean("intensional_rate"), 3),

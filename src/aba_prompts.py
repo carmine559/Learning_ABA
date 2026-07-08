@@ -32,29 +32,37 @@ YOUR TASK: Extend a background ABA framework so that:
   (3) New rule heads use only predicates listed as learnable.
 
 DEFEASIBILITY REQUIREMENT — this is the hardest and most important part:
-- NEVER output ground facts such as  p(X) :- X = t.  or bare facts  p(t).
-  Ground facts only memorise training examples; they do not generalise.
+- NEVER output ground facts such as  <pred>(X) :- X = <const>.  or bare facts
+  <pred>(<const>).  Ground facts only memorise training examples; they do not
+  generalise.
 - Every new rule MUST use a variable X and at least one background predicate.
 - If a generalised rule would also derive a NEGATIVE example, you MUST make
   it defeasible: add a new assumption alpha(X) to its body, then add a contrary
-  rule  c_alpha(X) :- <background_predicate_distinguishing_exceptions>(X).
-  The contrary rule must also use a variable — not a ground fact.
-- A defeasible solution looks like:
-    target(X) :- background_prop(X), normal_target(X).
-    exception_prop(X) :- negative_feature(X).   [contrary rule]
-  NEW ASSUMPTIONS:  normal_target(X) defeated_by exception_prop(X)
+  rule for c_alpha(X) whose body is a background predicate that distinguishes
+  the exceptions. The contrary rule must also use a variable — not a ground fact.
+- Schematically, a defeasible solution looks like:
+    <learnable>(X) :- <support>(X), alpha(X).
+    c_alpha(X) :- <exception>(X).   [contrary rule]
+  NEW ASSUMPTIONS:  alpha(X) defeated_by c_alpha(X)
+
+PLACEHOLDER RULE — critical:
+Angle-bracketed tokens such as <pred>, <support>, <exception>, <learnable> are
+PLACEHOLDERS used only to describe rule shapes. In your answer, replace each of
+them with a predicate name taken from THE PROBLEM ABOVE. Your answer must
+contain NO angle brackets and NO placeholder names — only predicates that occur
+in the problem, plus any new assumption names (alpha, c_alpha) you introduce.
 
 CRITICAL FORMATTING RULES — read carefully:
 - Do NOT use markdown. No backticks, no code fences, no bold, no bullet symbols.
 - Do NOT add any explanation or commentary outside the two sections below.
+- Do NOT repeat or echo the problem statement.
 - Output ONLY the two sections in this exact plain-text format:
 
 NEW RULES:
 <head> :- <body_atom_1>, <body_atom_2>.
-(or simply <head>. for a ground fact)
 
 NEW ASSUMPTIONS:
-<assumption(X)> defeated_by <contrary(X)>
+<assumption>(X) defeated_by <contrary>(X)
 
 If no new rules or assumptions are needed, write NONE under that section."""
 
@@ -115,13 +123,15 @@ For EACH rule produced in Step 2, explicitly check:
 
   Case B — some negatives derived: the rule overgeneralises.
     (i)  Add a new defeasible assumption alpha(X) to the rule body:
-           target(X) :- background_prop(X), alpha(X).
+           <learnable>(X) :- <support>(X), alpha(X).
     (ii) Find a background predicate that distinguishes the exceptions
          (the constants where the negative result should be blocked).
     (iii) Write a GENERAL contrary rule using that predicate:
-           c_alpha(X) :- exception_predicate(X).   [NOT a ground fact]
+           c_alpha(X) :- <exception>(X).   [NOT a ground fact]
     List as: "Rule overgeneralises for [list]. Introduce alpha(X) defeated_by c_alpha(X).
-             Contrary rule: c_alpha(X) :- <exception_predicate>(X)."
+             Contrary rule: c_alpha(X) :- <exception>(X)."
+    (<learnable>, <support>, <exception> are placeholders: use predicates from
+     the problem, never the placeholder names themselves.)
 
 STEP 3b — MULTIPLE DERIVATION PATHS:
 After Step 3, look at the remaining positive examples that are NOT yet covered
@@ -156,50 +166,54 @@ GOAL. Build a set of rules R' extending the background rules R so that:
     accepted in some stable extension), and
   * no NEGATIVE example is bravely entailed.
 New rule heads must be learnable predicates (or the contrary of a new assumption).
-A rule is written  head :- body.  A ground fact p(t) is written  p(X) :- X = t.
-A rule is INTENSIONAL if its body contains no equality "X = constant"; intensional
-rules are the goal, because they generalise beyond the listed constants.
+A rule is written  head :- body.  A ground fact is written
+<pred>(X) :- X = <const>.  A rule is INTENSIONAL if its body contains no
+equality "X = constant"; intensional rules are the goal, because they
+generalise beyond the listed constants.
+(All angle-bracketed tokens below are PLACEHOLDERS: substitute predicates and
+constants from the problem; never write the placeholder names themselves.)
 
 THE FOUR TRANSFORMATION RULES.
-  R1 - Rote Learning. To force an atom p(t) to hold, add the ground fact
-       p(X) :- X = t.  (Used both for positive examples and for the contraries
-       of assumptions.)
-  R2 - Folding (generalisation). Given a ground fact  p(X) :- X = t,  find a
-       background atom b(X) that holds for t (i.e. b(t) is derivable) and replace
-       the equality with it:   p(X) :- b(X).   More generally, replace a set of
-       body atoms by the head of a background rule whose body those atoms match.
-  R3 - Assumption Introduction (defeasibility). If a rule  H :- B  is too general
-       and lets a NEGATIVE example through, add a fresh assumption to its body to
+  R1 - Rote Learning. To force an atom <pred>(<const>) to hold, add the ground
+       fact  <pred>(X) :- X = <const>.  (Used both for positive examples and
+       for the contraries of assumptions.)
+  R2 - Folding (generalisation). Given a ground fact <pred>(X) :- X = <const>,
+       find a background predicate <support> that holds for <const> and replace
+       the equality with it:   <pred>(X) :- <support>(X).   More generally,
+       replace a set of body atoms by the head of a background rule whose body
+       those atoms match.
+  R3 - Assumption Introduction (defeasibility). If a rule is too general and
+       lets a NEGATIVE example through, add a fresh assumption to its body to
        make it defeasible:
-            H :- B, alpha(X).      with contrary  c_alpha(X)
+            <pred>(X) :- <support>(X), alpha(X).      with contrary  c_alpha(X)
        Then, by R1+R2, learn an INTENSIONAL rule for the contrary that fires
-       exactly on the exceptions to be blocked:   c_alpha(X) :- e(X).
-  R4 - Fact Subsumption. Delete any ground fact  p(X) :- X = t  if E+ and E- are
-       still correctly entailed without it.
+       exactly on the exceptions to be blocked:   c_alpha(X) :- <exception>(X).
+  R4 - Fact Subsumption. Delete any ground fact <pred>(X) :- X = <const> if E+
+       and E- are still correctly entailed without it.
 
 THE ALGORITHM (two phases).
   PHASE 1 - RoLe (Rote Learning): using R1, add the MINIMAL set of ground facts
     that makes every E+ entailed and every E- blocked. This is a correct but
     non-general (memorised) solution.
   PHASE 2 - Gen (Generalisation): turn each learnt ground fact into an
-    intensional rule. For each learnt fact  p(X) :- X = t:
+    intensional rule. For each learnt fact <pred>(X) :- X = <const>:
       (a) [R4] If the fact can be dropped with E+/E- still correct, drop it.
-      (b) [R2] Otherwise fold it into  p(X) :- b(X)  using a background predicate
-          b that holds for t.
+      (b) [R2] Otherwise fold it into  <pred>(X) :- <support>(X)  using a
+          background predicate <support> that holds for <const>.
       (c) Check the folded rule against ALL constants: does it now derive any
           negative example?
             - No  -> keep the intensional rule.
-            - Yes -> [R3] add an assumption:  p(X) :- b(X), alpha(X);  then learn
-              an intensional contrary rule  c_alpha(X) :- e(X)  using a background
-              predicate e that holds exactly on the constants to block (fold that
-              contrary rule too, recursively).
+            - Yes -> [R3] add an assumption: <pred>(X) :- <support>(X), alpha(X);
+              then learn an intensional contrary rule c_alpha(X) :- <exception>(X)
+              using a background predicate <exception> that holds exactly on the
+              constants to block (fold that contrary rule too, recursively).
       (d) Repeat until the rule is intensional.
 
 Now EXECUTE both phases on the problem above: show the facts added in RoLe and
 each transformation (R2/R3/R4) applied in Gen. Then output ONLY the final
 framework in the required format. Every final rule must be INTENSIONAL (no
-"X = constant") and use only the predicates listed above. Use ASCII names such as
-alpha(X) and c_alpha(X) for any new assumptions and their contraries.
+"X = constant") and must use only predicate names that appear in the problem,
+plus alpha(X) / c_alpha(X) for any new assumptions and their contraries.
 """
 
 _TASK_GUIDED_TEMPLATE = """
@@ -212,19 +226,24 @@ Your task: generalise EACH of these ground facts into intensional rules
 (rules with variables, no explicit constants) using Folding and
 Assumption Introduction.
 
-For each ground fact p(X) :- X = t:
-  1. Find a background predicate B such that B(t) holds.
-  2. Replace "X = t" with "B(X)" to produce the folded rule  p(X) :- B(X).
-  3. Check: does  p(X) :- B(X)  derive any NEGATIVE example?
+For each ground fact of the form  <pred>(X) :- X = <const>
+(the <...> tokens are placeholders — always substitute the actual predicate
+and constant from the fact you are working on):
+  1. Find a background predicate <support> such that <support>(<const>) holds.
+  2. Replace "X = <const>" with "<support>(X)" to produce the folded rule
+     <pred>(X) :- <support>(X).
+  3. Check: does the folded rule derive any NEGATIVE example?
        If NO  → keep the rule as-is.
-       If YES → add a defeasible assumption:  p(X) :- B(X), alpha(X).
-                Find a background predicate E that holds for the exceptions.
-                Write the contrary rule:  c_alpha(X) :- E(X).   [must use variable X]
+       If YES → add a defeasible assumption:  <pred>(X) :- <support>(X), alpha(X).
+                Find a background predicate <exception> that holds for the
+                exceptions. Write the contrary rule:
+                c_alpha(X) :- <exception>(X).   [must use variable X]
   4. Once all ground facts are generalised, remove any that are now redundant
      (already covered by the intensional rules).
 
-REMINDER: Your final answer must contain ZERO occurrences of "X = <constant>".
-If any rule still has "X = t" after folding, you have not generalised enough.
+REMINDER: Your final answer must contain ZERO occurrences of "X = constant",
+NO angle brackets, and only predicate names that appear in the problem (plus
+alpha / c_alpha for new assumptions).
 
 Output your answer in the required format.
 """

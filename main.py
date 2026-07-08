@@ -397,6 +397,8 @@ def generate_report(
             "gen_at_1":            symbolic_results["solved"] / max(n, 1),
             "fit_at_k":            symbolic_results["solved"] / max(n, 1),
             "gen_at_k":            symbolic_results["solved"] / max(n, 1),
+            "clean_at_1":          symbolic_results["solved"] / max(n, 1),
+            "clean_at_k":          symbolic_results["solved"] / max(n, 1),
             "intensional_rate":    symbolic_results["intensional"] / max(n, 1),
             "degenerate_rate":     0.0,
             "mean_overfit_gap":    0.0,
@@ -414,10 +416,12 @@ def generate_report(
         json.dump(summary, f, indent=2)
     print(f"\nSummary saved to {summary_path}")
 
-    # Print formatted table
+    # Print formatted table. clean@k is the STRICT criterion (error_type ==
+    # "none": fits ALL train examples AND generalises) — the honest measure of
+    # "replicates the algorithm"; gen@k alone can be high while fit is 0.
     print("\n=== Results table ===")
     col_w = 22
-    metrics = ["gen_at_1", "gen_at_k", "fit_at_1",
+    metrics = ["gen_at_1", "gen_at_k", "clean_at_k", "fit_at_1",
                "intensional_rate", "degenerate_rate", "parse_rate"]
     header  = f"{'Config':<20}" + "".join(f"{m[:18]:>18}" for m in metrics)
     print(header)
@@ -428,12 +432,13 @@ def generate_report(
         row = f"{name:<20}"
         for m in metrics:
             v = agg.get(m, 0)
-            cell = f"{v:.1%}" if "rate" in m else f"{v:.2f}"
+            cell = f"{v:.1%}" if ("rate" in m or "clean" in m) else f"{v:.2f}"
             row += f"{cell:>18}"
         print(row)
 
     if by_tier:
-        print("\n=== Per-tier breakdown (gen@k = algorithm capability replicated) ===")
+        print("\n=== Per-tier breakdown: gen@k / clean@k "
+              "(clean = fits train AND generalises) ===")
         tiers = sorted({t for mode_t in by_tier.values() for t in mode_t})
         header = f"{'Mode':<12}" + "".join(f"{t:>14}" for t in tiers)
         print(header)
@@ -442,7 +447,11 @@ def generate_report(
             row = f"{mode:<12}"
             for t in tiers:
                 agg = tier_aggs.get(t)
-                row += f"{agg['gen_at_k']:>13.0%} " if agg else f"{'-':>14}"
+                if agg:
+                    cell = f"{agg['gen_at_k']:.0%}/{agg.get('clean_at_k', 0):.0%}"
+                    row += f"{cell:>14}"
+                else:
+                    row += f"{'-':>14}"
             print(row)
 
     # Generate figures
