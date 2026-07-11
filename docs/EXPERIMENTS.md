@@ -10,7 +10,7 @@ into `experiments/` together with a manifest.
 | --- | --- | --- | --- | --- | --- | --- |
 | [`00_preliminary_api`](../experiments/00_preliminary_api/MANIFEST.md) | May–Jun 2026 | Llama-3.3-70B, Llama-3.1-8B | Groq API | v0 (evolving) | 3 builtin ± early synthetics | done (exploratory) |
 | [`01_bench_prompts_v1`](../experiments/01_bench_prompts_v1/MANIFEST.md) | Jul 2026 | Qwen2.5-7B | local (L40) | v1 | 103 problems, 5 tiers, anonymised | done |
-| [`02_bench_prompts_v2`](../experiments/02_bench_prompts_v2/MANIFEST.md) | Jul 2026 | Qwen2.5-3B/7B/14B, Mistral-7B | local (L40) | v2 | 103 problems, 5 tiers, anonymised | **running** |
+| [`02_bench_prompts_v2`](../experiments/02_bench_prompts_v2/MANIFEST.md) | Jul 2026 | Qwen2.5-3B/7B/14B, Mistral-7B | local (L40) | v2 | 103 problems, 5 tiers, anonymised | done |
 
 ## The benchmark at a glance
 

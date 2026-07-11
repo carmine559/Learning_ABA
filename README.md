@@ -21,24 +21,34 @@ guidance, and two extension tasks (gradual ABA semantics, ArgLLMs + RAG).
 3. **Task 3 — ArgLLMs + RAG** *(planned)*: retrieval-grounded intrinsic-strength
    attribution (Freedman et al., AAAI 2025). See [`argllm/README.md`](argllm/README.md).
 
-## Headline result (so far)
+## Headline results
 
-Qwen2.5-7B on 103 anonymised problems (5 capability tiers × 20 + 3 builtin),
-3 samples/problem, symbolic baseline solves 100%
-([full set + manifest](experiments/01_bench_prompts_v1/MANIFEST.md)):
+Four models on 103 anonymised problems (5 capability tiers × 20 + 3 builtin),
+4 prompting modes, 3 samples/problem; symbolic baseline solves 100%. Cells are
+**gen@k / clean@k** — clean = fits *all* training examples AND generalises
+([full sets + manifests](docs/EXPERIMENTS.md)):
 
-| Mode (increasing guidance) | gen@k | strict clean rate |
-| --- | --- | --- |
-| `guided` (RoLe output given, generalise it) | **61%** | **11%** |
-| `direct` (problem only) | 37% | 3% |
-| `algorithm` (full published algorithm to execute) | 30% | 2% |
-| `cot` (step-by-step recipe) | 29% | 2% |
+| Model | direct | cot | guided | algorithm |
+| --- | --- | --- | --- | --- |
+| Qwen2.5-3B | 5% / 1% | 4% / 1% | 15% / 6% | 34% / 13% |
+| Qwen2.5-7B | 45% / 31% | 32% / 13% | 46% / 13% | 35% / 4% |
+| Mistral-7B | 37% / 14% | 40% / 26% | **58%** / 13% | 48% / 10% |
+| Qwen2.5-14B | 39% / 17% | 63% / 32% | 53% / 22% | **68% / 42%** |
 
-Per tier, the boundary is sharp: the model **replicates Folding** (t1: 80%
-gen@k, 69% intensional) but **systematically fails Assumption Introduction**
-(t2: 25%) — it handles the monotonic part of the algorithm and breaks exactly
-at the non-monotonic core. A 4-model run under improved prompts is in progress
-([set 02](experiments/02_bench_prompts_v2/MANIFEST.md)).
+Two findings stand out
+([set 02 manifest](experiments/02_bench_prompts_v2/MANIFEST.md)):
+
+1. **Executing the published algorithm scales with model size** — at ≤7B the
+   `algorithm` mode is mediocre, at 14B it becomes the best configuration.
+2. **The non-monotonic core (Assumption Introduction, tier t2) emerges with
+   scale**: 0% clean solutions at ≤7B (models write the overgeneral rule and
+   omit the exception guard), 40% clean at 14B.
+
+An earlier single-model run under v1 prompts
+([set 01](experiments/01_bench_prompts_v1/MANIFEST.md)) additionally exposed a
+**template-copying artefact** (11.3% of samples copied instruction schema names
+instead of problem symbols) — documented in
+[docs/PROMPTS.md](docs/PROMPTS.md).
 
 ## Repository map
 
@@ -272,15 +282,15 @@ back to the original vocabulary for human-readable reporting.
 1. Go to [aistudio.google.com/apikey](https://aistudio.google.com/apikey) and create a key.
 2. Set the environment variable:
 
-```powershell
-$env:GOOGLE_API_KEY = "AIza..."
-```
+   ```powershell
+   $env:GOOGLE_API_KEY = "AIza..."
+   ```
 
 3. Run:
 
-```powershell
-python main.py --backend google_ai --modes cot guided --n-samples 5
-```
+   ```powershell
+   python main.py --backend google_ai --modes cot guided --n-samples 5
+   ```
 
 ### Which Gemini model to use
 
