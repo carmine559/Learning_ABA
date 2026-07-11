@@ -1,380 +1,0 @@
-[array 3] model=qwen2.5-14b bench_n=20 samples=3
-GPU: NVIDIA L40
-Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
-============================================================
-ABA Framework Learning - Thesis Experiments
-============================================================
-
-[1/4] Building dataset...
-  Loaded 3 built-in benchmark problems.
-  tier t1_mono: 20/20 problems (folding only, monotonic rule suffices)
-  tier t2_defeas: 20/20 problems (assumption introduction, one exception)
-  tier t3_noise: 20/20 problems (distractor robustness, extra noise predicates)
-  tier t4_domain: 20/20 problems (domain-size scaling, 12 constants)
-  tier t5_twopath: 20/20 problems (two independent defeasible derivation paths)
-  After benchmark suite: 103 problems.
-  Anonymised all problems (scheme=letters).
-  Anonymisation maps saved to results/bench_qwen2.5-14b/name_maps.json
-  Solved: 103/103  avg_bg_rules=15.52
-
-[2/4] Symbolic baseline (ASP-ABAlearnB)...
-
-=== Symbolic baseline (ASP-ABAlearnB) ===
-  nixon_diamond_anon: OK intensional
-  flies_anon: OK intensional
-  tax_law_anon: OK intensional
-  t1_mono_0000_anon: OK intensional
-  t1_mono_0001_anon: OK intensional
-  t1_mono_0002_anon: OK intensional
-  t1_mono_0003_anon: OK intensional
-  t1_mono_0004_anon: OK intensional
-  t1_mono_0005_anon: OK intensional
-  t1_mono_0006_anon: OK intensional
-  t1_mono_0007_anon: OK intensional
-  t1_mono_0008_anon: OK intensional
-  t1_mono_0009_anon: OK intensional
-  t1_mono_0010_anon: OK intensional
-  t1_mono_0011_anon: OK intensional
-  t1_mono_0012_anon: OK intensional
-  t1_mono_0013_anon: OK intensional
-  t1_mono_0014_anon: OK intensional
-  t1_mono_0015_anon: OK intensional
-  t1_mono_0016_anon: OK intensional
-  t1_mono_0017_anon: OK intensional
-  t1_mono_0018_anon: OK intensional
-  t1_mono_0019_anon: OK intensional
-  t2_defeas_0000_anon: OK intensional
-  t2_defeas_0001_anon: OK intensional
-  t2_defeas_0002_anon: OK intensional
-  t2_defeas_0003_anon: OK intensional
-  t2_defeas_0004_anon: OK intensional
-  t2_defeas_0005_anon: OK intensional
-  t2_defeas_0006_anon: OK intensional
-  t2_defeas_0007_anon: OK intensional
-  t2_defeas_0008_anon: OK intensional
-  t2_defeas_0009_anon: OK intensional
-  t2_defeas_0010_anon: OK intensional
-  t2_defeas_0011_anon: OK intensional
-  t2_defeas_0012_anon: OK intensional
-  t2_defeas_0013_anon: OK intensional
-  t2_defeas_0014_anon: OK intensional
-  t2_defeas_0015_anon: OK intensional
-  t2_defeas_0016_anon: OK intensional
-  t2_defeas_0017_anon: OK intensional
-  t2_defeas_0018_anon: OK intensional
-  t2_defeas_0019_anon: OK intensional
-  t3_noise_0000_anon: OK intensional
-  t3_noise_0001_anon: OK intensional
-  t3_noise_0002_anon: OK intensional
-  t3_noise_0003_anon: OK intensional
-  t3_noise_0004_anon: OK intensional
-  t3_noise_0005_anon: OK intensional
-  t3_noise_0006_anon: OK intensional
-  t3_noise_0007_anon: OK intensional
-  t3_noise_0008_anon: OK intensional
-  t3_noise_0009_anon: OK intensional
-  t3_noise_0010_anon: OK intensional
-  t3_noise_0011_anon: OK intensional
-  t3_noise_0012_anon: OK intensional
-  t3_noise_0013_anon: OK intensional
-  t3_noise_0014_anon: OK intensional
-  t3_noise_0015_anon: OK intensional
-  t3_noise_0016_anon: OK intensional
-  t3_noise_0017_anon: OK intensional
-  t3_noise_0018_anon: OK intensional
-  t3_noise_0019_anon: OK intensional
-  t4_domain_0000_anon: OK intensional
-  t4_domain_0001_anon: OK intensional
-  t4_domain_0002_anon: OK intensional
-  t4_domain_0003_anon: OK intensional
-  t4_domain_0004_anon: OK intensional
-  t4_domain_0005_anon: OK intensional
-  t4_domain_0006_anon: OK intensional
-  t4_domain_0007_anon: OK intensional
-  t4_domain_0008_anon: OK intensional
-  t4_domain_0009_anon: OK intensional
-  t4_domain_0010_anon: OK intensional
-  t4_domain_0011_anon: OK intensional
-  t4_domain_0012_anon: OK intensional
-  t4_domain_0013_anon: OK intensional
-  t4_domain_0014_anon: OK intensional
-  t4_domain_0015_anon: OK intensional
-  t4_domain_0016_anon: OK intensional
-  t4_domain_0017_anon: OK intensional
-  t4_domain_0018_anon: OK intensional
-  t4_domain_0019_anon: OK intensional
-  t5_twopath_0000_anon: OK intensional
-  t5_twopath_0001_anon: OK intensional
-  t5_twopath_0002_anon: OK intensional
-  t5_twopath_0003_anon: OK intensional
-  t5_twopath_0004_anon: OK intensional
-  t5_twopath_0005_anon: OK intensional
-  t5_twopath_0006_anon: OK intensional
-  t5_twopath_0007_anon: OK intensional
-  t5_twopath_0008_anon: OK intensional
-  t5_twopath_0009_anon: OK intensional
-  t5_twopath_0010_anon: OK intensional
-  t5_twopath_0011_anon: OK intensional
-  t5_twopath_0012_anon: OK intensional
-  t5_twopath_0013_anon: OK intensional
-  t5_twopath_0014_anon: OK intensional
-  t5_twopath_0015_anon: OK intensional
-  t5_twopath_0016_anon: OK intensional
-  t5_twopath_0017_anon: OK intensional
-  t5_twopath_0018_anon: OK intensional
-  t5_twopath_0019_anon: OK intensional
-
-Symbolic: 103/103 solved, 103/103 intensional
-
-[3/4] LLM experiments (backend=local, model=qwen2.5-14b)...
-Loading weights:   0%|          | 0/579 [00:00<?, ?it/s]Loading weights:   4%|▎         | 21/579 [00:00<00:03, 170.20it/s]Loading weights:   7%|▋         | 39/579 [00:00<00:06, 78.32it/s] Loading weights:   9%|▊         | 50/579 [00:00<00:07, 73.97it/s]Loading weights:  12%|█▏        | 69/579 [00:00<00:05, 96.88it/s]Loading weights:  14%|█▍        | 81/579 [00:00<00:04, 100.77it/s]Loading weights:  16%|█▌        | 94/579 [00:00<00:04, 105.51it/s]Loading weights:  18%|█▊        | 106/579 [00:01<00:04, 104.76it/s]Loading weights:  20%|██        | 118/579 [00:01<00:05, 91.71it/s] Loading weights:  22%|██▏       | 128/579 [00:01<00:05, 79.06it/s]Loading weights:  24%|██▎       | 137/579 [00:01<00:06, 63.82it/s]Loading weights:  26%|██▋       | 152/579 [00:01<00:06, 69.82it/s]Loading weights:  28%|██▊       | 160/579 [00:01<00:06, 67.73it/s]Loading weights:  29%|██▉       | 168/579 [00:02<00:06, 63.48it/s]Loading weights:  31%|███▏      | 181/579 [00:02<00:06, 64.31it/s]Loading weights:  35%|███▍      | 200/579 [00:02<00:04, 86.85it/s]Loading weights:  36%|███▋      | 210/579 [00:02<00:06, 56.64it/s]Loading weights:  38%|███▊      | 218/579 [00:02<00:07, 51.52it/s]Loading weights:  44%|████▎     | 253/579 [00:03<00:03, 93.82it/s]Loading weights:  46%|████▌     | 265/579 [00:03<00:03, 84.38it/s]Loading weights:  47%|████▋     | 275/579 [00:03<00:03, 78.54it/s]Loading weights:  49%|████▉     | 285/579 [00:03<00:03, 75.19it/s]Loading weights:  51%|█████     | 294/579 [00:03<00:04, 59.62it/s]Loading weights:  53%|█████▎    | 307/579 [00:04<00:04, 66.17it/s]Loading weights:  54%|█████▍    | 315/579 [00:04<00:03, 66.22it/s]Loading weights:  56%|█████▌    | 323/579 [00:04<00:04, 60.08it/s]Loading weights:  57%|█████▋    | 330/579 [00:04<00:06, 37.36it/s]Loading weights:  59%|█████▉    | 341/579 [00:04<00:05, 46.66it/s]Loading weights:  63%|██████▎   | 367/579 [00:05<00:02, 73.26it/s]Loading weights:  65%|██████▍   | 376/579 [00:05<00:02, 70.44it/s]Loading weights:  67%|██████▋   | 387/579 [00:05<00:02, 75.86it/s]Loading weights:  69%|██████▉   | 402/579 [00:05<00:01, 89.56it/s]Loading weights:  72%|███████▏  | 418/579 [00:05<00:01, 91.14it/s]Loading weights:  74%|███████▍  | 428/579 [00:05<00:01, 91.25it/s]Loading weights:  76%|███████▋  | 442/579 [00:05<00:01, 91.71it/s]Loading weights:  78%|███████▊  | 452/579 [00:06<00:01, 86.00it/s]Loading weights:  80%|███████▉  | 462/579 [00:06<00:01, 89.09it/s]Loading weights:  82%|████████▏ | 472/579 [00:06<00:01, 84.03it/s]Loading weights:  83%|████████▎ | 481/579 [00:06<00:02, 44.59it/s]Loading weights:  84%|████████▍ | 488/579 [00:06<00:01, 48.10it/s]Loading weights:  87%|████████▋ | 504/579 [00:06<00:01, 66.71it/s]Loading weights:  89%|████████▉ | 516/579 [00:07<00:00, 76.03it/s]Loading weights:  91%|█████████▏| 529/579 [00:07<00:00, 78.12it/s]Loading weights:  93%|█████████▎| 539/579 [00:07<00:00, 78.06it/s]Loading weights:  95%|█████████▍| 548/579 [00:07<00:00, 70.57it/s]Loading weights:  96%|█████████▌| 556/579 [00:07<00:00, 59.63it/s]Loading weights: 100%|██████████| 579/579 [00:07<00:00, 74.76it/s]
-[local] loaded Qwen/Qwen2.5-14B-Instruct (bfloat16) on cuda:0
-
-=== Mode: direct ===
-  [1/103] nixon_diamond_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-
-  [!] API ERROR DETECTED - the LLM call is failing, not the parser.
-     [LLM ERROR] AttributeError: 
-     Common causes: deprecated/invalid --model id, missing or expired API key, or rate limiting.
-     Check current model ids at https://console.groq.com/docs/models
-
-  [2/103] flies_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [3/103] tax_law_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [4/103] t1_mono_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [5/103] t1_mono_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [6/103] t1_mono_0002_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [7/103] t1_mono_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [8/103] t1_mono_0004_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [9/103] t1_mono_0005_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [10/103] t1_mono_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [11/103] t1_mono_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [12/103] t1_mono_0008_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [13/103] t1_mono_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [14/103] t1_mono_0010_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [15/103] t1_mono_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [16/103] t1_mono_0012_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [17/103] t1_mono_0013_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [18/103] t1_mono_0014_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [19/103] t1_mono_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [20/103] t1_mono_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [21/103] t1_mono_0017_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [22/103] t1_mono_0018_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [23/103] t1_mono_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [24/103] t2_defeas_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [25/103] t2_defeas_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [26/103] t2_defeas_0002_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [27/103] t2_defeas_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [28/103] t2_defeas_0004_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [29/103] t2_defeas_0005_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [30/103] t2_defeas_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [31/103] t2_defeas_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [32/103] t2_defeas_0008_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [33/103] t2_defeas_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [34/103] t2_defeas_0010_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [35/103] t2_defeas_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [36/103] t2_defeas_0012_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [37/103] t2_defeas_0013_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [38/103] t2_defeas_0014_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [39/103] t2_defeas_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [40/103] t2_defeas_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [41/103] t2_defeas_0017_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [42/103] t2_defeas_0018_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [43/103] t2_defeas_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [44/103] t3_noise_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [45/103] t3_noise_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [46/103] t3_noise_0002_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [47/103] t3_noise_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [48/103] t3_noise_0004_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [49/103] t3_noise_0005_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [50/103] t3_noise_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [51/103] t3_noise_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [52/103] t3_noise_0008_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [53/103] t3_noise_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [54/103] t3_noise_0010_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [55/103] t3_noise_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [56/103] t3_noise_0012_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [57/103] t3_noise_0013_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [58/103] t3_noise_0014_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [59/103] t3_noise_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [60/103] t3_noise_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [61/103] t3_noise_0017_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [62/103] t3_noise_0018_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [63/103] t3_noise_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [64/103] t4_domain_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [65/103] t4_domain_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [66/103] t4_domain_0002_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [67/103] t4_domain_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [68/103] t4_domain_0004_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [69/103] t4_domain_0005_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [70/103] t4_domain_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [71/103] t4_domain_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [72/103] t4_domain_0008_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [73/103] t4_domain_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [74/103] t4_domain_0010_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [75/103] t4_domain_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [76/103] t4_domain_0012_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [77/103] t4_domain_0013_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [78/103] t4_domain_0014_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [79/103] t4_domain_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [80/103] t4_domain_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [81/103] t4_domain_0017_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [82/103] t4_domain_0018_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [83/103] t4_domain_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [84/103] t5_twopath_0000_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [85/103] t5_twopath_0001_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [86/103] t5_twopath_0002_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [87/103] t5_twopath_0003_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [88/103] t5_twopath_0004_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [89/103] t5_twopath_0005_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [90/103] t5_twopath_0006_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [91/103] t5_twopath_0007_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [92/103] t5_twopath_0008_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [93/103] t5_twopath_0009_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [94/103] t5_twopath_0010_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [95/103] t5_twopath_0011_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [96/103] t5_twopath_0012_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [97/103] t5_twopath_0013_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [98/103] t5_twopath_0014_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [99/103] t5_twopath_0015_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [100/103] t5_twopath_0016_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [101/103] t5_twopath_0017_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [102/103] t5_twopath_0018_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  [103/103] t5_twopath_0019_anon (k=3) ... gen@1=0% gen@k=no fit@1=0% parse=0%
-  -> gen@1=0.0%  gen@k=0.0%  fit@1=0.0%  degenerate=0.0%
-Traceback (most recent call last):
-  File "/scratch.hpc/carmine.santella/Learning_aba/main.py", line 869, in <module>
-    main()
-  File "/scratch.hpc/carmine.santella/Learning_aba/main.py", line 828, in main
-    results_by_mode = run_prompt_experiments(
-                      ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/scratch.hpc/carmine.santella/Learning_aba/main.py", line 186, in run_prompt_experiments
-    f.write(json.dumps(s.to_dict()) + "\n")
-                       ^^^^^^^^^^^
-  File "/scratch.hpc/carmine.santella/Learning_aba/src/aba_evaluation.py", line 82, in to_dict
-    return asdict(self)
-           ^^^^^^^^^^^^
-  File "/usr/lib/python3.11/dataclasses.py", line 1274, in asdict
-    return _asdict_inner(obj, dict_factory)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/dataclasses.py", line 1281, in _asdict_inner
-    value = _asdict_inner(getattr(obj, f.name), dict_factory)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/dataclasses.py", line 1315, in _asdict_inner
-    return copy.deepcopy(obj)
-           ^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 172, in deepcopy
-    y = _reconstruct(x, memo, *rv)
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 271, in _reconstruct
-    state = deepcopy(state, memo)
-            ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 146, in deepcopy
-    y = copier(x, memo)
-        ^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 231, in _deepcopy_dict
-    y[deepcopy(key, memo)] = deepcopy(value, memo)
-                             ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 146, in deepcopy
-    y = copier(x, memo)
-        ^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 231, in _deepcopy_dict
-    y[deepcopy(key, memo)] = deepcopy(value, memo)
-                             ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 172, in deepcopy
-    y = _reconstruct(x, memo, *rv)
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 271, in _reconstruct
-    state = deepcopy(state, memo)
-            ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 146, in deepcopy
-    y = copier(x, memo)
-        ^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 231, in _deepcopy_dict
-    y[deepcopy(key, memo)] = deepcopy(value, memo)
-                             ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 146, in deepcopy
-    y = copier(x, memo)
-        ^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 231, in _deepcopy_dict
-    y[deepcopy(key, memo)] = deepcopy(value, memo)
-                             ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 172, in deepcopy
-    y = _reconstruct(x, memo, *rv)
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 271, in _reconstruct
-    state = deepcopy(state, memo)
-            ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 146, in deepcopy
-    y = copier(x, memo)
-        ^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 231, in _deepcopy_dict
-    y[deepcopy(key, memo)] = deepcopy(value, memo)
-                             ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 146, in deepcopy
-    y = copier(x, memo)
-        ^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 231, in _deepcopy_dict
-    y[deepcopy(key, memo)] = deepcopy(value, memo)
-                             ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 172, in deepcopy
-    y = _reconstruct(x, memo, *rv)
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 271, in _reconstruct
-    state = deepcopy(state, memo)
-            ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 146, in deepcopy
-    y = copier(x, memo)
-        ^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 231, in _deepcopy_dict
-    y[deepcopy(key, memo)] = deepcopy(value, memo)
-                             ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 146, in deepcopy
-    y = copier(x, memo)
-        ^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 231, in _deepcopy_dict
-    y[deepcopy(key, memo)] = deepcopy(value, memo)
-                             ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 172, in deepcopy
-    y = _reconstruct(x, memo, *rv)
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 271, in _reconstruct
-    state = deepcopy(state, memo)
-            ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 146, in deepcopy
-    y = copier(x, memo)
-        ^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 231, in _deepcopy_dict
-    y[deepcopy(key, memo)] = deepcopy(value, memo)
-                             ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 146, in deepcopy
-    y = copier(x, memo)
-        ^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 231, in _deepcopy_dict
-    y[deepcopy(key, memo)] = deepcopy(value, memo)
-                             ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 172, in deepcopy
-    y = _reconstruct(x, memo, *rv)
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 271, in _reconstruct
-    state = deepcopy(state, memo)
-            ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 146, in deepcopy
-    y = copier(x, memo)
-        ^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 231, in _deepcopy_dict
-    y[deepcopy(key, memo)] = deepcopy(value, memo)
-                             ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 146, in deepcopy
-    y = copier(x, memo)
-        ^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 231, in _deepcopy_dict
-    y[deepcopy(key, memo)] = deepcopy(value, memo)
-                             ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/copy.py", line 153, in deepcopy
-    y = copier(memo)
-        ^^^^^^^^^^^^
-  File "/scratch.hpc/carmine.santella/Learning_aba/venv/lib/python3.11/site-packages/torch/nn/parameter.py", line 68, in __deepcopy__
-    self.data.clone(memory_format=torch.preserve_format), self.requires_grad
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 10.00 MiB. GPU 0 has a total capacity of 44.32 GiB of which 9.25 MiB is free. Including non-PyTorch memory, this process has 44.30 GiB memory in use. Of the allocated memory 43.89 GiB is allocated by PyTorch, and 1.42 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
