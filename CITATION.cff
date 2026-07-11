@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "Learning ABA: Can LLMs Replicate Assumption-Based Argumentation Learning?"
+authors:
+  - family-names: Santella
+    given-names: Carmine
+    affiliation: "University of Bologna"
+year: 2026
+repository-code: "https://github.com/carmine559/Learning_ABA"
+abstract: >-
+  Experimental pipeline for an MSc thesis investigating whether large language
+  models can replicate the ASP-ABAlearnB algorithm for learning Assumption-Based
+  Argumentation frameworks from background knowledge and examples, with a
+  stratified anonymised benchmark, gradual ABA semantics (BSAF), and a planned
+  ArgLLMs+RAG extension.
+license: MIT

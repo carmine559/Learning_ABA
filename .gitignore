@@ -1,7 +1,15 @@
+# Environments / IDE
 .venv/
+venv/
 .vscode/
 .claude/
+
+# Python caches
 __pycache__/
-venv/
+*.pyc
 
+# SLURM job logs
+*.out
 
+# Working experiment outputs (curated snapshots live in experiments/)
+results/

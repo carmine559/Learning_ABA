@@ -1,14 +1,57 @@
-# Learning Assumption-Based Argumentation Frameworks with LLMs
+# Learning ABA — Can LLMs Replicate Assumption-Based Argumentation Learning?
 
-> **Research question:** Can a large language model *learn* an Assumption-Based
-> Argumentation (ABA) framework from background knowledge and examples —
-> producing rules that **generalise to unseen cases**, not merely memorise the
-> training set?
+> **Research question:** Can a large language model *execute* the
+> ASP-ABAlearnB algorithm — learning an Assumption-Based Argumentation (ABA)
+> framework from background knowledge and examples that **generalises to unseen
+> cases**, rather than memorising the training set?
 
-This module implements the full experimental pipeline: a symbolic **ASP-ABAlearnB**
-baseline that provably solves ABA learning problems, four LLM prompting strategies
-that attempt to replicate its reasoning, and a rigorous **held-out generalisation
-protocol** to distinguish genuine learning from memorisation.
+MSc thesis project (University of Bologna). The pipeline provides a provably
+correct symbolic baseline, a **stratified anonymised benchmark** that isolates
+each capability of the algorithm, four prompting strategies of increasing
+guidance, and two extension tasks (gradual ABA semantics, ArgLLMs + RAG).
+
+**The three tasks:**
+
+1. **Task 1 — Learn** *(the core question)*: LLM vs the ASP-ABAlearnB algorithm
+   (De Angelis, Proietti & Toni, ECAI 2024), on problems **anonymised** so the
+   model cannot lean on world knowledge.
+2. **Task 2 — Gradual semantics**: correct BSAF gradual ABA semantics
+   (Rapberger, Russo, Rago & Toni, KR 2025) vs the argument-tree baseline, over
+   the learned frameworks. See [`gradual/`](gradual/).
+3. **Task 3 — ArgLLMs + RAG** *(planned)*: retrieval-grounded intrinsic-strength
+   attribution (Freedman et al., AAAI 2025). See [`argllm/README.md`](argllm/README.md).
+
+## Headline result (so far)
+
+Qwen2.5-7B on 103 anonymised problems (5 capability tiers × 20 + 3 builtin),
+3 samples/problem, symbolic baseline solves 100%
+([full set + manifest](experiments/01_bench_prompts_v1/MANIFEST.md)):
+
+| Mode (increasing guidance) | gen@k | strict clean rate |
+| --- | --- | --- |
+| `guided` (RoLe output given, generalise it) | **61%** | **11%** |
+| `direct` (problem only) | 37% | 3% |
+| `algorithm` (full published algorithm to execute) | 30% | 2% |
+| `cot` (step-by-step recipe) | 29% | 2% |
+
+Per tier, the boundary is sharp: the model **replicates Folding** (t1: 80%
+gen@k, 69% intensional) but **systematically fails Assumption Introduction**
+(t2: 25%) — it handles the monotonic part of the algorithm and breaks exactly
+at the non-monotonic core. A 4-model run under improved prompts is in progress
+([set 02](experiments/02_bench_prompts_v2/MANIFEST.md)).
+
+## Repository map
+
+| Path | Content |
+| --- | --- |
+| [`src/`](src/) | shared core + Task 1 (types, Clingo validation, symbolic solver, anonymisation, prompts, evaluation) |
+| [`gradual/`](gradual/) | Task 2 — BSAF gradual semantics, BAF baseline, random-ABAF generator |
+| [`argllm/`](argllm/) | Task 3 — design spec (planned) |
+| [`extras/`](extras/) | reporting: framework export, explanations, figures |
+| [`cluster/`](cluster/) | SLURM scripts for the DISI GPU cluster ([guide](cluster/README.md)) |
+| [`experiments/`](experiments/) | **curated, committed result sets** — one folder + `MANIFEST.md` per run ([registry](docs/EXPERIMENTS.md)) |
+| [`docs/`](docs/) | [experiment registry](docs/EXPERIMENTS.md) · [prompt design & version history](docs/PROMPTS.md) |
+| `results/` | gitignored working directory (`main.py` output; promoted runs move to `experiments/`) |
 
 ---
 
@@ -89,19 +132,20 @@ Requires Python 3.10+ and Clingo 5.6+.
 conda create -n aba_llm python=3.11 -y
 conda activate aba_llm
 conda install -c potassco clingo -y
-pip install matplotlib numpy scikit-learn networkx
 
-# Choose your backend:
-pip install groq             # Groq API (free, recommended)
-pip install huggingface_hub  # HuggingFace Inference API (free)
+# Core + optional backends (see requirements.txt for the grouped list)
+pip install -r requirements.txt
 ```
+
+For the **local GPU backend** (`--backend local`, used on the cluster) install a
+CUDA-matched torch first — see [`cluster/setup_env.sh`](cluster/setup_env.sh).
 
 **Verify:**
 
 ```python
 import clingo; print("Clingo:", clingo.__version__)
-from aba_dataset import make_nixon_diamond
-from aba_algorithm import solve_aba_learning
+from src.aba_dataset import make_nixon_diamond
+from src.aba_algorithm import solve_aba_learning
 p, _ = make_nixon_diamond()
 sol, _ = solve_aba_learning(p)
 print("Symbolic solver OK — intensional:", sol.is_intensional())
@@ -126,7 +170,7 @@ python main.py `
   --backend groq --model llama3-70b `
   --modes direct cot guided algorithm `
   --n-samples 5 `
-  --output results\groq_70b
+  --output results\my_run
 ```
 
 **HuggingFace Inference API (free):**
@@ -727,26 +771,31 @@ abnormal_quaker(X) :- republican(X), alpha(X).  % [assumption_guarded]
 
 ## Output Structure
 
+`main.py` writes into `--output` (default `./results/`, **gitignored** — a
+working directory). Runs worth keeping are *promoted* to
+[`experiments/`](experiments/) with a `MANIFEST.md`; see the
+[experiment registry](docs/EXPERIMENTS.md).
+
 ```text
-results/
-├── summary.json              # Aggregated metrics per mode + symbolic baseline
-├── results_direct.jsonl      # Per-sample SampleResult records
-├── results_cot.jsonl
-├── results_guided.jsonl
-└── figures/
-    ├── validity_by_mode.pdf
-    ├── error_breakdown.pdf
-    ├── heatmap.pdf
-    └── comparison_table.pdf
+results/<run>/
+├── summary.json              # Metrics per mode + symbolic baseline + per-tier (by_tier)
+├── results_<mode>.jsonl      # Per-sample records: raw LLM output, error class, metrics
+├── explanations.md           # Per-problem narrative of how the model generalised
+├── frameworks.{jsonl,md}     # Every learned framework, mechanism-tagged   (--export)
+├── defeasibility.csv         # Flat per-sample table for stats             (--export)
+├── graded_results.json       # BSAF vs BAF graded semantics                (--graded)
+├── name_maps.json            # Anonymisation maps (de-anonymise for reading)
+└── figures/                  # validity, error breakdown, heatmap, complexity (PDF)
 ```
 
 Quick analysis:
 
 ```python
 import json
-samples = [json.loads(l) for l in open("results/results_guided.jsonl")]
-gen_ok = [s for s in samples if s["gen_valid"]]
-print(f"{len(gen_ok)}/{len(samples)} samples generalised ({len(gen_ok)/len(samples):.0%})")
+path = "experiments/01_bench_prompts_v1/bench_qwen2.5-7b/results_guided.jsonl"
+samples = [json.loads(l) for l in open(path)]
+clean = [s for s in samples if s["error_type"] == "none"]
+print(f"{len(clean)}/{len(samples)} samples fully solve the learning problem")
 ```
 
 ---
