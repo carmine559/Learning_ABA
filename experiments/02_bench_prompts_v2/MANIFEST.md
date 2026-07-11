@@ -46,3 +46,9 @@
   per-problem (any of 3 samples); set 01's manifest reports a per-*sample*
   clean rate.
 - Mistral-7B `algorithm` parse rate is 80% (format drift); all other cells ≥94%.
+- **Prompt-ablation check:** v1's schema-name copying is fully eliminated
+  (0.0% in all 16 model×mode cells vs 11.3% guided in set 01). Mistral-7B
+  partially re-anchors on the new placeholder tokens (11.7% of guided samples
+  mention them), but these fail parsing loudly instead of yielding
+  plausible-looking wrong frameworks — see
+  [docs/PROMPTS.md](../../docs/PROMPTS.md#measured-effect-v1-vs-v2-same-regex-over-raw-outputs).

@@ -87,8 +87,21 @@ Changes (all in `src/aba_prompts.py`):
    verbatim as fresh assumption names.
 
 **Consequence for analysis:** sets 01 and 02 are not directly comparable; the
-delta on the template-copy rate (11.3% → measured in set 02) is itself an
-ablation of instruction-induced symbol leakage under anonymisation.
+template-copy delta is itself an ablation of instruction-induced symbol leakage
+under anonymisation.
+
+#### Measured effect (v1 vs v2, same regex over raw outputs)
+
+| Failure signature | v1 (Qwen2.5-7B) | v2 (Qwen2.5-7B) | v2 (all 4 models) |
+| --- | --- | --- | --- |
+| **Schema-name copying** (`target(`, `exception_prop(`, …) | **11.3%** guided; 4–6% other modes | **0.0%** | **0.0% in all 16 model×mode cells** |
+| Placeholder copying (`<support>`, `learnable(`, …) | ≤1.3% (only the format section's `<head>` existed) | ≤0.6% | ≤3.6% except **Mistral-7B: 11.7% guided, 7.8% cot** |
+
+The v1 failure is **eliminated**. Mistral-7B partially shifts the same anchoring
+behaviour onto the new placeholder tokens — but, by design, placeholder mentions
+are either confined to the reasoning text or rejected loudly by the parser
+(angle brackets never parse into rules), instead of silently producing
+plausible-looking frameworks with invented predicates as in v1.
 
 ## Prompt-version ↔ experiment-set matrix
 

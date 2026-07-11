@@ -46,9 +46,10 @@ Two findings stand out
 
 An earlier single-model run under v1 prompts
 ([set 01](experiments/01_bench_prompts_v1/MANIFEST.md)) additionally exposed a
-**template-copying artefact** (11.3% of samples copied instruction schema names
-instead of problem symbols) — documented in
-[docs/PROMPTS.md](docs/PROMPTS.md).
+**template-copying artefact** (11.3% of guided samples copied instruction schema
+names instead of problem symbols); the v2 placeholder-neutralised prompts
+**eliminate it completely** (0.0% across all 16 model×mode cells) — measured
+ablation in [docs/PROMPTS.md](docs/PROMPTS.md).
 
 ## Repository map
 
