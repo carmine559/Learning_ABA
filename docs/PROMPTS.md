@@ -103,10 +103,54 @@ are either confined to the reasoning text or rejected loudly by the parser
 (angle brackets never parse into rules), instead of silently producing
 plausible-looking frameworks with invented predicates as in v1.
 
+### v3 — terminologically exact (current; supervisor feedback)
+
+After review, the prompts were found *terminologically imprecise* with respect
+to the source paper (De Angelis, Proietti & Toni, ECAI 2024). v3 rewrites the
+system prompt and all task templates to state Definition 1 and the four
+transformation rules **exactly as in the paper**. The corrections, each a real
+divergence and not mere wording:
+
+1. **Goal statement (Definition 1(v)).** v2 demanded "no negative example is
+   bravely entailed" — *stronger than the paper*. Correct: there exists **one
+   single stable extension Δ** in which all of E+ are accepted and none of E−
+   is; a negative may still be accepted in *other* extensions. (The Clingo
+   validator always implemented the correct condition — only the prompt prose
+   was wrong.)
+2. **Folding (R2) restated syntactically.** v2 said "find a background
+   predicate that *holds* for the constant" — a semantic paraphrase of a
+   *syntactic* rule. v3 gives the paper's schema: distinct rules
+   `rho1: H :- Eqs1, B1, B2` and `rho2: K :- Eqs1, Eqs2, B1` (fresh `Eqs2`
+   variables), replace `rho1` by `rho3: H :- Eqs2, K, B2`; plus the special
+   case actually used (folding with a normalised background fact), plus the
+   Proposition-1 caveat: folding preserves existing arguments but may CREATE
+   arguments/attacks — the framework can stop being a solution.
+3. **Assumption Introduction (R3) trigger widened.** v2 triggered R3 only when
+   "a negative gets through". The paper applies R3 whenever the framework is
+   **no longer a solution — including a LOST POSITIVE** (its own running
+   example introduces α to *recover* `pacifist(a)`). v3 also restores:
+   α new **or existing** (reuse, Definition 4), `X = vars(B)`, and the
+   `c_α` exceptions added via **R1 and generalised recursively** in later Gen
+   iterations.
+4. **Fact Subsumption (R4) criterion.** v2's CoT said "remove facts already
+   derivable" — wrong criterion. Correct: remove a learnt fact iff the
+   framework **without it is still a solution**.
+5. **Conflict-freeness restored.** A pasted PDF fragment had lost the `∄`
+   glyph, literally inverting the stable-extension definition ("there exist
+   α,β…" instead of "there do NOT exist"). v3 states it in words.
+6. **CoT Step 3b explicitly labelled** a search heuristic *outside* the
+   original algorithm (it was previously presented as part of it).
+
+Also made exact: flatness, normalised rule form (`p(t)` as `p(X) :- X = t`),
+brave consequence, and "intensional" per the paper (non-ground rule schemata).
+The problem-serialisation headers now read "all accepted in ONE common stable
+extension" / "none accepted in that same extension".
+
 ## Prompt-version ↔ experiment-set matrix
 
 | Experiment set | Prompts | Comparable with |
 | --- | --- | --- |
 | `experiments/00_preliminary_api` | v0 (evolving) | nothing (exploratory) |
 | `experiments/01_bench_prompts_v1` | v1 | — |
-| `experiments/02_bench_prompts_v2` | v2 | future v2 runs |
+| `experiments/02_bench_prompts_v2` | v2 | — |
+| *(future benchmark runs)* | **v3** | future v3 runs |

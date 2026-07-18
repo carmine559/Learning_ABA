@@ -14,45 +14,81 @@ from src.aba_validator import run_rote_learning
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT = """You are an expert in Assumption-Based Argumentation (ABA).
+Terminology follows De Angelis, Proietti & Toni, "Learning Brave Assumption-
+Based Argumentation Frameworks via ASP" (ECAI 2024).
 
-KEY DEFINITIONS:
-- An ABA framework has: (1) inference rules of the form "head :- body", \
-(2) defeasible assumptions, (3) a mapping from each assumption to its contrary.
-- An argument for claim s is a proof tree: root=s, leaves=assumptions or facts, \
-  internal nodes derived by rules.
-- An argument A attacks B if A's claim is the contrary of an assumption in B's support.
-- A stable extension Δ is a conflict-free set of arguments that attacks \
-  every argument outside it.
-- Brave entailment: s is bravely entailed if some argument for s is in \
-  some stable extension.
+KEY DEFINITIONS.
+- An ABA framework is a tuple (R, A, C) where:
+    R is a set of inference rules of the form  s0 :- s1, ..., sm  (m >= 0;
+      if m = 0 the rule is a FACT, written  s0. );
+    A is a non-empty set of ASSUMPTIONS;
+    C is a total mapping assigning to each assumption a in A its CONTRARY,
+      a sentence written contrary(a).
+  The framework is FLAT: assumptions never occur as heads of rules.
+- NORMALISED FORM. Rules are written
+      p0(X0) :- eq_1, ..., eq_k, p1(X1), ..., pn(Xn)
+  where each eq_i is an equality between terms. In particular a ground fact
+  p(t) is represented as the normalised rule  p(X) :- X = t.
+- An ARGUMENT for a claim s, supported by a set of assumptions S and a set of
+  rules, is a finite proof tree: the root is labelled s; every leaf is labelled
+  by an assumption in S or by true; every internal node labelled s' has as
+  children exactly the body atoms of a rule in R with head s'.
+- An argument A1 with claim s1 ATTACKS an argument A2 iff s1 = contrary(a) for
+  some assumption a in the support of A2.
+- A set Delta of arguments is a STABLE EXTENSION iff
+    (i)  there are NO two arguments a, b in Delta such that a attacks b
+         (Delta is conflict-free), and
+    (ii) for every argument b NOT in Delta, some argument a in Delta attacks b
+         (Delta attacks every argument it does not contain).
+- A framework is SATISFIABLE iff it admits at least one stable extension.
+- A sentence s is a BRAVE CONSEQUENCE of the framework iff s is the claim of an
+  argument belonging to SOME stable extension.
 
-YOUR TASK: Extend a background ABA framework so that:
-  (1) All positive examples are bravely entailed.
-  (2) No negative example is bravely entailed.
-  (3) New rule heads use only predicates listed as learnable.
+THE LEARNING PROBLEM (Definition 1 of the paper).
+Given: a satisfiable background framework (R, A, C); positive examples E+ and
+negative examples E- (disjoint sets of ground atoms whose predicates are not
+assumptions); a set T of LEARNABLE predicates, disjoint from the assumption
+predicates, with every predicate of E+ and E- belonging to T.
+Goal: construct a framework (R', A', C') such that
+  (i)   R is a subset of R';
+  (ii)  every NEW rule head uses either a learnable predicate from T or an
+        entirely NEW predicate (e.g. the contrary of a new assumption);
+  (iii) A is a subset of A';
+  (iv)  C' agrees with C on all old assumptions;
+  (v)   (R', A', C') is satisfiable and admits ONE stable extension Delta
+        such that:
+          1. EVERY e in E+ is the claim of an argument in Delta, and
+          2. NO   e in E- is the claim of an argument in Delta.
+IMPORTANT: conditions 1 and 2 refer to the SAME single extension Delta. A
+negative example may still be accepted in some OTHER stable extension; that
+does not violate the definition.
+A solution is INTENSIONAL when the new rules R' \\ R are non-ground rule
+schemata, i.e. contain no equalities "X = constant" binding variables to
+specific individuals.
 
-DEFEASIBILITY REQUIREMENT — this is the hardest and most important part:
-- NEVER output ground facts such as  <pred>(X) :- X = <const>.  or bare facts
-  <pred>(<const>).  Ground facts only memorise training examples; they do not
-  generalise.
-- Every new rule MUST use a variable X and at least one background predicate.
-- If a generalised rule would also derive a NEGATIVE example, you MUST make
-  it defeasible: add a new assumption alpha(X) to its body, then add a contrary
-  rule for c_alpha(X) whose body is a background predicate that distinguishes
-  the exceptions. The contrary rule must also use a variable — not a ground fact.
-- Schematically, a defeasible solution looks like:
+YOUR TASK: given an ABA Learning problem, construct a solution satisfying
+Definition 1. In this task an INTENSIONAL solution is REQUIRED:
+- NEVER leave ground facts  <pred>(X) :- X = <const>.  or bare facts
+  <pred>(<const>).  in your final answer: they memorise the examples without
+  generalising.
+- Every new rule must use a variable X and at least one background predicate.
+- Defeasibility: if a candidate rule makes the framework violate condition (v)
+  - either a positive example is no longer accepted in the chosen extension,
+  or a negative example becomes accepted in it - make a rule defeasible by
+  Assumption Introduction: add an assumption alpha(X) to its body and learn an
+  intensional rule for its contrary c_alpha(X). Schematically:
     <learnable>(X) :- <support>(X), alpha(X).
-    c_alpha(X) :- <exception>(X).   [contrary rule]
+    c_alpha(X) :- <exception>(X).
   NEW ASSUMPTIONS:  alpha(X) defeated_by c_alpha(X)
 
-PLACEHOLDER RULE — critical:
+PLACEHOLDER RULE - critical:
 Angle-bracketed tokens such as <pred>, <support>, <exception>, <learnable> are
 PLACEHOLDERS used only to describe rule shapes. In your answer, replace each of
 them with a predicate name taken from THE PROBLEM ABOVE. Your answer must
-contain NO angle brackets and NO placeholder names — only predicates that occur
+contain NO angle brackets and NO placeholder names - only predicates that occur
 in the problem, plus any new assumption names (alpha, c_alpha) you introduce.
 
-CRITICAL FORMATTING RULES — read carefully:
+CRITICAL FORMATTING RULES - read carefully:
 - Do NOT use markdown. No backticks, no code fences, no bold, no bullet symbols.
 - Do NOT add any explanation or commentary outside the two sections below.
 - Do NOT repeat or echo the problem statement.
@@ -75,11 +111,11 @@ def _format_problem(problem: LearningProblem) -> str:
     lines = ["=== BACKGROUND KNOWLEDGE ==="]
     lines.append(problem.background.to_natural_language())
     lines.append("")
-    lines.append("=== POSITIVE EXAMPLES (must be bravely entailed) ===")
+    lines.append("=== POSITIVE EXAMPLES (all accepted in ONE common stable extension) ===")
     for e in problem.positive:
         lines.append(f"  + {e}")
     lines.append("")
-    lines.append("=== NEGATIVE EXAMPLES (must NOT be bravely entailed) ===")
+    lines.append("=== NEGATIVE EXAMPLES (none accepted in that same extension) ===")
     for e in problem.negative:
         lines.append(f"  - {e}")
     lines.append("")
@@ -95,8 +131,8 @@ def _format_problem(problem: LearningProblem) -> str:
 # ---------------------------------------------------------------------------
 
 _TASK_DIRECT = """
-Extend the background knowledge directly.
-Think about which constants satisfy the positive examples and not the negatives,
+Find a solution directly.
+Think about which claims entail the positive examples and not the negatives,
 then construct rules that capture this.
 """
 
@@ -105,53 +141,55 @@ Follow these steps explicitly in your response:
 
 STEP 1 — ROTE LEARNING:
 For each positive example, determine the minimal ground facts needed to derive it.
-Also determine ground facts needed to block each negative example.
 List them as: "Add: <fact>."
 
-STEP 2 — FOLDING:
-For each ground fact from Step 1, check if a rule in the background has a head
-that matches after substituting the constant. If yes, replace the constant-binding
-equality with that rule's head.
-List as: "Fold <fact> using <rule> → <generalised_rule>"
+STEP 2 — FOLDING (syntactic generalisation):
+For each ground fact  <pred>(X) :- X = <const>  from Step 1, look for a rule or
+normalised background fact whose body matches the equality (most commonly a
+background fact  <support>(<const>), i.e.  <support>(X) :- X = <const>), and
+REPLACE the matched sub-body by that rule's HEAD:
+    <pred>(X) :- <support>(X).
+List as: "Fold <fact> using <rule> -> <generalised_rule>"
+CAUTION: folding preserves all existing arguments but can CREATE new arguments
+and attacks — after folding, the framework may stop being a solution.
 
-STEP 3 — ASSUMPTION INTRODUCTION (overgeneralisation check):
-For EACH rule produced in Step 2, explicitly check:
-  "If I apply this rule to every domain constant, does it derive any NEGATIVE example?"
-  List the negatives it would incorrectly derive (if any).
+STEP 3 — SOLUTION CHECK + ASSUMPTION INTRODUCTION:
+For EACH rule produced in Step 2, check BOTH directions against the single
+target extension:
+  (a) does some NEGATIVE example now become accepted?
+  (b) does some POSITIVE example STOP being accepted? (this can happen when a
+      folded contrary rule defeats an assumption that a positive relied on)
+  List every violated example.
 
-  Case A — no negative derived: the rule is safe. Keep it as-is.
+  Case A — no violation: the rule is safe. Keep it as-is.
 
-  Case B — some negatives derived: the rule overgeneralises.
-    (i)  Add a new defeasible assumption alpha(X) to the rule body:
+  Case B — any violation: make the rule defeasible.
+    (i)  Add an assumption alpha(X) to the rule body (new, or reuse an
+         existing assumption already used with the same body):
            <learnable>(X) :- <support>(X), alpha(X).
-    (ii) Find a background predicate that distinguishes the exceptions
-         (the constants where the negative result should be blocked).
+    (ii) Find a background predicate distinguishing exactly the constants
+         where the rule must be defeated.
     (iii) Write a GENERAL contrary rule using that predicate:
            c_alpha(X) :- <exception>(X).   [NOT a ground fact]
-    List as: "Rule overgeneralises for [list]. Introduce alpha(X) defeated_by c_alpha(X).
+    List as: "Rule violates [list]. Introduce alpha(X) defeated_by c_alpha(X).
              Contrary rule: c_alpha(X) :- <exception>(X)."
     (<learnable>, <support>, <exception> are placeholders: use predicates from
      the problem, never the placeholder names themselves.)
 
-STEP 3b — MULTIPLE DERIVATION PATHS:
-After Step 3, look at the remaining positive examples that are NOT yet covered
-by the rules produced so far.  Ask: "Do any of these positives share a DIFFERENT
-background predicate that could serve as an alternative support?"
-
-  If YES: fold those facts separately using that background predicate to produce
-           a second (or third) rule for the same target predicate.  Each new rule
-           may also need its own assumption if it overgeneralises (repeat Step 3).
-  If NO:  skip this step.
-
-Multiple rules for the same head are valid and desirable — they represent
-alternative argument paths. A constant reachable via two independent rules
-receives stronger graded support than one reachable via only one.
-List as: "Alternative path found using <pred> → <new_rule>"
+STEP 3b — MULTIPLE DERIVATION PATHS (search heuristic, NOT part of the
+original algorithm):
+If some positive examples are still not covered, ask whether they share a
+DIFFERENT background predicate usable as alternative support; if so, fold
+those facts separately into a second (or third) rule for the same head, and
+re-apply Step 3 to each new rule. Multiple rules for the same head are valid —
+they represent alternative argument paths.
+List as: "Alternative path found using <pred> -> <new_rule>"
 
 STEP 4 — FACT SUBSUMPTION:
-Check if any added ground fact is now redundant (already derivable without it).
-Remove redundant facts.
-List as: "Remove <fact> (redundant)."
+Delete a remaining ground fact if and only if the framework WITHOUT it still
+satisfies the goal (one stable extension accepting all positives and no
+negatives). The criterion is the solution check, not mere derivability.
+List as: "Remove <fact> (solution preserved without it)."
 
 After completing all steps, output the final answer in the required format.
 """
@@ -161,59 +199,92 @@ Apply the ASP-ABAlearnB algorithm for brave ABA Learning (De Angelis, Proietti
 & Toni, ECAI 2024) to the problem above. EXECUTE the algorithm step by step; do
 not guess the final answer.
 
-GOAL. Build a set of rules R' extending the background rules R so that:
-  * every POSITIVE example is bravely entailed (it is the claim of an argument
-    accepted in some stable extension), and
-  * no NEGATIVE example is bravely entailed.
-New rule heads must be learnable predicates (or the contrary of a new assumption).
-A rule is written  head :- body.  A ground fact is written
-<pred>(X) :- X = <const>.  A rule is INTENSIONAL if its body contains no
-equality "X = constant"; intensional rules are the goal, because they
-generalise beyond the listed constants.
+GOAL (Definition 1, restated). Extend the background framework so that the
+result is satisfiable and admits ONE stable extension Delta in which EVERY
+positive example is the claim of an accepted argument and NO negative example
+is. A SOLUTION is checked against this single-extension condition - after
+every transformation below, "still a solution" means exactly this check.
+A rule is INTENSIONAL if its body contains no equality "X = constant". The
+final solution must be intensional.
 (All angle-bracketed tokens below are PLACEHOLDERS: substitute predicates and
 constants from the problem; never write the placeholder names themselves.)
 
-THE FOUR TRANSFORMATION RULES.
-  R1 - Rote Learning. To force an atom <pred>(<const>) to hold, add the ground
-       fact  <pred>(X) :- X = <const>.  (Used both for positive examples and
-       for the contraries of assumptions.)
-  R2 - Folding (generalisation). Given a ground fact <pred>(X) :- X = <const>,
-       find a background predicate <support> that holds for <const> and replace
-       the equality with it:   <pred>(X) :- <support>(X).   More generally,
-       replace a set of body atoms by the head of a background rule whose body
-       those atoms match.
-  R3 - Assumption Introduction (defeasibility). If a rule is too general and
-       lets a NEGATIVE example through, add a fresh assumption to its body to
-       make it defeasible:
-            <pred>(X) :- <support>(X), alpha(X).      with contrary  c_alpha(X)
-       Then, by R1+R2, learn an INTENSIONAL rule for the contrary that fires
-       exactly on the exceptions to be blocked:   c_alpha(X) :- <exception>(X).
-  R4 - Fact Subsumption. Delete any ground fact <pred>(X) :- X = <const> if E+
-       and E- are still correctly entailed without it.
+THE FOUR TRANSFORMATION RULES (as defined in the paper).
 
-THE ALGORITHM (two phases).
-  PHASE 1 - RoLe (Rote Learning): using R1, add the MINIMAL set of ground facts
-    that makes every E+ entailed and every E- blocked. This is a correct but
-    non-general (memorised) solution.
-  PHASE 2 - Gen (Generalisation): turn each learnt ground fact into an
-    intensional rule. For each learnt fact <pred>(X) :- X = <const>:
-      (a) [R4] If the fact can be dropped with E+/E- still correct, drop it.
-      (b) [R2] Otherwise fold it into  <pred>(X) :- <support>(X)  using a
-          background predicate <support> that holds for <const>.
-      (c) Check the folded rule against ALL constants: does it now derive any
-          negative example?
-            - No  -> keep the intensional rule.
-            - Yes -> [R3] add an assumption: <pred>(X) :- <support>(X), alpha(X);
-              then learn an intensional contrary rule c_alpha(X) :- <exception>(X)
-              using a background predicate <exception> that holds exactly on the
-              constants to block (fold that contrary rule too, recursively).
-      (d) Repeat until the rule is intensional.
+  R1 - ROTE LEARNING. Given a ground atom <pred>(<const>), add to R the
+       normalised ground fact
+           <pred>(X) :- X = <const>.
+       Used in two places: to make positive examples derivable, and to add
+       facts for the CONTRARIES of assumptions (the exceptions).
 
-Now EXECUTE both phases on the problem above: show the facts added in RoLe and
-each transformation (R2/R3/R4) applied in Gen. Then output ONLY the final
-framework in the required format. Every final rule must be INTENSIONAL (no
-"X = constant") and must use only predicate names that appear in the problem,
-plus alpha(X) / c_alpha(X) for any new assumptions and their contraries.
+  R2 - FOLDING. A SYNTACTIC generalisation step. Given two DISTINCT rules
+           rho1:  H :- Eqs1, B1, B2.        (the rule being folded)
+           rho2:  K :- Eqs1, Eqs2, B1.      (the rule used for folding, in R)
+       where Eqs1, Eqs2 are sets of equalities, B1, B2 are sets of atoms, and
+       the variables of Eqs2 do not occur in rho1, REPLACE rho1 by
+           rho3:  H :- Eqs2, K, B2.
+       That is: the sub-body "Eqs1, B1" of rho1 is replaced by the HEAD K of a
+       rule whose body is that same sub-body (up to the residual equalities
+       Eqs2, which are carried over into the new body).
+       Most common special case here: fold the learnt fact
+           <pred>(X) :- X = <const>.
+       using a normalised background fact  <support>(X) :- X = <const>.
+       (i.e. the background contains the fact <support>(<const>)), obtaining
+           <pred>(X) :- <support>(X).
+       CAUTION (Proposition 1 of the paper): folding PRESERVES all existing
+       arguments but may CREATE NEW arguments and new attacks. Therefore after
+       folding the framework may NO LONGER BE A SOLUTION - a positive example
+       may stop being accepted, a negative example may become accepted, or all
+       stable extensions may disappear. ALWAYS re-check after folding.
+
+  R3 - ASSUMPTION INTRODUCTION. Replace a rule
+           rho1:  H :- Eqs, B.
+       by the defeasible rule
+           rho2:  H :- Eqs, B, alpha(X).
+       where X are the variables of the body B, and alpha(X) is an assumption
+       with contrary c_alpha(X). alpha may be a NEW assumption, or an EXISTING
+       assumption already used with the same body B (reusing assumptions keeps
+       the framework small). Applied when, after folding, the framework is no
+       longer a solution - whether the failure is an ACCEPTED NEGATIVE or a
+       LOST POSITIVE. Then, by R1, add ground facts for the contrary,
+           c_alpha(X) :- X = <const>.
+       for exactly those constants where the rule must be defeated so the
+       framework becomes a solution again. These new ground facts are then
+       themselves generalised (R2/R3/R4) in later iterations.
+
+  R4 - FACT SUBSUMPTION. Delete a learnt ground fact
+           <pred>(X) :- X = <const>.
+       if and only if the framework WITHOUT it is still a solution
+       (Definition 1 still holds). The criterion is the solution check, not
+       mere derivability of the fact.
+
+THE ALGORITHM: two procedures, RoLe then Gen.
+
+  RoLe: using R1, add a MINIMAL set of ground facts (with learnable-predicate
+    heads) such that the framework becomes a - non-intensional - solution.
+
+  Gen: iterate over every learnt ground fact rho still present:
+    (a) [R4] if the framework without rho is still a solution, delete rho and
+        continue with the next fact;
+    (b) [R2] otherwise fold rho (repeatedly if needed) into an intensional
+        rule, using rules and normalised facts of the background;
+    (c) check: is the framework still a solution?
+          - YES -> keep the folded rule; continue;
+          - NO  -> [R3] add an assumption alpha(X) to the folded rule's body
+            (new, or an existing one fitting the same body), set its contrary
+            c_alpha(X), and [R1] add ground facts c_alpha(X) :- X = <const>.
+            for the constants where the rule must be defeated so that the
+            framework is a solution again. These c_alpha facts join the learnt
+            set and are generalised by the SAME procedure in later iterations.
+    Repeat until every learnt rule is intensional.
+
+Now EXECUTE both procedures on the problem above: show the facts added by RoLe
+and each transformation (R2/R3/R4) applied in Gen, re-checking the solution
+condition after each step. Then output ONLY the final framework in the
+required format. Every final rule must be INTENSIONAL (no "X = constant") and
+must use only predicate names that appear in the problem, plus
+alpha(X) / c_alpha(X) (or alpha1, alpha2, ... if several) for new assumptions
+and their contraries.
 """
 
 _TASK_GUIDED_TEMPLATE = """
@@ -223,23 +294,30 @@ I have already determined that the following ground facts must be added
 {role_facts}
 
 Your task: generalise EACH of these ground facts into intensional rules
-(rules with variables, no explicit constants) using Folding and
-Assumption Introduction.
+(rules with variables, no explicit constants) using Folding (R2) and
+Assumption Introduction (R3) as defined by De Angelis, Proietti & Toni
+(ECAI 2024).
 
 For each ground fact of the form  <pred>(X) :- X = <const>
 (the <...> tokens are placeholders — always substitute the actual predicate
 and constant from the fact you are working on):
-  1. Find a background predicate <support> such that <support>(<const>) holds.
-  2. Replace "X = <const>" with "<support>(X)" to produce the folded rule
-     <pred>(X) :- <support>(X).
-  3. Check: does the folded rule derive any NEGATIVE example?
-       If NO  → keep the rule as-is.
-       If YES → add a defeasible assumption:  <pred>(X) :- <support>(X), alpha(X).
-                Find a background predicate <exception> that holds for the
-                exceptions. Write the contrary rule:
+  1. FOLD: find a background fact <support>(<const>) (in normalised form,
+     <support>(X) :- X = <const>) and replace the matched equality by its
+     head, producing   <pred>(X) :- <support>(X).
+     Folding preserves existing arguments but can create NEW arguments and
+     attacks, so the result must be re-checked.
+  2. CHECK the solution condition — ONE stable extension accepting all
+     positive examples and no negative example. Check BOTH directions:
+     a negative may have become accepted, or a positive may have been LOST.
+       If it holds  → keep the folded rule.
+       If violated  → ASSUMPTION INTRODUCTION: add an assumption to the body,
+                <pred>(X) :- <support>(X), alpha(X).
+                and write an INTENSIONAL contrary rule that fires exactly on
+                the constants where the rule must be defeated:
                 c_alpha(X) :- <exception>(X).   [must use variable X]
-  4. Once all ground facts are generalised, remove any that are now redundant
-     (already covered by the intensional rules).
+  3. Once all ground facts are generalised, delete any remaining learnt ground
+     fact if and only if the framework without it still satisfies the solution
+     condition (Fact Subsumption, R4).
 
 REMINDER: Your final answer must contain ZERO occurrences of "X = constant",
 NO angle brackets, and only predicate names that appear in the problem (plus
