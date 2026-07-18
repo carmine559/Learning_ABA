@@ -129,8 +129,11 @@ held-out **TEST** examples it never saw. The gap between training fit and
 held-out generalisation (`overfit_gap`) directly measures memorisation.
 
 Each problem is attempted **k times** (default: 5) to account for LLM
-stochasticity. The headline metric is **`gen@k`** — success if any of the k
-attempts generalises.
+stochasticity. The headline metric is **`clean@k`** — success if any of the k
+attempts produces a *legal, stable, fitting, generalising, non-degenerate*
+solution, where "generalising" means the framework **is a Definition-1
+solution of the full problem** (train + held-out examples, one common stable
+extension). Precise definitions of every metric: [docs/EXPERIMENTS.md](docs/EXPERIMENTS.md).
 
 ---
 
@@ -334,16 +337,19 @@ python main.py --backend google_ai --min-interval 7 --modes guided --n-samples 5
 
 | Metric | Meaning |
 | --- | --- |
-| `gen@k` | Any of k samples generalises to held-out examples — **headline metric** |
-| `gen@1` | Mean generalisation rate across samples |
-| `fit@1` | Mean training-fit rate |
-| `overfit_gap` | fit − gen_score — memorisation indicator |
+| `clean@k` | Any of k samples yields a legal, stable, fitting, generalising, non-degenerate solution — **headline metric** |
+| `gen@k` | Any of k samples is a Definition-1 solution of the FULL problem (train + held-out, one common extension) |
+| `fit@1` / `fit@k` | Solution of the TRAIN problem (mean / any-of-k) |
+| `overfit_gap` | fit(0/1) − per-example held-out score — memorisation indicator (diagnostic) |
 | `intensional_rate` | Fraction of fit solutions with no constants in new rules |
 | `degenerate_rate` | Fraction of fit solutions that only memorised ground facts |
 | `parse_rate` | Fraction of samples the parser could read |
 
-**Error types per sample:** `none` (correct), `parse_error`, `stability_error`,
-`completeness_error`, `soundness_error`, `generalization_error`, `degenerate`.
+**Error types per sample** (first failing stage): `parse_error`,
+`illformed_solution` (Definition-1 side conditions (ii)/(iv)/flatness violated),
+`stability_error`, `completeness_error`, `soundness_error`, `both_errors`,
+`generalization_error`, `degenerate`, `none` (fully clean).
+Full precise definitions: [docs/EXPERIMENTS.md](docs/EXPERIMENTS.md).
 
 ---
 

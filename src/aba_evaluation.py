@@ -28,6 +28,7 @@ from src.aba_model import LLMBackend, ModelResponse
 from src.aba_generalization import (
     SplitProblem, split_problem_examples, evaluate_generalization,
     GeneralizationResult, semantic_equivalence, is_intensional_strict,
+    wellformed_violations,
 )
 
 
@@ -67,6 +68,9 @@ class SampleResult:
     unentailed_positives: int = 0
     spurious_negatives:   int = 0
     error_type:           str = "none"
+    # Definition-1 side conditions ((ii), (iv), flatness) violated by the
+    # candidate, if any — such samples are ill-formed regardless of entailment.
+    wellformed_violations: List[str] = field(default_factory=list)
 
     # Reference comparison (semantic)
     semantic_match:        bool  = False
@@ -155,6 +159,16 @@ def evaluate_one_sample(
 
     r.n_new_rules       = len(candidate.new_rules)
     r.n_new_assumptions = len(candidate.new_assumptions)
+
+    # 2b. Definition-1 well-formedness ((ii) learnable heads, (iv) unchanged
+    #     contraries, flatness, assumption freshness). An ill-formed candidate
+    #     is not a legal solution regardless of what it entails.
+    r.wellformed_violations = wellformed_violations(
+        candidate, entry.problem.background, entry.problem.learnable
+    )
+    if r.wellformed_violations:
+        r.error_type = "illformed_solution"
+        return r
 
     # 3. Stability + generalisation
     domain = entry.problem.get_domain()

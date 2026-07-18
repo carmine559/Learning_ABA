@@ -137,6 +137,96 @@ def is_intensional_strict(framework: ABAFramework) -> bool:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# Definition-1 well-formedness (side conditions entailment checks cannot see)
+# ──────────────────────────────────────────────────────────────────────────────
+
+_PRED_NAME_RE = re.compile(r'^(?:not\s+)?([a-z]\w*)')
+_EQ_ATOM_RE   = re.compile(r'^[A-Z]\w*\s*=')
+_RESERVED     = {"dom", "true", "false", "not"}
+
+
+def _pred_of(atom: str) -> Optional[str]:
+    """Predicate symbol of an atom string; None for equalities/reserved."""
+    atom = atom.strip()
+    if _EQ_ATOM_RE.match(atom):
+        return None
+    m = _PRED_NAME_RE.match(atom)
+    if not m or m.group(1) in _RESERVED:
+        return None
+    return m.group(1)
+
+
+def wellformed_violations(
+    candidate: ABAFramework,
+    background: ABAFramework,
+    learnable: List[str],
+) -> List[str]:
+    """
+    Check the side conditions of Definition 1 (De Angelis et al., ECAI 2024)
+    that the entailment checks cannot detect. Returns human-readable violation
+    messages (empty list = well-formed).
+
+      (ii)  every NEW rule head whose predicate already occurs in the
+            background language must be a LEARNABLE predicate; heads with
+            genuinely new predicates (e.g. contraries of new assumptions)
+            are unrestricted;
+      (iv)  the contrary of every BACKGROUND assumption must be unchanged;
+      flatness: no assumption predicate (old or new) may occur as a rule head;
+      freshness: a NEW assumption's predicate must not already occur in the
+            background language (the paper introduces new assumption symbols,
+            or reuses EXISTING assumptions - it never repurposes background
+            predicates as assumptions).
+    """
+    viol: List[str] = []
+
+    # Background language: predicates of rules (heads + bodies), assumptions,
+    # and contraries.
+    bg_lang: set = set()
+    for r in background.rules:
+        for atom in [r.head, *r.body]:
+            p = _pred_of(atom)
+            if p:
+                bg_lang.add(p)
+    for a in background.assumptions:
+        p = _pred_of(a)
+        if p:
+            bg_lang.add(p)
+    for c in background.contraries.values():
+        p = _pred_of(c)
+        if p:
+            bg_lang.add(p)
+
+    asm_preds = {_pred_of(a) for a in candidate.assumptions} - {None}
+    learn = set(learnable)
+
+    for r in candidate.new_rules:
+        hp = _pred_of(r.head)
+        if hp is None:
+            viol.append(f"reserved or malformed head: '{r.head}'")
+            continue
+        if hp in asm_preds:
+            viol.append(f"flatness violated: assumption '{hp}' used as rule head")
+        elif hp in bg_lang and hp not in learn:
+            viol.append(f"condition (ii) violated: head '{hp}' is a background "
+                        f"predicate not in the learnable set")
+
+    for a in background.assumptions:
+        old_c = background.contraries.get(a)
+        new_c = candidate.contraries.get(a)
+        if old_c is not None and new_c is not None and old_c != new_c:
+            viol.append(f"condition (iv) violated: contrary of existing "
+                        f"assumption '{a}' changed from '{old_c}' to '{new_c}'")
+
+    for a in candidate.new_assumptions:
+        p = _pred_of(a)
+        if p and p in bg_lang:
+            viol.append(f"new assumption predicate '{p}' already occurs in "
+                        f"the background language")
+
+    return viol
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 # Generalisation evaluation
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -204,7 +294,26 @@ def evaluate_generalization(
         if not ok:                       # ':- e' unsat ⟺ e entailed
             res.spurious_negatives += 1
 
-    # ── Generalisation on held-out examples (per-example) ───────────────────
+    # ── Generalisation ───────────────────────────────────────────────────────
+    # HEADLINE CHECK (Definition 1 of De Angelis et al. 2024, on the FULL
+    # problem): gen_valid holds iff the framework admits ONE stable extension
+    # accepting ALL original examples (train + held-out positives) and NONE of
+    # the original negatives (train + held-out) — a single joint ASP check.
+    # A per-example check would be wrong twice over: held-out positives could
+    # be accepted in DIFFERENT extensions, and ":- e" alone only asks whether
+    # SOME extension avoids e, which is near-vacuous on multi-extension
+    # frameworks. gen_valid == "the framework solves the full learning problem
+    # the symbolic algorithm solves".
+    res.gen_valid, _, _ = check_brave_entailment(
+        framework,
+        train_pos + split.test_positive,
+        train_neg + split.test_negative,
+        dom, timeout,
+    )
+
+    # DIAGNOSTIC per-example score on the held-out set only (each example
+    # checked in isolation; brave per example). Used for the graded
+    # generalization_score and error localisation, NOT for validity.
     for e in split.test_positive:
         ok, _, _ = check_brave_entailment(framework, [e], [], dom, timeout)
         if ok:
@@ -219,14 +328,9 @@ def evaluate_generalization(
         res.generalization_score = (
             (res.test_pos_correct + res.test_neg_correct) / n_test
         )
-        res.gen_valid = (
-            res.test_pos_correct == res.n_test_pos and
-            res.test_neg_correct == res.n_test_neg
-        )
     else:
-        # No held-out set (problem too small): fall back to fit
+        # No held-out set (problem too small): score falls back to fit
         res.generalization_score = 1.0 if res.fit_valid else 0.0
-        res.gen_valid = res.fit_valid
 
     res.overfit_gap = (1.0 if res.fit_valid else 0.0) - res.generalization_score
     res.is_degenerate = is_degenerate_solution(framework, train_pos)
