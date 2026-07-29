@@ -1,0 +1,614 @@
+{
+  "direct": {
+    "n_problems": 103,
+    "parse_rate": 1.0,
+    "fit_at_1": 0.003,
+    "gen_at_1": 0.0,
+    "fit_at_k": 0.01,
+    "gen_at_k": 0.0,
+    "clean_at_1": 0.0,
+    "clean_at_k": 0.0,
+    "gen_score_mean": 0.094,
+    "mean_overfit_gap": -0.091,
+    "intensional_rate": 0.01,
+    "degenerate_rate": 0.0,
+    "error_breakdown": {
+      "illformed_solution": 256,
+      "generalization_error": 1,
+      "completeness_error": 21,
+      "both_errors": 31
+    }
+  },
+  "cot": {
+    "n_problems": 103,
+    "parse_rate": 0.968,
+    "fit_at_1": 0.087,
+    "gen_at_1": 0.061,
+    "fit_at_k": 0.223,
+    "gen_at_k": 0.155,
+    "clean_at_1": 0.061,
+    "clean_at_k": 0.155,
+    "gen_score_mean": 0.348,
+    "mean_overfit_gap": -0.261,
+    "intensional_rate": 0.199,
+    "degenerate_rate": 0.024,
+    "error_breakdown": {
+      "illformed_solution": 124,
+      "soundness_error": 38,
+      "parse_error": 10,
+      "none": 19,
+      "completeness_error": 59,
+      "generalization_error": 8,
+      "both_errors": 48,
+      "stability_error": 3
+    }
+  },
+  "guided": {
+    "n_problems": 103,
+    "parse_rate": 1.0,
+    "fit_at_1": 0.113,
+    "gen_at_1": 0.081,
+    "fit_at_k": 0.175,
+    "gen_at_k": 0.146,
+    "clean_at_1": 0.081,
+    "clean_at_k": 0.146,
+    "gen_score_mean": 0.225,
+    "mean_overfit_gap": -0.112,
+    "intensional_rate": 0.155,
+    "degenerate_rate": 0.0,
+    "error_breakdown": {
+      "completeness_error": 9,
+      "soundness_error": 31,
+      "both_errors": 32,
+      "none": 25,
+      "generalization_error": 10,
+      "illformed_solution": 202
+    }
+  },
+  "algorithm": {
+    "n_problems": 103,
+    "parse_rate": 0.764,
+    "fit_at_1": 0.097,
+    "gen_at_1": 0.061,
+    "fit_at_k": 0.233,
+    "gen_at_k": 0.146,
+    "clean_at_1": 0.061,
+    "clean_at_k": 0.146,
+    "gen_score_mean": 0.311,
+    "mean_overfit_gap": -0.214,
+    "intensional_rate": 0.1,
+    "degenerate_rate": 0.063,
+    "error_breakdown": {
+      "illformed_solution": 81,
+      "parse_error": 73,
+      "soundness_error": 40,
+      "none": 19,
+      "completeness_error": 37,
+      "stability_error": 5,
+      "generalization_error": 11,
+      "both_errors": 43
+    }
+  },
+  "symbolic_baseline": {
+    "n_problems": 103,
+    "parse_rate": 1.0,
+    "fit_at_1": 1.0,
+    "gen_at_1": 1.0,
+    "fit_at_k": 1.0,
+    "gen_at_k": 1.0,
+    "clean_at_1": 1.0,
+    "clean_at_k": 1.0,
+    "intensional_rate": 1.0,
+    "degenerate_rate": 0.0,
+    "mean_overfit_gap": 0.0
+  },
+  "by_tier": {
+    "direct": {
+      "builtin": {
+        "n_problems": 3,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "gen_score_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "intensional_rate": 0.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 9
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.017,
+        "gen_at_1": 0.0,
+        "fit_at_k": 0.05,
+        "gen_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "gen_score_mean": 0.083,
+        "mean_overfit_gap": -0.067,
+        "intensional_rate": 0.05,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 50,
+          "generalization_error": 1,
+          "completeness_error": 9
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "gen_score_mean": 0.008,
+        "mean_overfit_gap": -0.008,
+        "intensional_rate": 0.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 59,
+          "both_errors": 1
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "gen_score_mean": 0.167,
+        "mean_overfit_gap": -0.167,
+        "intensional_rate": 0.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 42,
+          "both_errors": 17,
+          "completeness_error": 1
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "gen_score_mean": 0.225,
+        "mean_overfit_gap": -0.225,
+        "intensional_rate": 0.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "completeness_error": 11,
+          "both_errors": 13,
+          "illformed_solution": 36
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "gen_score_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "intensional_rate": 0.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 60
+        }
+      }
+    },
+    "cot": {
+      "builtin": {
+        "n_problems": 3,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "gen_score_mean": 0.222,
+        "mean_overfit_gap": -0.222,
+        "intensional_rate": 0.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 5,
+          "soundness_error": 4
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "parse_rate": 0.967,
+        "fit_at_1": 0.233,
+        "gen_at_1": 0.183,
+        "fit_at_k": 0.55,
+        "gen_at_k": 0.45,
+        "clean_at_1": 0.183,
+        "clean_at_k": 0.45,
+        "gen_score_mean": 0.333,
+        "mean_overfit_gap": -0.1,
+        "intensional_rate": 0.425,
+        "degenerate_rate": 0.125,
+        "error_breakdown": {
+          "illformed_solution": 30,
+          "parse_error": 2,
+          "none": 11,
+          "completeness_error": 13,
+          "generalization_error": 3,
+          "soundness_error": 1
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.067,
+        "gen_at_1": 0.067,
+        "fit_at_k": 0.15,
+        "gen_at_k": 0.15,
+        "clean_at_1": 0.067,
+        "clean_at_k": 0.15,
+        "gen_score_mean": 0.367,
+        "mean_overfit_gap": -0.3,
+        "intensional_rate": 0.15,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "completeness_error": 7,
+          "illformed_solution": 28,
+          "soundness_error": 11,
+          "none": 4,
+          "both_errors": 9,
+          "stability_error": 1
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "parse_rate": 0.95,
+        "fit_at_1": 0.033,
+        "gen_at_1": 0.017,
+        "fit_at_k": 0.1,
+        "gen_at_k": 0.05,
+        "clean_at_1": 0.017,
+        "clean_at_k": 0.05,
+        "gen_score_mean": 0.383,
+        "mean_overfit_gap": -0.35,
+        "intensional_rate": 0.1,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "completeness_error": 12,
+          "illformed_solution": 22,
+          "both_errors": 10,
+          "soundness_error": 11,
+          "parse_error": 3,
+          "none": 1,
+          "generalization_error": 1
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "parse_rate": 0.917,
+        "fit_at_1": 0.033,
+        "gen_at_1": 0.033,
+        "fit_at_k": 0.1,
+        "gen_at_k": 0.1,
+        "clean_at_1": 0.033,
+        "clean_at_k": 0.1,
+        "gen_score_mean": 0.4,
+        "mean_overfit_gap": -0.367,
+        "intensional_rate": 0.1,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "completeness_error": 8,
+          "both_errors": 15,
+          "soundness_error": 9,
+          "illformed_solution": 19,
+          "parse_error": 5,
+          "stability_error": 2,
+          "none": 2
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.083,
+        "gen_at_1": 0.017,
+        "fit_at_k": 0.25,
+        "gen_at_k": 0.05,
+        "clean_at_1": 0.017,
+        "clean_at_k": 0.05,
+        "gen_score_mean": 0.275,
+        "mean_overfit_gap": -0.192,
+        "intensional_rate": 0.25,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "completeness_error": 19,
+          "generalization_error": 4,
+          "illformed_solution": 20,
+          "both_errors": 14,
+          "soundness_error": 2,
+          "none": 1
+        }
+      }
+    },
+    "guided": {
+      "builtin": {
+        "n_problems": 3,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.333,
+        "gen_at_1": 0.222,
+        "fit_at_k": 0.333,
+        "gen_at_k": 0.333,
+        "clean_at_1": 0.222,
+        "clean_at_k": 0.333,
+        "gen_score_mean": 0.389,
+        "mean_overfit_gap": -0.056,
+        "intensional_rate": 0.222,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "completeness_error": 1,
+          "soundness_error": 4,
+          "both_errors": 1,
+          "none": 2,
+          "generalization_error": 1
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.483,
+        "gen_at_1": 0.383,
+        "fit_at_k": 0.7,
+        "gen_at_k": 0.7,
+        "clean_at_1": 0.383,
+        "clean_at_k": 0.7,
+        "gen_score_mean": 0.525,
+        "mean_overfit_gap": -0.042,
+        "intensional_rate": 0.667,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 18,
+          "none": 23,
+          "completeness_error": 4,
+          "soundness_error": 7,
+          "generalization_error": 6,
+          "both_errors": 2
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.017,
+        "gen_at_1": 0.0,
+        "fit_at_k": 0.05,
+        "gen_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "gen_score_mean": 0.192,
+        "mean_overfit_gap": -0.175,
+        "intensional_rate": 0.05,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 43,
+          "both_errors": 11,
+          "generalization_error": 1,
+          "soundness_error": 5
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "gen_score_mean": 0.217,
+        "mean_overfit_gap": -0.217,
+        "intensional_rate": 0.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "both_errors": 5,
+          "illformed_solution": 42,
+          "soundness_error": 11,
+          "completeness_error": 2
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "gen_score_mean": 0.05,
+        "mean_overfit_gap": -0.05,
+        "intensional_rate": 0.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 54,
+          "both_errors": 6
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.033,
+        "gen_at_1": 0.0,
+        "fit_at_k": 0.1,
+        "gen_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "gen_score_mean": 0.117,
+        "mean_overfit_gap": -0.083,
+        "intensional_rate": 0.05,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 45,
+          "both_errors": 7,
+          "soundness_error": 4,
+          "completeness_error": 2,
+          "generalization_error": 2
+        }
+      }
+    },
+    "algorithm": {
+      "builtin": {
+        "n_problems": 3,
+        "parse_rate": 0.556,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "gen_score_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "intensional_rate": 0.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 3,
+          "parse_error": 4,
+          "soundness_error": 2
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "parse_rate": 0.717,
+        "fit_at_1": 0.283,
+        "gen_at_1": 0.217,
+        "fit_at_k": 0.65,
+        "gen_at_k": 0.45,
+        "clean_at_1": 0.217,
+        "clean_at_k": 0.45,
+        "gen_score_mean": 0.358,
+        "mean_overfit_gap": -0.075,
+        "intensional_rate": 0.367,
+        "degenerate_rate": 0.1,
+        "error_breakdown": {
+          "illformed_solution": 15,
+          "parse_error": 17,
+          "none": 13,
+          "completeness_error": 7,
+          "stability_error": 1,
+          "soundness_error": 2,
+          "generalization_error": 4,
+          "both_errors": 1
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "parse_rate": 0.8,
+        "fit_at_1": 0.1,
+        "gen_at_1": 0.067,
+        "fit_at_k": 0.2,
+        "gen_at_k": 0.2,
+        "clean_at_1": 0.067,
+        "clean_at_k": 0.2,
+        "gen_score_mean": 0.4,
+        "mean_overfit_gap": -0.3,
+        "intensional_rate": 0.1,
+        "degenerate_rate": 0.025,
+        "error_breakdown": {
+          "parse_error": 12,
+          "soundness_error": 10,
+          "illformed_solution": 13,
+          "completeness_error": 9,
+          "both_errors": 9,
+          "none": 4,
+          "generalization_error": 2,
+          "stability_error": 1
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "parse_rate": 0.733,
+        "fit_at_1": 0.033,
+        "gen_at_1": 0.017,
+        "fit_at_k": 0.1,
+        "gen_at_k": 0.05,
+        "clean_at_1": 0.017,
+        "clean_at_k": 0.05,
+        "gen_score_mean": 0.317,
+        "mean_overfit_gap": -0.283,
+        "intensional_rate": 0.05,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 15,
+          "soundness_error": 16,
+          "completeness_error": 4,
+          "parse_error": 16,
+          "both_errors": 6,
+          "stability_error": 1,
+          "generalization_error": 1,
+          "none": 1
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "parse_rate": 0.817,
+        "fit_at_1": 0.033,
+        "gen_at_1": 0.017,
+        "fit_at_k": 0.1,
+        "gen_at_k": 0.05,
+        "clean_at_1": 0.017,
+        "clean_at_k": 0.05,
+        "gen_score_mean": 0.258,
+        "mean_overfit_gap": -0.225,
+        "intensional_rate": 0.0,
+        "degenerate_rate": 0.05,
+        "error_breakdown": {
+          "illformed_solution": 23,
+          "parse_error": 11,
+          "soundness_error": 4,
+          "both_errors": 12,
+          "completeness_error": 7,
+          "none": 1,
+          "stability_error": 1,
+          "generalization_error": 1
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "parse_rate": 0.783,
+        "fit_at_1": 0.05,
+        "gen_at_1": 0.0,
+        "fit_at_k": 0.15,
+        "gen_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "gen_score_mean": 0.267,
+        "mean_overfit_gap": -0.217,
+        "intensional_rate": 0.0,
+        "degenerate_rate": 0.15,
+        "error_breakdown": {
+          "completeness_error": 10,
+          "illformed_solution": 12,
+          "both_errors": 15,
+          "parse_error": 13,
+          "soundness_error": 6,
+          "stability_error": 1,
+          "generalization_error": 3
+        }
+      }
+    }
+  }
+}

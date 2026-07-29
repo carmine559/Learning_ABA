@@ -9,4 +9,3 @@ __pycache__/
 *.pyc
 
 # Working experiment outputs (curated snapshots live in experiments/)
-results/
