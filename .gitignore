@@ -8,8 +8,5 @@ venv/
 __pycache__/
 *.pyc
 
-# SLURM job logs
-*.out
-
 # Working experiment outputs (curated snapshots live in experiments/)
 results/
