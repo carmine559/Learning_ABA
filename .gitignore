@@ -7,5 +7,13 @@ venv/
 # Python caches
 __pycache__/
 *.pyc
+.pytest_cache/
 
-# Working experiment outputs (curated snapshots live in experiments/)
+# Working experiment outputs (curated snapshots live in experiments/).
+# The pattern below was missing, so results/ was tracked while every doc
+# described it as ignored.
+results/
+
+# Raw SLURM logs — the ones worth keeping are promoted into experiments/
+cluster/outputs/
+slurm-*.out

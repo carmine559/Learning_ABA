@@ -1,855 +1,308 @@
-# Learning ABA — Can LLMs Replicate Assumption-Based Argumentation Learning?
+# Learning ABA — can an LLM replicate ABA Learning?
 
-> **Research question:** Can a large language model *execute* the
-> ASP-ABAlearnB algorithm — learning an Assumption-Based Argumentation (ABA)
-> framework from background knowledge and examples that **generalises to unseen
-> cases**, rather than memorising the training set?
+> **Research question.** Can a large language model *execute* the ASP-ABAlearnB
+> algorithm — learning an Assumption-Based Argumentation framework from
+> background knowledge and examples that **generalises to unseen cases**,
+> rather than memorising the examples it was shown?
 
-MSc thesis project (University of Bologna). The pipeline provides a provably
-correct symbolic baseline, a **stratified anonymised benchmark** that isolates
-each capability of the algorithm, four prompting strategies of increasing
-guidance, and two extension tasks (gradual ABA semantics, ArgLLMs + RAG).
+MSc thesis project, University of Bologna. The repository provides a symbolic
+reference implementation of the published algorithm, a stratified anonymised
+benchmark that isolates each of its capabilities, four prompting strategies of
+increasing guidance, and a Clingo-verified evaluation.
 
-**The three tasks:**
+**Three tasks.**
 
-1. **Task 1 — Learn** *(the core question)*: LLM vs the ASP-ABAlearnB algorithm
-   (De Angelis, Proietti & Toni, ECAI 2024), on problems **anonymised** so the
-   model cannot lean on world knowledge.
-2. **Task 2 — Gradual semantics**: correct BSAF gradual ABA semantics
-   (Rapberger, Russo, Rago & Toni, KR 2025) vs the argument-tree baseline, over
-   the learned frameworks. See [`gradual/`](gradual/).
-3. **Task 3 — ArgLLMs + RAG** *(planned)*: retrieval-grounded intrinsic-strength
-   attribution (Freedman et al., AAAI 2025). See [`argllm/README.md`](argllm/README.md).
+1. **Learn** *(the core question)* — LLM vs. ASP-ABAlearnB (De Angelis,
+   Proietti & Toni, ECAI 2024), on problems **anonymised** so the model cannot
+   fall back on world knowledge.
+2. **Evaluate gradually** — BSAF gradual ABA semantics (Rapberger, Russo, Rago
+   & Toni, KR 2025) against an argument-tree baseline, over the learned
+   frameworks. See [docs/GRADED.md](docs/GRADED.md).
+3. **Attribute strengths** *(planned, no code yet)* — ArgLLMs + RAG. See
+   [argllm/README.md](argllm/README.md).
+
+---
+
+## Status
+
+The current numbers below come from **prompts v3 + metrics rev. 4**, obtained by
+re-scoring the four committed cluster runs offline with `rescore.py` — the raw
+model answers are unchanged, only the scoring is corrected. Three corrections
+matter enough to state up front:
+
+- The previous well-formedness check rejected the **legal reuse of a background
+  assumption** (Definition 4 / Algorithm 1 line 36), which alone marked 71.8% of
+  all samples ill-formed. Fixed.
+- The output parser silently discarded **~40% of the rules the models actually
+  wrote** — rules filed under `NEW ASSUMPTIONS:`, and draft answer blocks
+  preferred over the final one. Fixed, and every repair is now recorded per
+  sample in `parse_repairs`.
+- Generalisation was scored per example with independent brave queries, which is
+  near-vacuous for a negative on a multi-extension framework. Replaced by a
+  single-extension reading plus a strict determinacy check (see below).
+
+Earlier result sets `00`–`02` in [`experiments/`](experiments/) were produced
+with earlier prompts *and* earlier metrics; they are not comparable with the
+table below. See [docs/EXPERIMENTS.md](docs/EXPERIMENTS.md) for the registry and
+[docs/PROMPTS.md](docs/PROMPTS.md) for the prompt version history.
+
+---
 
 ## Headline results
 
-Four models on 103 anonymised problems (5 capability tiers × 20 + 3 builtin),
-4 prompting modes, 3 samples/problem; symbolic baseline solves 100%. Cells are
-**gen@k / clean@k** — clean = fits *all* training examples AND generalises
-([full sets + manifests](docs/EXPERIMENTS.md)):
+Four models, 103 anonymised problems (5 capability tiers × 20 + 3 built-ins),
+4 prompting modes, k = 3 samples per problem. Cells are **clean@k** — the
+fraction of problems where at least one of the 3 attempts produced a legal,
+stable, fitting, generalising, non-degenerate solution.
 
 | Model | direct | cot | guided | algorithm |
 | --- | --- | --- | --- | --- |
-| Qwen2.5-3B | 5% / 1% | 4% / 1% | 15% / 6% | 34% / 13% |
-| Qwen2.5-7B | 45% / 31% | 32% / 13% | 46% / 13% | 35% / 4% |
-| Mistral-7B | 37% / 14% | 40% / 26% | **58%** / 13% | 48% / 10% |
-| Qwen2.5-14B | 39% / 17% | 63% / 32% | 53% / 22% | **68% / 42%** |
+| Qwen2.5-3B | 1.9% | 0.0% | 0.0% | 0.0% |
+| Mistral-7B | 5.8% | 3.9% | 5.8% | 3.9% |
+| Qwen2.5-7B | 40.8% | 17.5% | 10.7% | 11.7% |
+| **Qwen2.5-14B** | **56.3%** | 30.1% | 7.8% | 21.4% |
 
-Two findings stand out
-([set 02 manifest](experiments/02_bench_prompts_v2/MANIFEST.md)):
+95% Wilson intervals are in each `summary.json`; the best cell is
+56.3% [46.7, 65.5], so differences smaller than about ten points are not
+resolved by n = 103.
 
-1. **Executing the published algorithm scales with model size** — at ≤7B the
-   `algorithm` mode is mediocre, at 14B it becomes the best configuration.
-2. **The non-monotonic core (Assumption Introduction, tier t2) emerges with
-   scale**: 0% clean solutions at ≤7B (models write the overgeneral rule and
-   omit the exception guard), 40% clean at 14B.
+**The reference, on the same footing.** ASP-ABAlearnB solves 100% of these
+problems when it sees every example — but that is a different task from the one
+the models face. Given only the training split and scored on the held-out
+examples exactly like an LLM, the symbolic algorithm reaches **53.8%**. It is a
+ceiling, not a perfect score, and the gap it leaves is mostly the same gap the
+models face.
 
-An earlier single-model run under v1 prompts
-([set 01](experiments/01_bench_prompts_v1/MANIFEST.md)) additionally exposed a
-**template-copying artefact** (11.3% of guided samples copied instruction schema
-names instead of problem symbols); the v2 placeholder-neutralised prompts
-**eliminate it completely** (0.0% across all 16 model×mode cells) — measured
-ablation in [docs/PROMPTS.md](docs/PROMPTS.md).
+**Three findings.**
 
-## Repository map
-
-| Path | Content |
-| --- | --- |
-| [`src/`](src/) | shared core + Task 1 (types, Clingo validation, symbolic solver, anonymisation, prompts, evaluation) |
-| [`gradual/`](gradual/) | Task 2 — BSAF gradual semantics, BAF baseline, random-ABAF generator |
-| [`argllm/`](argllm/) | Task 3 — design spec (planned) |
-| [`extras/`](extras/) | reporting: framework export, explanations, figures |
-| [`cluster/`](cluster/) | SLURM scripts for the DISI GPU cluster ([guide](cluster/README.md)) |
-| [`experiments/`](experiments/) | **curated, committed result sets** — one folder + `MANIFEST.md` per run ([registry](docs/EXPERIMENTS.md)) |
-| [`docs/`](docs/) | [experiment registry](docs/EXPERIMENTS.md) · [prompt design & version history](docs/PROMPTS.md) |
-| `results/` | gitignored working directory (`main.py` output; promoted runs move to `experiments/`) |
+1. **More guidance does not help — it hurts.** `direct` is the best mode for
+   every model, and `guided` — which hands over the Rote-Learning ground facts —
+   is the worst for both Qwen models. Being shown the ground facts appears to
+   anchor the model into restating them instead of generalising them.
+2. **Domain size is the wall, not defeasibility.** Per tier for Qwen2.5-14B
+   (`direct`): `t3_noise` 80%, `t2_defeas` 70%, `t5_twopath` 70%, `t1_mono` 55%,
+   but `t4_domain` — the same structure over 12 constants instead of 6 — **5%**.
+3. **Executing the published algorithm scales with size but stays hard.**
+   `algorithm` mode goes 0% → 3.9% → 11.7% → 21.4% across 3B → 14B, and its
+   solutions are the least intensional of any mode (47% at 14B, vs 100% for
+   `direct`): models handed the full algorithm fall back on ground facts.
 
 ---
 
 ## What is ABA Learning?
 
-An **ABA framework** `<R, A, ->` consists of inference rules, defeasible
-assumptions, and a contrary mapping. *Learning* an ABA framework means finding
-new rules and assumptions such that:
+An **ABA framework** ⟨R, A, ‾⟩ is a set of inference rules, a set of defeasible
+assumptions, and a mapping from each assumption to its contrary. *Learning* one
+means adding rules and assumptions so that the result is satisfiable and admits
+**one stable extension Δ** in which every positive example is the claim of an
+accepted argument and no negative example is. Both conditions refer to the *same*
+Δ: a negative example may still be accepted in some other extension.
 
-1. Every positive example `e ∈ E+` is **bravely entailed** (derivable in at least one stable extension).
-2. No negative example `e ∈ E-` is entailed.
-3. New rule heads use only the specified **learnable predicates**.
-
-**Classic example — Nixon Diamond:**
+New rule heads must be either a **learnable** predicate from T or an entirely
+new predicate. A solution is **intensional** when the new rules are non-ground
+schemata — no `X = constant`, no bare ground facts.
 
 ```prolog
-% Background
+% Background — the Nixon Diamond
 quaker(a). quaker(b). quaker(e).
 republican(a). republican(b). republican(d). democrat(c).
 pacifist(X) :- quaker(X), normal_quaker(X).
-% normal_quaker(X) defeated by abnormal_quaker(X)
+normal_quaker(X) defeated_by abnormal_quaker(X)
 
-E+ = {pacifist(a), pacifist(c), pacifist(e)}
+E+ = {pacifist(a), pacifist(c), pacifist(e)}      T = {pacifist, abnormal_quaker}
 E- = {pacifist(b), pacifist(d)}
 
-% Ground-truth solution
+% A solution
 pacifist(X)        :- democrat(X).
 abnormal_quaker(X) :- republican(X), alpha(X).
 c_alpha(X)         :- quaker(X), normal_quaker(X).
-% new assumption: alpha(X) defeated_by c_alpha(X)
+alpha(X) defeated_by c_alpha(X)
 ```
 
-The symbolic **ASP-ABAlearnB** algorithm (De Angelis, Proietti & Toni, ECAI 2024)
-solves this in two phases:
+**ASP-ABAlearnB** solves this in two phases: **RoLe** finds a minimal set of
+ground facts by ASP optimisation, then **Gen** generalises them with *Folding*
+(R2), *Assumption Introduction* (R3) and *Fact Subsumption* (R4), re-checking
+the solution condition after every step. Can an LLM run that loop?
 
-- **RoLe** — finds the minimal set of ground facts via ASP optimisation.
-- **Gen** — generalises those facts through *Folding*, *Assumption Introduction*,
-  and *Fact Subsumption*, producing intensional (variable-based) rules.
+### The four prompting modes
 
-Can an LLM replicate the Gen phase reasoning from a prompt?
+| Mode | What the model receives | What it tests |
+| --- | --- | --- |
+| `direct` | the problem only | raw zero-shot ability |
+| `cot` | step-by-step instructions mirroring RoLe → Folding → AsmIntro → Subsumption | algorithm mimicry from a recipe |
+| `guided` | the problem **plus the RoLe ground facts** (computed on the training split only) | the Gen phase in isolation |
+| `algorithm` | the **full published algorithm** — both phases and R1–R4 — to execute | can it replicate the algorithm? |
+
+All four are **anonymised by default**: every predicate and constant is renamed
+to an abstract symbol (`pacifist(X) :- quaker(X), normal(X)` becomes
+`v(X) :- p(X), w(X)`), so the model must reason from rule *structure* rather
+than recognise `penguins don't fly`. Renaming is a bijection and both the
+symbolic solver and Clingo are purely syntactic, so the anonymised problem is
+isomorphic to the original — only the LLM's behaviour can change, which is
+exactly the effect being measured. Use `--no-anonymize` to keep real names.
 
 ---
 
-## Evaluation Methodology
+## How a sample is scored
 
-### Why raw validity is not enough
+Each stage must pass before the next; the first failure names the `error_type`.
 
-A framework that simply asserts each positive example as a ground fact:
+| Stage | Check |
+| --- | --- |
+| 1. parse | the output yields a framework (an explicit `NONE/NONE` counts as an empty one, not a failure) |
+| 2. well-formed | Definition-1 side conditions: (ii) new-rule heads, (iv) contraries of existing assumptions unchanged, flatness, assumption freshness |
+| 3. stability | the candidate admits at least one stable extension |
+| 4. fit | it is a solution of the **training** problem (one joint check) |
+| 5. generalisation | it is a solution of the **full** problem, train + held-out (one joint check) |
+| 6. non-degenerate | at least one new rule mentions no individual constant |
 
-```prolog
-flies(X) :- X = tweety.
-```
+`X@1` is the mean over the k samples, `X@k` holds if **any** sample passes.
+**`clean@k` is the headline metric**: stages 1–6 all pass at least once.
 
-passes a basic validity check while **learning nothing**. To measure genuine
-learning, every problem is split at the **example level**:
+### Why there is a second generalisation metric
 
-```text
-E+ = {pacifist(a), pacifist(c), pacifist(e)}
-      LLM sees: pacifist(a), pacifist(e)   |   Held out: pacifist(c)
-```
+Brave ABA Learning is permissive by construction. A framework can contain
+mutually attacking assumptions that leave an unseen atom **free** — accepted in
+one stable extension, rejected in another — and brave entailment then scores a
+coin flip as a success. This is not hypothetical: on the paper's own Nixon
+Diamond, the reference solution leaves `pacifist(e)` free once `e` is held out.
 
-The LLM learns from **TRAIN** examples only, then the framework is tested on
-held-out **TEST** examples it never saw. The gap between training fit and
-held-out generalisation (`overfit_gap`) directly measures memorisation.
+So two numbers are reported side by side:
 
-Each problem is attempted **k times** (default: 5) to account for LLM
-stochasticity. The headline metric is **`clean@k`** — success if any of the k
-attempts produces a *legal, stable, fitting, generalising, non-degenerate*
-solution, where "generalising" means the framework **is a Definition-1
-solution of the full problem** (train + held-out examples, one common stable
-extension). Precise definitions of every metric: [docs/EXPERIMENTS.md](docs/EXPERIMENTS.md).
+- **`gen@k`** — some extension consistent with the whole problem gets the
+  held-out examples right. Faithful to Definition 1.
+- **`det@k`** — **every** extension consistent with the *training* examples
+  gets the held-out ones right. The framework actually predicts them.
+
+`gen@k − det@k` is how much of the apparent generalisation is free choice rather
+than learning. On the current synthetic tiers the gap is small (one problem for
+Qwen2.5-14B), because their assumptions can only be defeated by fixed background
+facts; the classical problems are where the pathology appears.
+
+Full definitions: [docs/EXPERIMENTS.md](docs/EXPERIMENTS.md).
 
 ---
 
 ## Installation
 
-Requires Python 3.10+ and Clingo 5.6+.
+Python 3.10+ and Clingo 5.6+.
 
-```powershell
-# Recommended: install Clingo via conda for reliability
+```bash
 conda create -n aba_llm python=3.11 -y
 conda activate aba_llm
 conda install -c potassco clingo -y
-
-# Core + optional backends (see requirements.txt for the grouped list)
 pip install -r requirements.txt
 ```
 
-For the **local GPU backend** (`--backend local`, used on the cluster) install a
-CUDA-matched torch first — see [`cluster/setup_env.sh`](cluster/setup_env.sh).
+For the local GPU backend, install a CUDA-matched torch first — see
+[`cluster/setup_env.sh`](cluster/setup_env.sh).
 
-**Verify:**
+Verify:
 
 ```python
-import clingo; print("Clingo:", clingo.__version__)
-from src.aba_dataset import make_nixon_diamond
+from src.aba_dataset  import make_nixon_diamond
 from src.aba_algorithm import solve_aba_learning
-p, _ = make_nixon_diamond()
-sol, _ = solve_aba_learning(p)
-print("Symbolic solver OK — intensional:", sol.is_intensional())
-```
-
----
-
-## Quick Start
-
-**No API key (mock backend):**
-
-```powershell
-python main.py --backend mock --modes direct cot guided --n-samples 3 --output results\
-```
-
-**Groq (free, recommended):**
-
-```powershell
-$env:GROQ_API_KEY = "gsk_your_key_here"
-
-python main.py `
-  --backend groq --model llama3-70b `
-  --modes direct cot guided algorithm `
-  --n-samples 5 `
-  --output results\my_run
-```
-
-**HuggingFace Inference API (free):**
-
-```powershell
-$env:HF_TOKEN = "hf_your_token_here"
-python main.py --backend hf_api --model qwen2.5-7b --modes guided --n-samples 5
-```
-
-**Symbolic baseline only:**
-
-```powershell
-python main.py --symbolic-only --output results\
-```
-
----
-
-## Prompting Modes
-
-Modes are ordered by **increasing guidance**, from raw zero-shot to handing the
-LLM the published algorithm to execute:
-
-| Mode | What the LLM receives | Tests |
-| --- | --- | --- |
-| `direct` | The problem only | Raw zero-shot capability |
-| `cot` | Step-by-step instructions mirroring RoLe → Folding → AsmIntro → Subsumption | Algorithm mimicry |
-| `guided` | The problem **plus the RoLe ground facts** (computed on TRAIN only) | Generalisation in isolation |
-| `algorithm` | The **full ASP-ABAlearnB algorithm** — RoLe + Gen and the four transformation rules R1–R4 (De Angelis et al. 2024) — to **execute** | Can the LLM *replicate the algorithm*? |
-
-`algorithm` is the central test of **Task 1**: the model is given the actual
-published algorithm (not a paraphrase) and asked to run it. `guided` isolates the
-hard part — replacing `X = const` with intensional rules and introducing
-assumptions for exceptions — by handing over the RoLe output. All four modes run
-by default.
-
-These Task-1 runs are **anonymised by default** (see below), so the LLM must
-reason from rule *structure* rather than from world knowledge about the predicates.
-
----
-
-## Anonymised Problems (controlling for world knowledge)
-
-An LLM carries vast world knowledge. When a problem mentions `flies`, `penguin`,
-or `quaker`, the model can **hallucinate** facts it "knows" (penguins don't fly)
-that were never stated in the ABA framework, or **leak external knowledge** that
-infects the derivation instead of reasoning purely from the supplied rules. Both
-contaminate the experiment: you can no longer tell whether the LLM *reasoned* or
-merely *recognised*.
-
-Anonymisation removes the semantic anchors. Every predicate and constant is
-consistently renamed to an abstract symbol, so the model has nothing to fall back
-on but the **structure** of the rules:
-
-```text
-ORIGINAL                                ANONYMISED  (default)
-pacifist(X) :- quaker(X), normal(X).    v(X) :- p(X), w(X).
-quaker(tweety).  republican(tweety).    p(a).  r(a).
-E+ = pacifist(tweety)                    E+ = v(a)
-```
-
-**This is ON by default** (it is core to Task 1). Use `--no-anonymize` to keep the
-original names — e.g. for human inspection, or for Task 3 / RAG, where retrieval
-needs real predicate names.
-
-```powershell
-python main.py --backend google_ai --modes algorithm guided   # anonymised (default)
-python main.py --anonymize-scheme indexed                      # p0,p1 / c0,c1
-python main.py --no-anonymize --graded                         # keep real names
-```
-
-**Why it is sound.** Renaming is a bijection on symbols, and both ASP-ABAlearnB
-and Clingo are purely syntactic — so the anonymised problem is *isomorphic* to the
-original. The symbolic solver succeeds on exactly the same problems and the graded
-strengths are identical (e.g. `pacifist(a)=0.333` becomes `v(a)=0.333`). **Only the
-LLM's behaviour can change** — which is precisely the effect being measured. The
-module's `verify_invariance()` asserts this.
-
-The per-problem renaming is written to `name_maps.json`, and
-`aba_anonymize.deanonymize_framework(fw, name_map)` translates a learned framework
-back to the original vocabulary for human-readable reporting.
-
-> Note: anonymisation composes with every prompting mode; the LLM never sees a
-> real predicate name. Use `--no-anonymize` only when you deliberately want the
-> model to use world knowledge (Task 3 / RAG) or for human-readable inspection.
-
----
-
-## LLM Backends
-
-| Backend | Key env var | Default model | Install |
-| --- | --- | --- | --- |
-| `groq` | `GROQ_API_KEY` | `llama-3.3-70b-versatile` | `pip install groq` |
-| `hf_api` | `HF_TOKEN` | `Qwen/Qwen2.5-7B-Instruct` | `pip install huggingface_hub` |
-| `google_ai` | `GOOGLE_API_KEY` | `gemini-2.5-flash` | `pip install google-genai` |
-| `mock` | — | hard-coded responses | — |
-
-### Google AI Studio setup
-
-1. Go to [aistudio.google.com/apikey](https://aistudio.google.com/apikey) and create a key.
-2. Set the environment variable:
-
-   ```powershell
-   $env:GOOGLE_API_KEY = "AIza..."
-   ```
-
-3. Run:
-
-   ```powershell
-   python main.py --backend google_ai --modes cot guided --n-samples 5
-   ```
-
-### Which Gemini model to use
-
-| Alias | Model ID | Free quota | Best for |
-| --- | --- | --- | --- |
-| `gemini-2.5-flash` (default) | `gemini-2.5-flash` | 500 req/day, 10 RPM | **Recommended** — best reasoning/speed balance |
-| `gemini-3.1-flash-lite` | `gemini-3.1-flash-lite` | 1500 req/day, 15 RPM | High-volume runs, many synthetic problems |
-| `gemini-3.0-flash` | `gemini-3.0-flash` | 50 req/day, 5 RPM | Maximum reasoning quality, small runs only |
-
-**Recommendation for this task:** `gemini-3.1-flash-lite`.
-The ABA learning problem (folding + assumption introduction) is exactly the kind of
-multi-step logical reasoning where Gemini 2.5's built-in chain-of-thought helps most.
-The thinking budget is 8 192 tokens and does not count against `--max-tokens`.
-
-```powershell
-# Standard run
-python main.py --backend google_ai --model gemini-2.5-flash --modes guided cot --n-samples 5
-
-# With thinking mode (better accuracy, higher latency)
-python main.py --backend google_ai --model gemini-2.5-flash --thinking --modes cot guided
-
-# High-volume with the more permissive model
-python main.py --backend google_ai --model gemini-3.1-flash --n-synthetic 50 --n-samples 5
-
-# Slow down requests to stay under 10 RPM
-python main.py --backend google_ai --min-interval 7 --modes guided --n-samples 5
-```
-
-### Groq model aliases
-
-`llama3-70b`, `llama3-8b`, `gemma2-9b`, `qwen`.
-
-### HuggingFace model aliases
-
-`qwen2.5-7b`, `llama3-8b`, `mistral-7b`, `phi3-mini`, `gemma2-9b`.
-
----
-
-## Key Metrics
-
-| Metric | Meaning |
-| --- | --- |
-| `clean@k` | Any of k samples yields a legal, stable, fitting, generalising, non-degenerate solution — **headline metric** |
-| `gen@k` | Any of k samples is a Definition-1 solution of the FULL problem (train + held-out, one common extension) |
-| `fit@1` / `fit@k` | Solution of the TRAIN problem (mean / any-of-k) |
-| `overfit_gap` | fit(0/1) − per-example held-out score — memorisation indicator (diagnostic) |
-| `intensional_rate` | Fraction of fit solutions with no constants in new rules |
-| `degenerate_rate` | Fraction of fit solutions that only memorised ground facts |
-| `parse_rate` | Fraction of samples the parser could read |
-
-**Error types per sample** (first failing stage): `parse_error`,
-`illformed_solution` (Definition-1 side conditions (ii)/(iv)/flatness violated),
-`stability_error`, `completeness_error`, `soundness_error`, `both_errors`,
-`generalization_error`, `degenerate`, `none` (fully clean).
-Full precise definitions: [docs/EXPERIMENTS.md](docs/EXPERIMENTS.md).
-
----
-
-## Architecture
-
-The project is organised around **three sequential tasks** that compose into one
-pipeline:
-
-```text
-TASK 1 (Learn)              TASK 3 (Attribute)          TASK 2 (Evaluate)
-BK + E± + ALGORITHM   ──►   intrinsic strengths τ  ──►   σ ∈ [0,1] graded
-  (anonymised)              for the assumptions           acceptability
-  → learned ABA fw          (LLM + RAG, grounded)         (BSAF semantics)
-```
-
-```text
-src/                        SHARED CORE + TASK 1 (can an LLM replicate ABA Learning?)
-  aba_types.py              Rule, ABAFramework, LearningProblem            [core]
-  aba_validator.py          Clingo API — brave entailment, RoLe phase      [core]
-  aba_dataset.py            Benchmarks + synthetic generators              [core]
-  aba_model.py              Backends: groq, hf_api, google_ai, mock        [core]
-  aba_algorithm.py          Symbolic ASP-ABAlearnB: RoLe + Gen (reference) [task 1]
-  aba_anonymize.py          Symbol anonymisation (world-knowledge control) [task 1]
-  aba_prompts.py            Prompt modes + markdown-robust output parser   [task 1]
-  aba_evaluation.py         k-sampling, fit/gen metrics                    [task 1]
-  aba_generalization.py     Train/test split, gen scoring, degeneracy      [task 1]
-
-gradual/                    TASK 2 — gradual ABA semantics (Rapberger et al. 2025)
-  aba_bsaf.py               CORRECT BSAF gradual semantics (fixpoint)
-  aba_graded.py             BAF baseline — argument-tree DF-QuAD
-  aba_generate.py           Random ABAF generator + convergence experiment
-
-argllm/                     TASK 3 — ArgLLMs + RAG (Freedman et al. 2025) — PLANNED
-  (see argllm/README.md)
-
-extras/                     Reporting utilities (Task 1 output)
-  aba_export.py             Dump frameworks to JSONL / Markdown / CSV
-  aba_explain.py            Mechanism tags + per-sample narratives
-  aba_visualization.py      Publication figures (PDF)
-
-main.py                     Single-pipeline CLI orchestration
-```
-
-See [Graded Semantics](#graded-semantics) for Task 2 and `argllm/README.md`
-for the Task 3 design.
-
----
-
-## Graded Semantics
-
-The graded layer adds a **continuous reasoning layer** on top of any learned ABA
-framework. Where Clingo returns a binary verdict (bravely entailed or not), it
-computes a **strength score σ ∈ [0, 1]**. Two semantics are provided, mirroring
-the comparison in Rapberger, Russo, Rago & Toni, *On Gradual Semantics for
-Assumption-Based Argumentation* (KR 2025):
-
-| Module | Semantics | Nodes | Role |
-| --- | --- | --- | --- |
-| `aba_bsaf.py` | **BSAF gradual ABA** (the paper's contribution) | assumptions | **headline / correct** |
-| `aba_graded.py` | **BAF baseline** (argument-tree DF-QuAD) | arguments | comparison baseline |
-
-**Why two?** The paper shows the *assumption-based* BSAF semantics is more
-principled and converges more reliably than the *argument-based* BAF instantiation.
-`aba_bsaf.py` implements the BSAF semantics as an **iterative strength-evolution
-fixpoint** (Definition 4.17), which resolves cyclic attack structures (e.g.
-`normal_quaker ↔ alpha` in Nixon Diamond) exactly — giving `pacifist(a) = 1/3`.
-The older `aba_graded.py` builds a per-query argument tree with a depth cap; it is
-the paper's baseline and only approximates even that (it reports `0.375` for the
-same query). `--graded` runs **both side by side** so the difference is visible.
-
-### Design principle
-
-The two readings coexist without contradiction:
-
-```text
-Learned ABA framework  ──────────────────────────────────────────────
-        │                                                             │
-        ▼  (structure is fixed and symbolic)                         ▼
-  aba_validator.py                                          aba_bsaf.py / aba_graded.py
-  Clingo brave entailment                                   gradual semantics
-  binary: True / False                                      continuous: σ ∈ [0, 1]
-```
-
-The LLM's uncertainty enters **only** through the base scores of the ABA
-assumptions. The argument structure (rules, attacks, support) is always taken
-from the symbolic framework unchanged.
-
-### The BSAF semantics (correct, headline)
-
-`aba_bsaf.py` follows the paper's 5-step pipeline (Figure 1):
-
-1. **Abstraction** — build the BSAF `F_D = (A, R_D, S_D)`: nodes are the ground
-   assumptions; `R_D = {(E,a) : E ⊢ contrary(a)}` are *set-attacks*; `S_D` are
-   *set-supports* (non-empty only for non-flat frameworks).
-2. **Set strength** — each attacking/supporting set `E` is scored by a
-   **set-aggregation** `ζ` (`ζ_Π` product or `ζ_⊥` min — Prop 4.5).
-3. **Aggregate** — per assumption, an **aggregation** `α` combines attacker and
-   supporter scalars (`α_Π` for DF-QuAD, `α_Σ` for QE).
-4. **Influence** — `s_{t+1}(a) = ι(τ(a), α(...))` (`ι_lin` or `ι_q`).
-5. **Repeat 2–4 to convergence.** `σ(a) = lim_t s(t)_a`.
-
-A claim's strength is read from the assumption strengths via the argument
-base-score `β_Π` and a `σ*` extraction mode (`max` = brave, the default).
-The modular kernel is selected with `--graded-kernel` and the claim reading with
-`--graded-claim-mode`.
-
-### Step 1 — get a framework
-
-`aba_graded.py` consumes any `ABAFramework` object — from the symbolic solver or
-from a successful LLM sample:
-
-```python
-from aba_dataset import make_nixon_diamond
-from aba_algorithm import solve_aba_learning
+from src.aba_generalization import is_intensional_strict
 
 problem, _ = make_nixon_diamond()
-framework, _ = solve_aba_learning(problem)
-domain = problem.get_domain()
+solution, trace = solve_aba_learning(problem)
+print("solved:", trace.success, "intensional:", is_intensional_strict(solution))
+for r in solution.new_rules:
+    print("  ", r.to_prolog())
 ```
 
-### Step 2 — assign base scores to assumptions
+## Quick start
 
-Three sources are available, trading cost for interpretability:
+```bash
+# no API key, no GPU — exercises the whole pipeline
+python main.py --backend mock --benchmark 2 --modes direct --n-samples 1
 
-| Source | How to obtain | When to use |
-| --- | --- | --- |
-| **Uniform** | empty dict (default 0.5) | Quick baseline; no extra calls needed |
-| **Sample frequency** | `assumption_scores_from_samples(fw_list)` | Free when k-sampling already ran; reflects the model's own distribution |
-| **LLM-elicited** | `assumption_scores_from_llm(framework, backend)` | Most informative; one extra LLM call per assumption |
+# the symbolic reference alone
+python main.py --symbolic-only --benchmark 20
 
-```python
-from gradual.aba_graded import (
-    assumption_scores_from_samples,
-    assumption_scores_from_llm,
-)
+# the full benchmark for one model on a GPU (what the cluster jobs run)
+python main.py --backend local --model qwen2.5-7b \
+    --benchmark 20 --modes direct cot guided algorithm \
+    --n-samples 3 --max-tokens 1536 --export --output results/bench_qwen2.5-7b
 
-# Option A — uniform (nothing extra needed, pass {} later)
-scores = {}
-
-# Option B — sample frequency
-# fw_list is your List[ABAFramework] collected from the k LLM samples
-scores = assumption_scores_from_samples(fw_list)
-# e.g. {"normal_quaker": 0.6, "alpha": 0.4}
-
-# Option C — LLM-elicited
-from aba_model import get_backend
-backend = get_backend("groq", model="llama3-70b")
-scores = assumption_scores_from_llm(framework, backend,
-                                    context="Nixon Diamond problem")
+# recompute every metric of a finished run — no LLM calls, no GPU
+python rescore.py results/bench_qwen2.5-7b --benchmark 20
 ```
 
-### Step 3 — compute graded entailment
-
-```python
-from gradual.aba_graded import GradedABA
-
-g = GradedABA(
-    framework=framework,
-    domain=domain,
-    assumption_scores=scores,   # from Step 2; {} → uniform 0.5
-    default_score=0.5,
-    max_depth=8,
-)
-
-strength, tree = g.graded_entailment("pacifist(a)")
-print(f"σ = {strength:.3f}")
-print(tree.to_text())
-```
-
-The explanation tree shows every argument, its base score, the supports and
-attacks that flow into it, and the final DF-QuAD strength at each node:
-
-```text
-pacifist(a)  base=0.00 σ=0.71
-  +support:
-    body_of(pacifist(a))  base=1.00 σ=0.71
-      +support:
-        quaker(a) [fact]  base=1.00 σ=1.00
-        normal_quaker(a) [asm]  base=0.60 σ=0.54
-          -attack:
-            abnormal_quaker(a)  base=0.00 σ=0.46
-```
-
-### Step 4 — compare crisp vs. graded across all queries
-
-```python
-from gradual.aba_graded import compare_crisp_vs_graded
-
-reports = compare_crisp_vs_graded(
-    framework, domain,
-    queries=problem.positive + problem.negative,
-    assumption_scores=scores,
-    threshold=0.5,
-)
-
-for r in reports:
-    print(f"{r.query:20s}  crisp={r.crisp_entailed}  "
-          f"graded={r.graded_strength:.3f}  agree={r.agree}")
-```
-
-`agree=True` means the graded reading (strength > 0.5) matches the Clingo binary
-verdict. Disagreements indicate cases where the framework is technically valid but
-the assumptions are scored weakly — useful as a confidence diagnostic.
-
-### Step 5 — contestability (optional robustness check)
-
-Raise or lower one assumption's score and verify that the conclusion moves in the
-expected direction:
-
-```python
-from gradual.aba_graded import contest_base_score
-
-result = contest_base_score(
-    framework, domain,
-    query="pacifist(a)",
-    assumption_pred="normal_quaker",
-    old_scores=scores,
-    new_value=0.9,          # raise the assumption's strength
-)
-
-print(result.intervention)   # "normal_quaker: 0.60 -> 0.90"
-print(result.original)       # σ before the intervention
-print(result.contested)      # σ after
-print(result.direction_ok)   # True if raising a pro-assumption raised the conclusion
-```
-
-`direction_ok=False` flags a non-monotonic response — a sign that the argument
-structure contains a hidden indirect attack worth inspecting.
-
-### Using the BSAF semantics directly
-
-```python
-from gradual.aba_bsaf import GradualABA, compare_crisp_vs_graded_bsaf
-
-g = GradualABA(framework, domain, assumption_scores=scores,
-               kernel="dfquad_prod", claim_mode="max")
-print(g.converged, g.iterations)        # fixpoint convergence info
-print(g.assumption_strengths())          # ground assumption -> σ
-print(g.query_strength("pacifist(a)"))   # claim strength (brave reading)
-
-# crisp vs BSAF graded across queries (same shape as the baseline's function)
-for r in compare_crisp_vs_graded_bsaf(framework, domain,
-                                      queries=problem.positive + problem.negative,
-                                      assumption_scores=scores):
-    print(r.query, r.crisp_entailed, r.graded_strength, r.agree, r.converged)
-```
-
-### Random ABAF generation + convergence experiment
-
-`gradual/aba_generate.py` reproduces the benchmark-generation procedure of
-Lehtonen et al. (IJCAI 2024) and the BSAF convergence experiment of the KR-2025
-paper (its Figure 3).
-
-```python
-from gradual.aba_generate import generate_random_abaf, convergence_experiment
-
-# one random (possibly non-flat) quantitative ABAF
-q = generate_random_abaf(n_sentences=40, assumption_ratio=0.4,
-                         nonflat_coef=0.1, cycle_prob=0.05,
-                         base_score_init="random", seed=1)
-# q.framework, q.base_scores, q.flat, q.meta
-
-# convergence rate + avg steps per (kernel, base-score init)
-convergence_experiment(n_frameworks=40, n_sentences=30, nonflat_coef=0.1,
-                       cycle_prob=0.08, seed=100)
-```
-
-Generator parameters (faithful to `cycle_bengen_asp.py`): `n_sentences`,
-`n_assumptions` / `assumption_ratio`, `n_rules_per_head`, `size_of_bodies`,
-`cycle_prob`, `nonflat_coef` (0 = flat), `base_score_init` (`constant` | `random`).
-As in the paper, **DF-QuAD converges most reliably** and Min-based set
-aggregation degrades on larger or cyclic instances.
+Every flag: [docs/CLI.md](docs/CLI.md). On the DISI SLURM cluster,
+`bash cluster/submit_benchmarks.sh` chains one job per model —
+[cluster/README.md](cluster/README.md).
 
 ---
 
-## Command-Line Reference
+## Repository map
 
-### Dataset
-
-| Argument | Default | Description |
-| --- | --- | --- |
-| `--n-synthetic N` | `0` | Generate N random single-path synthetic problems |
-| `--n-complex N` | `0` | Generate N two-path complex synthetic problems (see below) |
-| `--anonymize` / `--no-anonymize` | **on** | Rename predicates/constants to abstract symbols (see [Anonymised Problems](#anonymised-problems-controlling-for-world-knowledge)); on by default, `--no-anonymize` keeps real names |
-| `--anonymize-scheme {letters,indexed}` | `letters` | Abstract naming scheme: `p,q,…/a,b,…` or `p0,p1,…/c0,c1,…` |
-
-**`--n-synthetic`** generates single-path problems: one background predicate, one
-assumption, one contrary rule. Fast to generate; useful for aggregate statistics.
-The graded reading gives binary σ (0 or 1) because there is exactly one argument
-path per query.
-
-**`--n-complex`** generates two-path problems: two independent background predicates
-each leading to the same target predicate, each gated by its own assumption. This
-forces the symbolic solver and the LLM alike to discover **two** defeasible rules
-for the same head. The richer QBAF produces genuinely intermediate σ values — constants
-reachable via both paths score higher than those reachable via only one:
-
-```text
-target(c6)  — reachable via prop_a AND prop_b:  sigma=0.750  crisp=True
-target(c2)  — reachable via prop_a only:        sigma=0.500  crisp=True
-target(c3)  — exception (prop_a defeated):      sigma=0.000  crisp=False
-```
-
-### LLM
-
-| Argument | Default | Description |
-| --- | --- | --- |
-| `--backend BACKEND` | `mock` | LLM backend: `groq`, `hf_api`, `google_ai`, or `mock` |
-| `--model MODEL` | backend default | Model name or alias (see [LLM Backends](#llm-backends)) |
-| `--thinking` | off | Gemini thinking mode (google_ai, gemini-2.5-*) |
-| `--modes MODE …` | `direct cot guided algorithm` | Prompt modes: `direct`, `cot`, `guided`, `algorithm` |
-| `--n-samples N` | `5` | LLM samples per problem (controls pass@k) |
-| `--temperature F` | `0.7` | Sampling temperature |
-| `--max-tokens N` | `1024` | Maximum tokens per LLM response |
-| `--min-interval F` | `0.0` | Minimum seconds between requests (rate-limit throttle; try `2`–`4`) |
-
-### Run modes
-
-| Argument | Description |
+| Path | Content |
 | --- | --- |
-| `--symbolic-only` | Run only the ASP-ABAlearnB baseline; skip all LLM calls |
-| `--verbose` | Print per-step trace for the symbolic solver |
+| [`src/`](src/) | shared core + Task 1 — types, Clingo validation, symbolic solver, anonymisation, prompts, evaluation |
+| [`gradual/`](gradual/) | Task 2 — BSAF gradual semantics, BAF baseline, random-ABAF generator |
+| [`argllm/`](argllm/) | Task 3 — design spec only, no code yet |
+| [`extras/`](extras/) | reporting — framework export, explanations, figures |
+| [`cluster/`](cluster/) | SLURM scripts for the DISI GPU cluster |
+| [`experiments/`](experiments/) | curated, committed result sets, one `MANIFEST.md` each |
+| [`docs/`](docs/) | [CLI](docs/CLI.md) · [experiments](docs/EXPERIMENTS.md) · [prompts](docs/PROMPTS.md) · [graded semantics](docs/GRADED.md) |
+| `main.py` | the single pipeline entry point |
+| `rescore.py` | recompute metrics from stored raw answers |
+| `results/` | scratch output directory (gitignored); finished runs are promoted into `experiments/` |
 
-### Graded semantics
-
-| Argument | Default | Description |
-| --- | --- | --- |
-| `--graded` | off | Run graded analysis (BSAF headline + BAF baseline, side-by-side) |
-| `--graded-source SOURCE` | `uniform` | Base score source: `uniform`, `sample_freq`, or `llm_elicited` |
-| `--graded-kernel KERNEL` | `dfquad_prod` | BSAF modular kernel: `dfquad_prod`, `dfquad_min`, `qe_prod`, `qe_min` |
-| `--graded-claim-mode MODE` | `max` | Claim reading: `max` (brave), `min`, `avg`, `noisy_or` (accrual) |
-
-| `--graded-source` value | Cost | How scores are obtained |
-| --- | --- | --- |
-| `uniform` | free | All assumptions fixed at 0.5 — ArgLLMs baseline |
-| `sample_freq` | free (reuses k-samples) | Fraction of LLM samples that include each assumption |
-| `llm_elicited` | 1 extra call/assumption | Dedicated LLM prompt; uses Clingo to pre-compute the exception base rate |
-
-| `--graded-kernel` value | Set-agg | Agg + Influence | Note |
-| --- | --- | --- | --- |
-| `dfquad_prod` | product | DF-QuAD | Most robust (>90% convergence); the default |
-| `dfquad_min` | min | DF-QuAD | Weakest-link set aggregation |
-| `qe_prod` | product | Quadratic Energy | Fastest under product |
-| `qe_min` | min | Quadratic Energy | Degrades on large/cyclic instances |
-
-### Output
-
-| Argument | Default | Description |
-| --- | --- | --- |
-| `--output PATH` | `./results` | Directory for all output files and figures |
-| `--export` | off | Export all frameworks to `frameworks.jsonl`, `frameworks.md`, `defeasibility.csv` |
-
----
-
-## Benchmark Problems
-
-| Problem | Description | Difficulty |
-| --- | --- | --- |
-| `nixon_diamond` | Pacifists and republicans — requires Assumption Introduction | High |
-| `flies` | Tweety flies but penguins don't | Low |
-| `tax_law` | Employed vs. self-employed tax rules | Medium |
-
-Add synthetic problems for statistical power:
-
-```powershell
-# Single-path (fast; binary sigma values)
-python main.py --backend groq --model llama3-70b --n-synthetic 50 --modes guided --n-samples 5
-
-# Two-path (richer argument structure; intermediate sigma values)
-python main.py --backend groq --model llama3-70b --n-complex 10 --modes guided --graded
-```
-
----
-
-## Exporting Frameworks
-
-Pass `--export` to dump every learned framework — symbolic ground truth and
-all LLM samples — to three human-readable files:
-
-```powershell
-python main.py --backend groq --model llama3-70b --modes guided --export
-python main.py --symbolic-only --export          # symbolic solutions only
-python main.py --graded --export                 # include DF-QuAD scores
-```
-
-### What each file contains
-
-| File | Format | Content |
-| --- | --- | --- |
-| `frameworks.jsonl` | JSONL | One record per framework; machine-readable, re-loadable |
-| `frameworks.md` | Markdown | Human catalogue grouped by problem; for reading and appendices |
-| `defeasibility.csv` | CSV | Flat table: per (problem, source, sample) defeasibility flags |
-
-### What each record includes
-
-Each record is enriched with four explainability layers beyond the raw Prolog:
-
-1. **Natural-language rules** — each rule rendered as `"head holds if body."` using `Rule.to_text()`
-2. **Mechanism tags** — each rule labelled as one of:
-   - `ground_fact` — memorised a specific constant (bad)
-   - `assumption_guarded` — uses a defeasible assumption (the right structure)
-   - `contrary_rule` — defines when an assumption is defeated
-   - `intensional_copy` — conditions on background predicates only, no constants (generalises to unseen)
-   - `mixed` — combination of the above
-3. **Analysis narrative** — a one-paragraph natural-language account of how the model generalised, generated by `aba_explain.build_narrative()`
-4. **Graded entailment table** — per-query `(crisp, σ, agree)` triplets from DF-QuAD (only when `--graded` is also given)
-
-### Example Markdown output
-
-````markdown
-**llama-3.3-70b** / guided / sample 2 — `DEFEASIBLE`  (valid, generalises)
-
-```prolog
-pacifist(X) :- quaker(X), normal_quaker(X).  % [assumption_guarded]
-abnormal_quaker(X) :- republican(X), alpha(X).  % [assumption_guarded]
-% assumption: alpha(X) defeated_by c_alpha(X)
-```
-
-*Plain language:*
-
-- pacifist(X) holds if quaker(X) and normal_quaker(X).
-- abnormal_quaker(X) holds if republican(X) and alpha(X).
-
-> On 'nixon_diamond', the model produced a framework that fits the training
-> examples and correctly classifies ALL held-out examples (100%). It introduced
-> 2 new rule(s): 2 assumption guarded. It also introduced the assumption(s)
-> alpha(X) to make a rule defeasible, capturing exceptions.
-
-| Query           | Crisp | σ     | Agree |
-|-----------------|-------|-------|-------|
-| `pacifist(a)`   | True  | 0.714 | yes   |
-| `pacifist(b)`   | False | 0.286 | yes   |
-````
-
----
-
-## Output Structure
-
-`main.py` writes into `--output` (default `./results/`, **gitignored** — a
-working directory). Runs worth keeping are *promoted* to
-[`experiments/`](experiments/) with a `MANIFEST.md`; see the
-[experiment registry](docs/EXPERIMENTS.md).
+Inside `src/`:
 
 ```text
-results/<run>/
-├── summary.json              # Metrics per mode + symbolic baseline + per-tier (by_tier)
-├── results_<mode>.jsonl      # Per-sample records: raw LLM output, error class, metrics
-├── explanations.md           # Per-problem narrative of how the model generalised
-├── frameworks.{jsonl,md}     # Every learned framework, mechanism-tagged   (--export)
-├── defeasibility.csv         # Flat per-sample table for stats             (--export)
-├── graded_results.json       # BSAF vs BAF graded semantics                (--graded)
-├── name_maps.json            # Anonymisation maps (de-anonymise for reading)
-└── figures/                  # validity, error breakdown, heatmap, complexity (PDF)
-```
-
-Quick analysis:
-
-```python
-import json
-path = "experiments/01_bench_prompts_v1/bench_qwen2.5-7b/results_guided.jsonl"
-samples = [json.loads(l) for l in open(path)]
-clean = [s for s in samples if s["error_type"] == "none"]
-print(f"{len(clean)}/{len(samples)} samples fully solve the learning problem")
+aba_types.py           Rule, ABAFramework, LearningProblem
+aba_validator.py       Clingo — brave entailment, RoLe, witness extensions, determinacy
+aba_dataset.py         built-in benchmarks + stratified synthetic generators
+aba_model.py           backends: local (GPU), groq, hf_api, google_ai, mock
+aba_algorithm.py       symbolic ASP-ABAlearnB: RoLe + Gen  (the reference)
+aba_anonymize.py       symbol anonymisation (world-knowledge control)
+aba_prompts.py         the four prompt modes + the output parser
+aba_evaluation.py      k-sampling, scoring, aggregation
+aba_generalization.py  train/test split, generalisation and determinacy metrics
 ```
 
 ---
 
 ## Troubleshooting
 
-**All results are `parse_error`** — the model is not following the output format.
-Try a stronger model (`--model llama3-70b` / `--backend google_ai`) or a more
-guided mode (`--modes guided` or `--modes algorithm`).
+**Everything is `parse_error`** — the model is not producing the two sections at
+all. Check `parse_repairs` in `results_<mode>.jsonl` first; if it is empty the
+output has no recognisable structure. Try a larger model or a more guided mode.
 
-**Groq rate limit** — use `--min-interval 3` to space requests, or switch to
-`--model llama3-8b`. Per-day caps cannot be worked around by waiting; switch to
-`--backend hf_api` instead.
+**Everything is `illformed_solution`** — read the `wellformed_violations` field.
+`condition (iv) violated` means the model redefined the contrary of an existing
+background assumption, which is a real Definition-1 violation, not a formatting
+slip.
 
-**`gen@1` is low but `degenerate_rate` is high** — the model is memorising.
-This is a result, not a bug; the `overfit_gap` and `degenerate_rate` quantify it.
+**`gen@k` is much higher than `det@k`** — the framework leaves held-out atoms
+free; it is a legal solution but it is not predicting anything. Not a bug, a
+result.
 
-**Clingo not found** — install via `conda install -c potassco clingo` or
+**Rate limits (Groq / Gemini)** — `--min-interval 3` spaces requests. Per-day
+caps cannot be waited out; switch model or backend.
+
+**Clingo not found** — `conda install -c potassco clingo`, or
 `pip install clingo --no-cache-dir`.
 
 ---
 
-## Reference
+## References
 
 De Angelis, E., Proietti, M., & Toni, F. (2024). *Learning Brave
 Assumption-Based Argumentation Frameworks via ASP.* ECAI 2024, 3445–3452.
 
-Rago, A., Toni, F., Aurisicchio, M., & Baroni, P. (2016). *Discontinuity-Free
-Decision Support with Quantitative Argumentation Debates.* KR 2016.
+Rapberger, A., Russo, F., Rago, A., & Toni, F. (2025). *On Gradual Semantics for
+Assumption-Based Argumentation.* KR 2025, 512–522.
 
 Freedman, G., Rago, A., & Toni, F. (2025). *ArgLLM: Harnessing the Power of
 Large Language Models for Argumentation.* AAAI 2025.
 
-Rapberger, A., Russo, F., Rago, A., & Toni, F. (2025). *On Gradual Semantics for
-Assumption-Based Argumentation.* KR 2025, 512–522. (BSAF gradual semantics;
-code: <https://github.com/briziorusso/GradualABA>.)
+Rago, A., Toni, F., Aurisicchio, M., & Baroni, P. (2016). *Discontinuity-Free
+Decision Support with Quantitative Argumentation Debates.* KR 2016.
 
 Lehtonen, T., Rapberger, A., Toni, F., Ulbricht, M., & Wallner, J. P. (2024).
 *Instantiations and Computational Aspects of Non-Flat Assumption-Based
-Argumentation.* IJCAI 2024, 3457–3465. (Random ABAF benchmark generator.)
+Argumentation.* IJCAI 2024, 3457–3465.

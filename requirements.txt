@@ -7,6 +7,9 @@ matplotlib>=3.8.0        # figures in the report step
 scikit-learn>=1.4.0      # logistic-regression overlay in figures (optional)
 networkx>=3.2.0          # QBAF graph visualisation (optional)
 
+# Tests
+pytest>=8.0.0            # python -m pytest tests -q
+
 # API backends (install only what you use)
 groq>=0.9.0              # --backend groq      (set GROQ_API_KEY)
 google-genai>=1.0.0      # --backend google_ai (set GOOGLE_API_KEY)

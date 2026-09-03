@@ -28,6 +28,7 @@ from src.aba_algorithm  import solve_aba_learning
 from src.aba_model      import get_backend, LLMBackend
 from src.aba_evaluation import (
     ProblemResult, evaluate_dataset, aggregate_results, complexity_analysis,
+    tier_breakdown,
 )
 from extras.aba_visualization import save_all_plots
 
@@ -105,8 +106,23 @@ def build_dataset(
 # ─────────────────────────────────────────────────────────────────────────────
 
 def run_symbolic_baseline(ds: ABADataset, verbose: bool = False) -> Dict:
+    """Run ASP-ABAlearnB twice per problem, for two different purposes.
+
+      * on the FULL problem — the reference solution used for export and for
+        the semantic comparison; this is the algorithm doing its published job;
+      * on the TRAIN split only, then scored on the held-out examples exactly
+        like an LLM sample. Only this second number is comparable with the LLM
+        rows: every LLM sees the training split alone, so a 100% built from the
+        full problem is a different task, not a ceiling.
+    """
+    from src.aba_generalization import split_problem_examples, evaluate_generalization
+
     print("\n=== Symbolic baseline (ASP-ABAlearnB) ===")
-    results = {"total": 0, "solved": 0, "intensional": 0, "problems": []}
+    results = {
+        "total": 0, "solved": 0, "intensional": 0,
+        "train_solved": 0, "train_gen": 0, "train_determined": 0,
+        "problems": [],
+    }
 
     for entry in ds:
         problem = entry.problem
@@ -123,21 +139,40 @@ def run_symbolic_baseline(ds: ABADataset, verbose: bool = False) -> Dict:
         if ok and solution is not None:
             entry.solution = solution
 
-        row = {
+        # ── the comparable, train-only run ───────────────────────────────────
+        split = split_problem_examples(problem)
+        tr_sol, tr_trace = solve_aba_learning(split.train)
+        tr_ok = tr_sol is not None and tr_trace.success
+        tr_gen = tr_det = False
+        if tr_ok:
+            g = evaluate_generalization(tr_sol, split, domain=problem.get_domain())
+            tr_gen, tr_det = g.gen_valid, g.gen_determined
+        results["train_solved"]     += int(tr_ok)
+        results["train_gen"]        += int(tr_gen)
+        results["train_determined"] += int(tr_det)
+
+        results["problems"].append({
             "problem_id": problem.problem_id,
             "solved": ok,
             "intensional": inten,
             "n_steps": len(trace.steps),
             "n_new_rules": len(solution.new_rules) if solution else 0,
-        }
-        results["problems"].append(row)
+            "train_solved": tr_ok,
+            "train_gen_valid": tr_gen,
+            "train_gen_determined": tr_det,
+        })
 
         status = "OK intensional" if inten else ("OK ground" if ok else "FAIL")
-        print(f"  {problem.problem_id}: {status}")
+        print(f"  {problem.problem_id}: {status}"
+              f"   [train-only: {'gen' if tr_gen else 'no-gen'}"
+              f"/{'determined' if tr_det else 'undetermined'}]")
 
     n = results["total"]
-    print(f"\nSymbolic: {results['solved']}/{n} solved, "
+    print(f"\nSymbolic (full problem): {results['solved']}/{n} solved, "
           f"{results['intensional']}/{n} intensional")
+    print(f"Symbolic (train only, comparable with the LLM rows): "
+          f"{results['train_gen']}/{n} generalise, "
+          f"{results['train_determined']}/{n} determined")
     return results
 
 
@@ -174,8 +209,8 @@ def run_prompt_experiments(
 
         results_by_mode[mode] = results
         agg = aggregate_results(results)
-        print(f"  -> gen@1={agg['gen_at_1']:.1%}  gen@k={agg['gen_at_k']:.1%}  "
-              f"fit@1={agg['fit_at_1']:.1%}  degenerate={agg['degenerate_rate']:.1%}")
+        print(f"  -> clean@k={agg['clean_at_k']:.1%}  gen@k={agg['gen_at_k']:.1%}  "
+              f"det@k={agg['det_at_k']:.1%}  fit@1={agg['fit_at_1']:.1%}")
 
         # Save raw per-sample results per mode immediately, so a later crash
         # never loses work already completed.
@@ -351,31 +386,6 @@ def run_graded_analysis(
 # Reporting
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _tier_breakdown(
-    results_by_mode: Dict[str, List[ProblemResult]],
-) -> Dict[str, Dict[str, Dict]]:
-    """Aggregate results per benchmark tier: mode -> tier -> metrics.
-
-    Tier is read from the problem-id prefix (t1_mono_0007[_anon] -> t1_mono);
-    non-benchmark problems (nixon_diamond, flies, ...) are grouped as 'builtin'.
-    Returns {} when no benchmark problems are present, so the report section
-    only appears for --benchmark runs.
-    """
-    import re
-    tier_re = re.compile(r"^(t\d+_[a-z]+)_\d+")
-    out: Dict[str, Dict[str, Dict]] = {}
-    any_tier = False
-    for mode, results in results_by_mode.items():
-        groups: Dict[str, List[ProblemResult]] = {}
-        for pr in results:
-            m = tier_re.match(pr.problem_id)
-            tier = m.group(1) if m else "builtin"
-            any_tier = any_tier or bool(m)
-            groups.setdefault(tier, []).append(pr)
-        out[mode] = {tier: aggregate_results(prs) for tier, prs in groups.items()}
-    return out if any_tier else {}
-
-
 def generate_report(
     results_by_mode: Dict[str, List[ProblemResult]],
     symbolic_results: Optional[Dict],
@@ -389,24 +399,47 @@ def generate_report(
         for mode, results in results_by_mode.items()
     }
     if symbolic_results:
-        n = symbolic_results["total"]
-        summary["symbolic_baseline"] = {
-            "n_problems":          n,
+        n = max(symbolic_results["total"], 1)
+        # NOT comparable with the LLM rows — the algorithm sees every example.
+        # Kept because it is the reference the export and semantic comparison
+        # are built from.
+        summary["symbolic_full_problem"] = {
+            "n_problems":          symbolic_results["total"],
             "parse_rate":          1.0,
-            "fit_at_1":            symbolic_results["solved"] / max(n, 1),
-            "gen_at_1":            symbolic_results["solved"] / max(n, 1),
-            "fit_at_k":            symbolic_results["solved"] / max(n, 1),
-            "gen_at_k":            symbolic_results["solved"] / max(n, 1),
-            "clean_at_1":          symbolic_results["solved"] / max(n, 1),
-            "clean_at_k":          symbolic_results["solved"] / max(n, 1),
-            "intensional_rate":    symbolic_results["intensional"] / max(n, 1),
+            "fit_at_1":            symbolic_results["solved"] / n,
+            "gen_at_1":            symbolic_results["solved"] / n,
+            "det_at_1":            symbolic_results["solved"] / n,
+            "fit_at_k":            symbolic_results["solved"] / n,
+            "gen_at_k":            symbolic_results["solved"] / n,
+            "det_at_k":            symbolic_results["solved"] / n,
+            "clean_at_1":          symbolic_results["solved"] / n,
+            "clean_at_k":          symbolic_results["solved"] / n,
+            "intensional_rate":    symbolic_results["intensional"] / n,
             "degenerate_rate":     0.0,
             "mean_overfit_gap":    0.0,
+            "note":                "sees ALL examples; not an LLM-comparable ceiling",
+        }
+        # THE comparable row: same train/test split, same scoring.
+        summary["symbolic_train_only"] = {
+            "n_problems":          symbolic_results["total"],
+            "parse_rate":          1.0,
+            "fit_at_1":            symbolic_results["train_solved"] / n,
+            "gen_at_1":            symbolic_results["train_gen"] / n,
+            "det_at_1":            symbolic_results["train_determined"] / n,
+            "fit_at_k":            symbolic_results["train_solved"] / n,
+            "gen_at_k":            symbolic_results["train_gen"] / n,
+            "det_at_k":            symbolic_results["train_determined"] / n,
+            "clean_at_1":          symbolic_results["train_gen"] / n,
+            "clean_at_k":          symbolic_results["train_gen"] / n,
+            "intensional_rate":    symbolic_results["intensional"] / n,
+            "degenerate_rate":     0.0,
+            "mean_overfit_gap":    0.0,
+            "note":                "same split and scoring as the LLM rows",
         }
 
     # Per-tier breakdown (benchmark suite): WHICH capability does the LLM
     # replicate? Problem ids carry the tier prefix, e.g. t2_defeas_0003[_anon].
-    by_tier = _tier_breakdown(results_by_mode)
+    by_tier = tier_breakdown(results_by_mode)
     if by_tier:
         summary["by_tier"] = by_tier
 
@@ -420,21 +453,28 @@ def generate_report(
     # "none": fits ALL train examples AND generalises) — the honest measure of
     # "replicates the algorithm"; gen@k alone can be high while fit is 0.
     print("\n=== Results table ===")
-    col_w = 22
-    metrics = ["gen_at_1", "gen_at_k", "clean_at_k", "fit_at_1",
-               "intensional_rate", "degenerate_rate", "parse_rate"]
-    header  = f"{'Config':<20}" + "".join(f"{m[:18]:>18}" for m in metrics)
+    metrics = ["clean_at_k", "gen_at_k", "det_at_k", "fit_at_1",
+               "intensional_rate", "parse_rate"]
+    header = f"{'Config':<24}" + "".join(f"{m:>18}" for m in metrics)
     print(header)
     print("-" * len(header))
     for name, agg in summary.items():
         if name == "by_tier":
             continue
-        row = f"{name:<20}"
+        row = f"{name:<24}"
         for m in metrics:
-            v = agg.get(m, 0)
-            cell = f"{v:.1%}" if ("rate" in m or "clean" in m) else f"{v:.2f}"
+            v = agg.get(m)
+            # A quality rate is None when no sample ever fitted: "undefined",
+            # which must not be printed as a measured 0%.
+            cell = "n/a" if v is None else (
+                f"{v:.1%}" if ("rate" in m or "_at_" in m) else f"{v:.2f}")
             row += f"{cell:>18}"
         print(row)
+    print("\n  clean@k = legal+stable+fits+generalises+non-degenerate (brave)")
+    print("  gen@k   = solves the full problem in SOME stable extension")
+    print("  det@k   = held-out labels are forced in EVERY train-consistent "
+          "extension\n            (gen@k minus det@k is how much of gen@k is "
+          "free choice, not learning)")
 
     if by_tier:
         print("\n=== Per-tier breakdown: gen@k / clean@k "

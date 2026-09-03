@@ -146,11 +146,57 @@ brave consequence, and "intensional" per the paper (non-ground rule schemata).
 The problem-serialisation headers now read "all accepted in ONE common stable
 extension" / "none accepted in that same extension".
 
+### v4 — one notation (current)
+
+v3 fixed the *terminology* but left a structural problem: the problem itself was
+still serialised as English prose by `ABAFramework.to_natural_language()` —
+
+```text
+Rules:
+  - p(a) is always true.
+  - t(X) holds if q(X).
+Assumptions (defeasible by default):
+  - u(X)  [defeated by: t(X)]
+```
+
+— while every definition in the system prompt, all four transformation rules and
+the required output format were in ABA/Prolog syntax, and contraries appeared in
+a *third* notation (`defeated_by`) in the answer format. The model had to
+translate between three notations before it could begin reasoning.
+
+Changes, all in `_format_problem`:
+
+1. Rules are printed as rules (`h :- b1, b2.`, `p(a).`), exactly as they must be
+   written back.
+2. Assumptions and their contraries are printed as
+   `u(X) defeated_by t(X)` — the same line the answer must produce for a new
+   assumption. One notation end to end.
+3. The domain is stated as `dom(a). dom(b). …` with an explicit note that
+   assumptions are instantiated once per constant — previously the model was
+   shown a bare list of constants and never told what `dom` meant, although
+   `dom` appears in background rule bodies.
+4. Section headers name the formal objects: `E+`, `E-`, `T`.
+
+Also in v4, R3 in `algorithm` mode is split into its two cases, matching
+Algorithm 1 lines 36–44: **(a)** reusing an existing assumption, whose contrary
+is fixed and must not be redefined (and rules for it are legal only if that
+contrary is itself in `T`), and **(b)** introducing a new assumption, the only
+case in which contrary facts are rote-learned. v3 described only case (b) while
+every benchmark tier's intended solution is case (a). The system prompt gained a
+matching `REUSE FIRST` line.
+
+`to_natural_language()` is retained, but only for reports
+(`explanations.md`, `frameworks.md`).
+
 ## Prompt-version ↔ experiment-set matrix
 
-| Experiment set | Prompts | Comparable with |
-| --- | --- | --- |
-| `experiments/00_preliminary_api` | v0 (evolving) | nothing (exploratory) |
-| `experiments/01_bench_prompts_v1` | v1 | — |
-| `experiments/02_bench_prompts_v2` | v2 | — |
-| *(future benchmark runs)* | **v3** | future v3 runs |
+| Experiment set | Prompts | Metrics | Comparable with |
+| --- | --- | --- | --- |
+| `experiments/00_preliminary_api` | v0 (evolving) | rev 1 | nothing (exploratory) |
+| `experiments/01_bench_prompts_v1` | v1 | rev 2 | — |
+| `experiments/02_bench_prompts_v2` | v2 | rev 2 | — |
+| `experiments/03_bench_prompts_v3` | v3 | rev 4 | — |
+| *(next benchmark run)* | **v4** | rev 4 | future v4 runs |
+
+A prompt change and a metric change are independent axes: a metric change can be
+applied retroactively with `rescore.py`, a prompt change cannot.

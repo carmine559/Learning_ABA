@@ -1,16 +1,22 @@
 # Experiment registry
 
 Curated, immutable result sets live in [`experiments/`](../experiments/), one
-folder per set, each with a `MANIFEST.md` (date, model, prompt version, exact
-command, key metrics, caveats). The `results/` folder is a **gitignored working
-directory**: `main.py` writes there; finished runs worth keeping are *promoted*
-into `experiments/` together with a manifest.
+folder per set, each with a `MANIFEST.md` (date, model, prompt version, metric
+revision, exact command, key metrics, caveats). The `results/` folder is a
+gitignored working directory: `main.py` writes there; finished runs worth
+keeping are *promoted* into `experiments/` together with a manifest.
 
-| Set | Date | Models | Backend | Prompts | Dataset | Status |
-| --- | --- | --- | --- | --- | --- | --- |
-| [`00_preliminary_api`](../experiments/00_preliminary_api/MANIFEST.md) | May–Jun 2026 | Llama-3.3-70B, Llama-3.1-8B | Groq API | v0 (evolving) | 3 builtin ± early synthetics | done (exploratory) |
-| [`01_bench_prompts_v1`](../experiments/01_bench_prompts_v1/MANIFEST.md) | Jul 2026 | Qwen2.5-7B | local (L40) | v1 | 103 problems, 5 tiers, anonymised | done |
-| [`02_bench_prompts_v2`](../experiments/02_bench_prompts_v2/MANIFEST.md) | Jul 2026 | Qwen2.5-3B/7B/14B, Mistral-7B | local (L40) | v2 | 103 problems, 5 tiers, anonymised | done |
+| Set | Date | Models | Backend | Prompts | Metrics | Dataset | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| [`00_preliminary_api`](../experiments/00_preliminary_api/MANIFEST.md) | May–Jun 2026 | Llama-3.3-70B, Llama-3.1-8B | Groq API | v0 (evolving) | rev 1 | 3 builtin ± early synthetics | done (exploratory) |
+| [`01_bench_prompts_v1`](../experiments/01_bench_prompts_v1/MANIFEST.md) | Jul 2026 | Qwen2.5-7B | local (L40) | v1 | rev 2 | 103 problems, 5 tiers, anonymised | done |
+| [`02_bench_prompts_v2`](../experiments/02_bench_prompts_v2/MANIFEST.md) | Jul 2026 | Qwen2.5-3B/7B/14B, Mistral-7B | local (L40) | v2 | rev 2 | 103 problems, 5 tiers, anonymised | done |
+| [`03_bench_prompts_v3`](../experiments/03_bench_prompts_v3/MANIFEST.md) | Jul 2026 | Qwen2.5-3B/7B/14B, Mistral-7B | local (L40) | v3 | **rev 4** (re-scored offline) | 103 problems, 5 tiers, anonymised | done |
+
+Sets are comparable only when **both** the prompt version and the metric
+revision match. Set 03 was generated under rev-3 scoring and re-scored to rev 4
+with `rescore.py` from its stored raw answers; nothing about the model outputs
+changed.
 
 ## The benchmark at a glance
 
@@ -39,7 +45,7 @@ failure names the `error_type`):
 
 | Stage | Field | Definition |
 | --- | --- | --- |
-| 1. parse | `parse_success` | the output yields a non-empty framework in the required format |
+| 1. parse | `parse_success` | the output yields a framework. An explicit `NONE` / `NONE` answer is a legitimate empty framework, not a parse failure *(rev. 4)*. Every repair the parser applied is listed in `parse_repairs` |
 | 2. well-formed | `wellformed_violations = []` | Definition-1 side conditions hold: (ii) every new-rule head with a background predicate is learnable; (iv) contraries of existing assumptions unchanged; flatness (no assumption as rule head); new-assumption predicates fresh. *(added in metrics rev. 3)* |
 | 3. stability | `has_extension` | the candidate admits at least one stable extension |
 | 4. fit | `fit_valid` | the candidate **is a solution of the TRAIN problem** (one joint check) |
@@ -53,23 +59,71 @@ headline metric**: "the LLM produced, at least once, a legal, stable,
 fitting, generalising, non-degenerate solution — i.e. it did the algorithm's
 job".
 
+### The determinacy metric (`det@k`) — rev. 4
+
+`gen_valid` is faithful to Definition 1 but cannot, on its own, distinguish
+learning from guessing. Brave ABA Learning admits frameworks with mutually
+attacking assumptions under which an unseen atom is **free**: accepted in one
+stable extension and rejected in another. Brave entailment then reports success
+for a framework that predicts nothing. The paper itself notes this of its own
+Nixon solution (p. 3451, "cautious reasoning would not work"), and the effect is
+reproducible here — hold out `pacifist(e)` and the reference solution leaves it
+free.
+
+So each held-out atom is also classified *conditioned on the training examples*:
+
+| Status | Meaning |
+| --- | --- |
+| `ALWAYS` | accepted in **every** extension consistent with the training examples |
+| `NEVER` | accepted in none of them |
+| `FREE` | accepted in some, rejected in others — no prediction |
+
+- `gen_determined` (`det@1` / `det@k`): fit holds **and** every held-out example
+  is `ALWAYS`/`NEVER` in agreement with its label.
+- `determinacy_score`: the fraction of held-out atoms determined and correct.
+- `n_free_heldout`: how many the framework leaves open.
+
+`gen@k − det@k` is the share of apparent generalisation that is free choice.
+Implemented by `conditioned_status` in [`src/aba_validator.py`](../src/aba_validator.py).
+
 **Diagnostics (not validity):** `generalization_score` = fraction of held-out
-examples individually correct (per-example brave checks; localises errors);
-`overfit_gap` = fit(1/0) − generalization_score; `intensional_rate` (strict:
-no constants anywhere in new rules); `semantic_agreement` = per-constant
-agreement of the candidate with the symbolic reference on the target
-predicate.
+examples correct **inside one witness extension of the training problem**
+(rev. 4; previously independent per-example brave queries, which made this score
+routinely exceed fit); `overfit_gap` = fit(1/0) − generalization_score;
+`intensional_rate` (strict: no constant anywhere in a new rule; reported as
+`null` when no sample fitted, rather than as a measured 0%);
+`semantic_agreement` = per-constant agreement with the symbolic reference on the
+target predicate.
 
-> **Metrics revision 3** (with prompts v3): stage 2 added, and stage 5 changed
-> from per-example held-out checks to the joint full-problem check. The old
-> per-example version could accept held-out positives in *different*
-> extensions and its negative test (":- e" alone) was near-vacuous on
-> multi-extension frameworks — the source of "80% gen@k with 0% fit"
-> anomalies in sets 01–02. Numbers from sets 01–02 use the old stage 5 and
-> are therefore *optimistic* on `gen@k`; `fit` and `clean`'s fit-component
-> were always Definition-1-exact.
+**Two symbolic rows.** `symbolic_full_problem` is the algorithm with every
+example in view — not comparable with the LLM rows. `symbolic_train_only` runs
+ASP-ABAlearnB on the same training split and scores it with the same function
+used for LLM samples; that is the comparable ceiling (53.8% on the current
+benchmark, not 100%).
 
-`summary.json` contains every aggregate, overall and per tier (`by_tier`).
+> **Metrics revision 3** (prompts v3): stage 2 added; stage 5 changed from
+> per-example held-out checks to the joint full-problem check. The old
+> per-example version could accept held-out positives in *different* extensions
+> and its negative test (`:- e` alone) was near-vacuous — the source of the
+> "80% gen@k with 0% fit" anomalies in sets 01–02.
+>
+> **Metrics revision 4** (current). Four corrections, all of which change
+> reported numbers without any new model output:
+> 1. Stage 2 no longer rejects the legal **reuse** of a background assumption
+>    (Definition 4 / Algorithm 1 line 36). This alone accounted for 4 262 of
+>    ~6 100 violations, marking 71.8% of set-03 samples ill-formed.
+> 2. Stage 2 applies condition (ii) to the contrary of a background assumption
+>    like any other background predicate — it must be in T.
+> 3. The parser no longer discards rules filed under `NEW ASSUMPTIONS:` or
+>    prefers a draft answer block over the final one (~40% more rules
+>    recovered), and `NONE`/`NONE` is no longer a parse error.
+> 4. `det@*` added; `generalization_score` moved to a witness extension.
+>
+> Re-scoring an old set to the current revision costs minutes:
+> `python rescore.py <run_dir> --benchmark 20`.
+
+`summary.json` contains every aggregate, overall and per tier (`by_tier`), with
+95% Wilson intervals for the `@k` rates under `ci95`.
 
 ## Reproducing
 
