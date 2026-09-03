@@ -36,11 +36,15 @@ def _build_asp(
         lines.append(rule.to_prolog())
 
     # (b) assumptions  α :- dom(X), not c_α.
+    # dom/1 is unary, so an n-ary assumption needs one guard per argument;
+    # a propositional assumption needs no guard at all (a dom(X) with X
+    # unbound elsewhere would existentially quantify over the whole domain).
     for asm in framework.assumptions:
         contrary = framework.contraries.get(asm, f"c_{asm}")
         m = re.search(r'\((.+)\)', asm)
-        var = m.group(1) if m else "X"
-        lines.append(f"{asm} :- dom({var}), not {contrary}.")
+        args = [a.strip() for a in m.group(1).split(',')] if m else []
+        guards = "".join(f"dom({a}), " for a in args if a and a[:1].isupper())
+        lines.append(f"{asm} :- {guards}not {contrary}.")
 
     # (c) positive constraints
     for e in positive:
@@ -57,7 +61,11 @@ def _build_asp(
             lines.append(f"{pred}(X) :- {prime}(X).")
             lines.append(f"{{{prime}(X)}} :- dom(X).")
             if minimize:
-                lines.append(f"#minimize{{1,X : {prime}(X)}}.")
+                # The predicate MUST be part of the tuple: #minimize aggregates
+                # over the SET of tuples, so a bare {1,X} makes p(c) and q(c)
+                # cost 1 between them instead of 2, and RoLe stops being minimal
+                # as soon as |T| > 1.
+                lines.append(f"#minimize{{1,X,{pred} : {prime}(X)}}.")
 
     return "\n".join(lines)
 
@@ -160,6 +168,76 @@ def check_has_stable_extension(
     prog = _build_asp(framework, [], [], dom)
     sat, _, _ = _solve(prog, n_models=1, timeout=timeout)
     return sat
+
+
+def _norm(atom: str) -> str:
+    """Canonical spelling of a ground atom, so 'p(a, b)' == clingo's 'p(a,b)'."""
+    return re.sub(r'\s+', '', atom)
+
+
+def witness_extension(
+    framework: ABAFramework,
+    positive: List[str],
+    negative: List[str],
+    domain: Optional[List[str]] = None,
+    timeout: int = 30,
+) -> Optional[set]:
+    """One stable extension Δ satisfying the given examples, as a set of atoms.
+
+    Definition 1 asks for a SINGLE Δ accepting all of E+ and none of E-. This
+    returns a witness for that Δ so held-out examples can be read off inside
+    it, instead of being probed one at a time (which asks a different, much
+    weaker question on multi-extension frameworks).
+
+    Returns None when no such extension exists.
+    """
+    dom = domain or framework.get_domain()
+    prog = _build_asp(framework, positive, negative, dom)
+    sat, models, _ = _solve(prog, n_models=1, timeout=timeout)
+    if not sat or not models:
+        return None
+    return {_norm(a) for a in models[-1]}
+
+
+def conditioned_status(
+    framework: ABAFramework,
+    condition_positive: List[str],
+    condition_negative: List[str],
+    atoms: List[str],
+    domain: Optional[List[str]] = None,
+    timeout: int = 30,
+) -> Dict[str, str]:
+    """Status of each atom across ALL extensions satisfying the conditions.
+
+    For every atom, one of:
+      ``ALWAYS``       accepted in every extension that satisfies the conditions
+      ``NEVER``        accepted in none of them
+      ``FREE``         accepted in some and rejected in others — the framework
+                       makes no prediction about this atom; a brave check would
+                       score it as a success anyway
+      ``NO_EXTENSION`` the conditions themselves are unsatisfiable
+
+    Conditioning on the TRAINING examples and asking about the HELD-OUT ones is
+    the honest generalisation test under brave semantics: brave ABA Learning
+    admits mutually-attacking assumptions that let a framework realise any
+    labelling of the unseen atoms, so "some extension gets it right" is not
+    evidence of having learnt anything.
+    """
+    dom = domain or framework.get_domain()
+    base = _build_asp(framework, condition_positive, condition_negative, dom)
+    out: Dict[str, str] = {}
+    for atom in atoms:
+        accepts, _, _ = _solve(f"{base}\n:- not {atom}.", n_models=1, timeout=timeout)
+        rejects, _, _ = _solve(f"{base}\n:- {atom}.", n_models=1, timeout=timeout)
+        if accepts and rejects:
+            out[atom] = "FREE"
+        elif accepts:
+            out[atom] = "ALWAYS"
+        elif rejects:
+            out[atom] = "NEVER"
+        else:
+            out[atom] = "NO_EXTENSION"
+    return out
 
 
 # ──────────────────────────────────────────────────────────────────────────────

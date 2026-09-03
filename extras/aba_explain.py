@@ -25,6 +25,7 @@ from src.aba_types import Rule, ABAFramework, LearningProblem
 from src.aba_dataset import DatasetEntry
 from src.aba_generalization import (
     SplitProblem, split_problem_examples, rule_contains_constant,
+    evaluate_generalization, wellformed_violations,
 )
 from src.aba_validator import check_brave_entailment
 from src.aba_prompts import parse_llm_output
@@ -180,6 +181,10 @@ class ProblemExplanation:
     comparisons:       List[RuleComparison]
     outcomes:          List[ExampleOutcome]
     narrative:         str = ""
+    # Definition-1 side conditions the candidate violates, if any. A violating
+    # candidate is not a legal solution however well it scores on entailment.
+    violations:        List[str] = field(default_factory=list)
+    gen_determined:    bool = False
 
 
 def explain_sample(
@@ -209,14 +214,17 @@ def explain_sample(
 
     outcomes = generalisation_trace(candidate, split, domain)
 
-    # Derived flags
-    held = [o for o in outcomes if o.held_out]
-    gen_score = sum(o.correct for o in held) / len(held) if held else 0.0
-    generalises = all(o.correct for o in held) if held else False
-    fit_outcomes = [o for o in outcomes if not o.held_out]
-    fit = all(o.correct for o in fit_outcomes) if fit_outcomes else False
-    is_degen = (bool(candidate.new_rules) and
-                all(rule_contains_constant(r) for r in candidate.new_rules))
+    # Derived flags — taken from the SAME function that produces summary.json.
+    # Recomputing them here with per-example checks made explanations.md and
+    # summary.json disagree about which samples succeeded.
+    gen = evaluate_generalization(candidate, split, domain=domain)
+    fit          = gen.fit_valid
+    generalises  = gen.gen_valid
+    gen_score    = gen.generalization_score
+    is_degen     = gen.is_degenerate
+    violations   = wellformed_violations(
+        candidate, background, entry.problem.learnable
+    )
     semantic = False
     if entry.solution is not None and entry.problem.learnable:
         from src.aba_generalization import semantic_equivalence
@@ -234,6 +242,8 @@ def explain_sample(
         semantic_match=semantic,
         comparisons=comparisons,
         outcomes=outcomes,
+        violations=violations,
+        gen_determined=gen.gen_determined,
     )
     expl.narrative = build_narrative(expl, candidate, entry)
     return expl
@@ -255,12 +265,25 @@ def build_narrative(
     lines: List[str] = []
     pid = expl.problem_id
 
+    # 0. Legality comes first: an ill-formed candidate is not a solution, so
+    # nothing below it should be read as success.
+    if expl.violations:
+        lines.append(
+            f"On '{pid}', the candidate is NOT a legal solution: "
+            f"{'; '.join(expl.violations)}. The outcome below is reported for "
+            f"diagnosis only."
+        )
+
     # 1. Outcome summary
     if expl.generalises:
         lines.append(
             f"On '{pid}', the model produced a framework that fits the training "
-            f"examples and correctly classifies ALL held-out examples "
-            f"(generalisation score {expl.generalization_score:.0%})."
+            f"examples and solves the full problem in one stable extension."
+            + ("" if expl.gen_determined else
+               " Note that the held-out labels are NOT forced: some other "
+               "extension consistent with the training examples labels them "
+               "differently, so this is a legal solution rather than evidence "
+               "of a learnt generalisation.")
         )
     elif expl.fit:
         lines.append(

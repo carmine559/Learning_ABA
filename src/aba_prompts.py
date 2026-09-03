@@ -80,6 +80,10 @@ Definition 1. In this task an INTENSIONAL solution is REQUIRED:
     <learnable>(X) :- <support>(X), alpha(X).
     c_alpha(X) :- <exception>(X).
   NEW ASSUMPTIONS:  alpha(X) defeated_by c_alpha(X)
+  REUSE FIRST: if the background already declares an assumption that fits the
+  same body, put THAT assumption in the body instead of inventing alpha. Its
+  contrary is already fixed by the background - never redefine it (condition
+  (iv)), and only write rules for it if it is in the learnable set T.
 
 PLACEHOLDER RULE - critical:
 Angle-bracketed tokens such as <pred>, <support>, <exception>, <learnable> are
@@ -108,21 +112,47 @@ If no new rules or assumptions are needed, write NONE under that section."""
 # ---------------------------------------------------------------------------
 
 def _format_problem(problem: LearningProblem) -> str:
-    lines = ["=== BACKGROUND KNOWLEDGE ==="]
-    lines.append(problem.background.to_natural_language())
+    """Serialise the problem in the SAME notation the answer must use.
+
+    The background used to be rendered as prose ("p(a) is always true.",
+    "u(X) [defeated by: t(X)]") while every definition, transformation rule and
+    the required output were in ABA/Prolog syntax. That forced the model to
+    translate between three notations before it could start reasoning. One
+    notation throughout: rules as `h :- b1, b2.`, assumptions as
+    `a(X) defeated_by c(X)` — exactly the form required in NEW ASSUMPTIONS.
+    """
+    bg = problem.background
+    domain = problem.get_domain()
+
+    lines = ["=== BACKGROUND KNOWLEDGE (ABA framework) ==="]
+    lines.append("% Domain: dom/1 holds for each constant below, and every")
+    lines.append("% assumption is instantiated once per constant.")
+    lines.append("  " + " ".join(f"dom({c})." for c in domain))
     lines.append("")
-    lines.append("=== POSITIVE EXAMPLES (all accepted in ONE common stable extension) ===")
+    lines.append("% Rules R")
+    for r in bg.rules:
+        lines.append(f"  {r.to_prolog()}")
+    lines.append("")
+    lines.append("% Assumptions A, with their contraries")
+    if bg.assumptions:
+        for asm in bg.assumptions:
+            contrary = bg.contraries.get(asm, f"c_{asm}")
+            lines.append(f"  {asm} defeated_by {contrary}")
+    else:
+        lines.append("  (none)")
+
+    lines.append("")
+    lines.append("=== POSITIVE EXAMPLES E+ "
+                 "(all accepted in ONE common stable extension) ===")
     for e in problem.positive:
         lines.append(f"  + {e}")
     lines.append("")
-    lines.append("=== NEGATIVE EXAMPLES (none accepted in that same extension) ===")
+    lines.append("=== NEGATIVE EXAMPLES E- (none accepted in that same extension) ===")
     for e in problem.negative:
         lines.append(f"  - {e}")
     lines.append("")
-    lines.append(f"=== LEARNABLE PREDICATES ===")
+    lines.append("=== LEARNABLE PREDICATES T ===")
     lines.append(f"  {', '.join(problem.learnable)}")
-    lines.append(f"=== DOMAIN (known constants) ===")
-    lines.append(f"  {', '.join(problem.get_domain())}")
     return "\n".join(lines)
 
 
@@ -242,15 +272,28 @@ THE FOUR TRANSFORMATION RULES (as defined in the paper).
        by the defeasible rule
            rho2:  H :- Eqs, B, alpha(X).
        where X are the variables of the body B, and alpha(X) is an assumption
-       with contrary c_alpha(X). alpha may be a NEW assumption, or an EXISTING
-       assumption already used with the same body B (reusing assumptions keeps
-       the framework small). Applied when, after folding, the framework is no
-       longer a solution - whether the failure is an ACCEPTED NEGATIVE or a
-       LOST POSITIVE. Then, by R1, add ground facts for the contrary,
-           c_alpha(X) :- X = <const>.
-       for exactly those constants where the rule must be defeated so the
-       framework becomes a solution again. These new ground facts are then
-       themselves generalised (R2/R3/R4) in later iterations.
+       with contrary c_alpha(X). Applied when, after folding, the framework is
+       no longer a solution - whether the failure is an ACCEPTED NEGATIVE or a
+       LOST POSITIVE. There are two cases, and they behave differently:
+
+       (a) REUSE an EXISTING assumption already used with the same body B
+           (Definition 4). Try this FIRST: it keeps the framework small and it
+           is what makes the algorithm terminate. Its contrary is already
+           fixed by the background, so you must NOT invent or redefine it -
+           you only check whether the resulting framework is a solution. If it
+           is not, try another assumption or another fold.
+
+       (b) Otherwise introduce a NEW assumption alpha(X), whose contrary
+           c_alpha(X) is a NEW predicate. Only in this case do you then use R1
+           to add ground facts for the contrary,
+               c_alpha(X) :- X = <const>.
+           for exactly those constants where the rule must be defeated so the
+           framework becomes a solution again. These new ground facts are then
+           themselves generalised (R2/R3/R4) in later iterations.
+
+       (Learning rules for the contrary of an EXISTING background assumption is
+       allowed only when that contrary predicate is itself in T - condition (ii)
+       of Definition 1 applies to it like any other background predicate.)
 
   R4 - FACT SUBSUMPTION. Delete a learnt ground fact
            <pred>(X) :- X = <const>.
@@ -461,65 +504,189 @@ def _clean_llm_output(text: str) -> str:
     return text
 
 
+_RULES_HDR_RE = re.compile(r'^[ \t]*NEW[ \t]+RULES[ \t]*:', re.IGNORECASE | re.MULTILINE)
+_ASMS_HDR_RE  = re.compile(r'^[ \t]*NEW[ \t]+ASSUMPTIONS[ \t]*:', re.IGNORECASE | re.MULTILINE)
+_ECHO_HDR_RE  = re.compile(r'^[ \t]*===[ \t]', re.MULTILINE)
+_DEFEATED_RE  = re.compile(
+    r'([a-zA-Z_]\w*\([^)]*\)|[a-zA-Z_]\w*)\s+defeated_by\s+'
+    r'([a-zA-Z_]\w*\([^)]*\)|[a-zA-Z_]\w*)'
+)
+
+
+def _split_body(body: str) -> List[str]:
+    """Split a rule body on TOP-LEVEL commas only.
+
+    A naive ``body.split(',')`` tears ``p(X, Y)`` into ``p(X`` and ``Y)``.
+    """
+    atoms: List[str] = []
+    depth = 0
+    cur: List[str] = []
+    for ch in body:
+        if ch == '(':
+            depth += 1
+        elif ch == ')':
+            depth = max(0, depth - 1)
+        if ch == ',' and depth == 0:
+            atoms.append(''.join(cur).strip())
+            cur = []
+        else:
+            cur.append(ch)
+    atoms.append(''.join(cur).strip())
+    return [a for a in atoms if a]
+
+
+def _iter_answer_blocks(text: str) -> List[str]:
+    """Every ``NEW RULES:`` … block in the output, in order of appearance.
+
+    Models routinely draft an answer inside their reasoning and then restate
+    the final one; taking the first block scores the draft.
+    """
+    starts = [m.start() for m in _RULES_HDR_RE.finditer(text)]
+    if not starts:
+        return [text]
+    bounds = starts + [len(text)]
+    return [text[bounds[i]:bounds[i + 1]] for i in range(len(starts))]
+
+
+def _sections_of(block: str) -> tuple:
+    """(rules_text, assumptions_text) for one answer block."""
+    mr = re.search(r'NEW[ \t]+RULES[ \t]*:[ \t]*\n?(.*?)'
+                   r'(?=^[ \t]*NEW[ \t]+ASSUMPTIONS[ \t]*:|\Z)',
+                   block, re.DOTALL | re.IGNORECASE | re.MULTILINE)
+    ma = re.search(r'NEW[ \t]+ASSUMPTIONS[ \t]*:[ \t]*\n?(.*)\Z',
+                   block, re.DOTALL | re.IGNORECASE)
+    # No 'NEW RULES:' heading means no rules section — never fall back to the
+    # whole block, or free prose would be parsed as rules.
+    return (mr.group(1) if mr else ''), (ma.group(1) if ma else '')
+
+
+def _iter_content_lines(section: str):
+    """Yield the meaningful lines of a section, stripped of list markers."""
+    for line in section.split('\n'):
+        line = line.strip()
+        if not line or line.upper() == 'NONE':
+            continue
+        yield re.sub(r'^[\-\*\d\.]+\s*', '', line)
+
+
+def _looks_like_an_answer(rules: List[Rule], asms: Dict[str, str]) -> bool:
+    """A block is the real answer if it names at least one concrete symbol.
+
+    Guards against selecting an echoed copy of the prompt's format template,
+    whose ``<head> :- <body_atom_1>.`` lines parse but mean nothing.
+    """
+    for r in rules:
+        if '<' not in r.to_prolog() and re.match(r'^[a-z]\w*', r.head):
+            return True
+    return any('<' not in a for a in asms)
+
+
 def parse_llm_output(
     text: str,
     background: ABAFramework,
+    repairs: Optional[List[str]] = None,
 ) -> Optional[ABAFramework]:
     """
     Parse the LLM's output into an ABAFramework.
     Returns None if parsing fails entirely.
+
+    The parser repairs three failure modes that are common enough to dominate
+    the results if left alone (measured over 4 944 benchmark samples):
+      * several ``NEW RULES:`` blocks, only the last of which is the answer
+        (17.9% of samples) — the last usable block wins;
+      * rules written under ``NEW ASSUMPTIONS:`` (46.2%) — they are routed to
+        the rule list instead of being dropped;
+      * the problem statement echoed after the answer (23.6%) — truncated.
+
+    Pass a list as `repairs` to receive a note for every repair applied, so a
+    sample's score can always be traced back to what the model literally wrote.
     """
+    log = repairs if repairs is not None else []
+
     # Strip markdown and other formatting artefacts before any regex work
     text = _clean_llm_output(text)
 
-    # --- Extract NEW RULES section ---
-    rules_match = re.search(
-        r'NEW RULES:\s*\n(.*?)(?=\nNEW ASSUMPTIONS:|\Z)',
-        text, re.DOTALL | re.IGNORECASE
-    )
-    new_rules: List[Rule] = []
-    if rules_match:
-        rules_text = rules_match.group(1).strip()
-        if rules_text.upper() != 'NONE':
-            for line in rules_text.split('\n'):
-                line = line.strip()
-                if not line or line.upper() == 'NONE':
-                    continue
-                # Remove leading bullet/dash/number
-                line = re.sub(r'^[\-\*\d\.]+\s*', '', line)
-                rule = _parse_rule_line(line)
-                if rule:
-                    new_rules.append(rule)
+    blocks = _iter_answer_blocks(text)
+    if len(blocks) > 1:
+        log.append(f"output contained {len(blocks)} 'NEW RULES:' blocks")
 
-    # --- Extract NEW ASSUMPTIONS section ---
-    asms_match = re.search(
-        r'NEW ASSUMPTIONS:\s*\n(.*?)(?=\Z)',
-        text, re.DOTALL | re.IGNORECASE
-    )
-    new_asms: Dict[str, str] = {}
-    if asms_match:
-        asms_text = asms_match.group(1).strip()
-        if asms_text.upper() != 'NONE':
-            for line in asms_text.split('\n'):
-                line = line.strip()
-                if not line or line.upper() == 'NONE':
-                    continue
-                line = re.sub(r'^[\-\*\d\.]+\s*', '', line)
-                asm, contrary = _parse_assumption_line(line)
-                if asm:
-                    new_asms[asm] = contrary
+    best: Optional[tuple] = None
+    # Later blocks first: the final restatement is the model's actual answer.
+    for offset, block in enumerate(reversed(blocks)):
+        echo = _ECHO_HDR_RE.search(block)
+        if echo:
+            block = block[:echo.start()]
+        rules, asms, block_log = _parse_answer_block(block)
+        if best is None:
+            best = (rules, asms, block_log, offset, bool(echo))
+        if _looks_like_an_answer(rules, asms):
+            best = (rules, asms, block_log, offset, bool(echo))
+            break
+
+    if best is None:
+        return None
+    new_rules, new_asms, block_log, offset, echoed = best
+    if echoed:
+        log.append("truncated an echoed problem statement")
+    if offset > 0:
+        log.append(f"used answer block {len(blocks) - offset} of {len(blocks)}")
+    log.extend(block_log)
 
     if not new_rules and not new_asms:
-        return None
+        # An answer of NONE/NONE is a legitimate claim ("the background already
+        # suffices"), not a parse failure — scoring it as parse_error would
+        # conflate "unreadable output" with "model said nothing is needed".
+        # Only genuinely unstructured output fails to parse.
+        if not (_RULES_HDR_RE.search(text) or _ASMS_HDR_RE.search(text)):
+            return None
+        log.append("empty answer (NONE / NONE)")
 
-    # Merge with background
+    # An assumption the background already declares is legal REUSE
+    # (Definition 4), not a new assumption — but keep the contrary the model
+    # wrote so that a changed contrary is still visible to the Definition-1(iv)
+    # check rather than being silently repaired away.
+    genuinely_new = [a for a in new_asms if a not in background.assumptions]
+    reused = [a for a in new_asms if a in background.assumptions]
+    if reused:
+        log.append(f"re-listed existing assumption(s): {', '.join(reused)}")
+
     merged = background.copy()
     merged.rules = background.rules + new_rules
-    merged.assumptions = background.assumptions + list(new_asms.keys())
+    merged.assumptions = background.assumptions + genuinely_new
     merged.contraries = {**background.contraries, **new_asms}
     merged.new_rules = new_rules
-    merged.new_assumptions = list(new_asms.keys())
+    merged.new_assumptions = genuinely_new
     return merged
+
+
+def _parse_answer_block(block: str) -> tuple:
+    """Parse one answer block into (rules, assumptions, repair_log)."""
+    log: List[str] = []
+    rules_text, asms_text = _sections_of(block)
+
+    new_rules: List[Rule] = []
+    for line in _iter_content_lines(rules_text):
+        rule = _parse_rule_line(line)
+        if rule:
+            new_rules.append(rule)
+
+    new_asms: Dict[str, str] = {}
+    n_misfiled = 0
+    for line in _iter_content_lines(asms_text):
+        asm, contrary, remainder = _parse_assumption_line(line)
+        if asm:
+            new_asms[asm] = contrary
+        # Whatever is left is a rule the model filed under the wrong heading.
+        if remainder and ':-' in remainder:
+            rule = _parse_rule_line(remainder)
+            if rule:
+                new_rules.append(rule)
+                n_misfiled += 1
+    if n_misfiled:
+        log.append(f"recovered {n_misfiled} rule(s) written under "
+                   f"'NEW ASSUMPTIONS:'")
+    new_rules = list(dict.fromkeys(new_rules))   # Rule is hashable; keep order
+    return new_rules, new_asms, log
 
 
 def _parse_rule_line(line: str) -> Optional[Rule]:
@@ -527,38 +694,45 @@ def _parse_rule_line(line: str) -> Optional[Rule]:
     Parse a line like 'pacifist(X) :- quaker(X), normal_quaker(X).'
     or 'pacifist(a).'
     """
-    line = line.rstrip('.')
+    line = line.strip().rstrip('.').strip()
     if not line:
         return None
     if ':-' in line:
         head, body = line.split(':-', 1)
-        body_atoms = [b.strip() for b in body.split(',') if b.strip()]
-        return Rule(head=head.strip(), body=body_atoms)
+        head = head.strip()
+        if not head:
+            return None
+        return Rule(head=head, body=_split_body(body))
     # Fact
-    if re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*(\(.*\))?$', line.strip()):
-        return Rule(head=line.strip(), body=[])
+    if re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*(\(.*\))?$', line):
+        return Rule(head=line, body=[])
     return None
 
 
 def _parse_assumption_line(line: str) -> tuple:
     """
-    Parse 'normal_quaker(X) defeated_by abnormal_quaker(X)'
-    Returns (assumption, contrary) or (None, None) on failure.
+    Parse 'normal_quaker(X) defeated_by abnormal_quaker(X)'.
+
+    Returns (assumption, contrary, remainder). `remainder` is whatever text
+    surrounded the declaration — models often write a whole defeasible rule and
+    its ``defeated_by`` clause on one line, and the rule part must not be lost.
     """
-    # Format: asm defeated_by contrary
-    m = re.match(
-        r'([a-zA-Z_][a-zA-Z0-9_]*\([^)]*\))\s+defeated_by\s+'
-        r'([a-zA-Z_][a-zA-Z0-9_]*\([^)]*\))',
-        line
-    )
+    m = _DEFEATED_RE.search(line)
     if m:
-        return m.group(1).strip(), m.group(2).strip()
-    # Also try comma-separated format: asm, contrary
-    m2 = re.match(
-        r'([a-zA-Z_][a-zA-Z0-9_]*\([^)]*\))\s*[,→]\s*'
-        r'([a-zA-Z_][a-zA-Z0-9_]*\([^)]*\))',
-        line
-    )
-    if m2:
-        return m2.group(1).strip(), m2.group(2).strip()
-    return None, None
+        # Keep the assumption atom in the remainder. A model writing
+        #   v(X) :- t(X), u(X) defeated_by c_u(X).
+        # means the rule body is 't(X), u(X)' AND u(X) is declared defeasible;
+        # deleting the whole span would drop the assumption from the body.
+        remainder = (line[:m.start()] + m.group(1) + line[m.end():]).strip()
+        return m.group(1).strip(), m.group(2).strip(), remainder
+    # Comma/arrow-separated form 'asm, contrary' — only when the line is not a
+    # rule, otherwise a two-atom rule body would be read as a declaration.
+    if ':-' not in line:
+        m2 = re.match(
+            r'([a-zA-Z_][a-zA-Z0-9_]*\([^)]*\))\s*[,→]\s*'
+            r'([a-zA-Z_][a-zA-Z0-9_]*\([^)]*\))\s*$',
+            line
+        )
+        if m2:
+            return m2.group(1).strip(), m2.group(2).strip(), ""
+    return None, None, line

@@ -57,12 +57,16 @@ def _current_framework(
     learnt: List[Rule],
     new_asms: Dict[str, str],
 ) -> ABAFramework:
+    # Reusing an existing assumption (Definition 4) does not introduce a new
+    # one — list it once, and report only genuinely fresh assumptions as new,
+    # so the symbolic side and the LLM parser agree on what "new" means.
+    genuinely_new = [a for a in new_asms if a not in background.assumptions]
     fw = background.copy()
     fw.rules = background.rules + learnt
-    fw.assumptions = background.assumptions + list(new_asms.keys())
+    fw.assumptions = background.assumptions + genuinely_new
     fw.contraries = {**background.contraries, **new_asms}
     fw.new_rules = learnt
-    fw.new_assumptions = list(new_asms.keys())
+    fw.new_assumptions = genuinely_new
     return fw
 
 
@@ -120,9 +124,12 @@ def _candidate_folds(rule: Rule, background: ABAFramework) -> List[Rule]:
             bg_pred = head_m.group(1)
             bg_eq_atom = f"{bg_var} = {const}"
             if bg_eq_atom in [a.strip() for a in bg.body]:
-                # Remaining bg body (minus the equality, normalised to our var)
+                # Remaining bg body (minus the equality, normalised to our var).
+                # Rename on word boundaries: a bare str.replace would also
+                # rewrite 'X' inside 'X1' or any identifier containing it.
+                _rename = re.compile(rf'\b{re.escape(bg_var)}\b')
                 remaining_bg = [
-                    a.replace(bg_var, var)
+                    _rename.sub(var, a)
                     for a in bg.body
                     if a.strip() != bg_eq_atom
                 ]
@@ -230,7 +237,8 @@ def _new_assumption_name(existing: List[str]) -> Tuple[str, str]:
 
 def assumption_introduction(
     folded_rule: Rule,
-    framework: ABAFramework,
+    background: ABAFramework,
+    current: ABAFramework,
     problem: LearningProblem,
     learnt: List[Rule],
     new_asms: Dict[str, str],
@@ -242,13 +250,20 @@ def assumption_introduction(
       1. Try using an existing assumption relative to the rule body.
       2. If none works, introduce a fresh assumption.
 
+    `background` is the ORIGINAL background knowledge and `current` the
+    framework as it stands (background + everything learnt so far). Keeping
+    them apart matters: `learnt` already carries the rules under construction,
+    so building the test framework from `current` would append them a second
+    time — leaving the un-folded ground fact in place and making every
+    satisfiability check below pass for the wrong reason.
+
     Returns (defeasible_rule, asm_atom, contrary_atom, contrary_facts)
     or None on failure.
     """
     dom = problem.get_domain()
 
     # ── 1. Try existing assumptions relative to body ──────────────────────────
-    for asm in _assumptions_relative_to(folded_rule.body, framework):
+    for asm in _assumptions_relative_to(folded_rule.body, current):
         defeasible = Rule(
             head=folded_rule.head,
             body=folded_rule.body + [asm],
@@ -256,16 +271,16 @@ def assumption_introduction(
         candidate_asms = dict(new_asms)
         test_learnt = [r for r in learnt
                        if r.to_prolog() != folded_rule.to_prolog()] + [defeasible]
-        fw = _current_framework(framework, test_learnt, candidate_asms)
+        fw = _current_framework(background, test_learnt, candidate_asms)
         sat, _, _ = check_brave_entailment(
             fw, problem.positive, problem.negative, dom
         )
         if sat:
-            contrary = framework.contraries.get(asm, f"c_{asm}")
+            contrary = current.contraries.get(asm, f"c_{asm}")
             return defeasible, asm, contrary, []
 
     # ── 2. Introduce a fresh assumption α_i(X) ────────────────────────────────
-    all_asms = framework.assumptions + list(new_asms.keys())
+    all_asms = list(dict.fromkeys(background.assumptions + list(new_asms.keys())))
     asm, contrary = _new_assumption_name(all_asms)
     defeasible = Rule(
         head=folded_rule.head,
@@ -276,7 +291,7 @@ def assumption_introduction(
     tmp_new_asms = {**new_asms, asm: contrary}
     test_learnt = [r for r in learnt
                    if r.to_prolog() != folded_rule.to_prolog()] + [defeasible]
-    tmp_fw = _current_framework(framework, test_learnt, tmp_new_asms)
+    tmp_fw = _current_framework(background, test_learnt, tmp_new_asms)
 
     contra_pred = re.match(r'^([a-z]\w*)', contrary).group(1)
     rote_problem = LearningProblem(
@@ -377,7 +392,7 @@ def gen_phase(
             for folded in fold_candidates:
                 test_learnt = learnt[:idx] + [folded] + learnt[idx + 1:]
                 result = assumption_introduction(
-                    folded, fw_now, problem, test_learnt, new_asms
+                    folded, background, fw_now, problem, test_learnt, new_asms
                 )
                 if result is not None:
                     defeasible, asm, contrary, contra_facts = result

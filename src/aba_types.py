@@ -8,6 +8,11 @@ from typing import List, Dict, Tuple, Optional, Any
 import re
 
 
+# Terms that are never individual constants even in an argument position.
+_RESERVED_TERMS = {"true", "false", "not", "dom"}
+_EQUALITY_RE = re.compile(r'^([A-Za-z_]\w*)\s*=\s*([A-Za-z_]\w*)$')
+
+
 # ---------------------------------------------------------------------------
 # Core ABA primitives
 # ---------------------------------------------------------------------------
@@ -35,18 +40,40 @@ class Rule:
         return not any(t[0].isupper() or t.startswith('_') for t in tokens
                        if t not in ('true', 'false'))
 
+    def contains_constant(self) -> bool:
+        """True if the head or body mentions any individual constant.
+
+        Covers both the normalised form ``p(X) :- X = c`` and a bare ground
+        fact ``p(c).`` — the paper calls a rule intensional only when it is a
+        non-ground schema, so both forms disqualify it.
+        """
+        return bool(self.get_constants())
+
     def is_intensional(self) -> bool:
-        """True if no equality X=constant appears in body (rule is general)."""
-        eq_pattern = re.compile(r'\b[A-Z]\w*\s*=\s*[a-z]\w*')
-        body_str = ", ".join(self.body)
-        return not bool(eq_pattern.search(body_str))
+        """True if the rule is a non-ground schema (mentions no constant)."""
+        return not self.contains_constant()
 
     def get_constants(self) -> List[str]:
-        """Extract all constant symbols (lowercase atoms) from the rule."""
-        text = self.head + " ".join(self.body)
-        tokens = re.findall(r'\b([a-z][a-z0-9_]*)\b', text)
-        keywords = {'not', 'true', 'dom', 'is', 'if', 'and'}
-        return [t for t in tokens if t not in keywords]
+        """Individual constants occurring in the rule, in order of appearance.
+
+        Only ARGUMENT positions count. Matching every lowercase token would
+        return predicate symbols as well, which then leak into ``get_domain()``
+        and are grounded as if they were domain elements.
+        """
+        consts: List[str] = []
+        for atom in [self.head, *self.body]:
+            atom = atom.strip()
+            eq = _EQUALITY_RE.match(atom)
+            if eq:
+                terms = eq.groups()
+            else:
+                terms = [a.strip()
+                         for group in re.findall(r'\(([^)]*)\)', atom)
+                         for a in group.split(',')]
+            for t in terms:
+                if t[:1].islower() and t not in _RESERVED_TERMS:
+                    consts.append(t)
+        return consts
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Rule):
@@ -83,8 +110,10 @@ class ABAFramework:
         for asm in self.assumptions:
             contrary = self.contraries.get(asm, f"c_{asm}")
             var_match = re.search(r'\((.+)\)', asm)
-            var = var_match.group(1) if var_match else 'X'
-            lines.append(f"{asm} :- dom({var}), not {contrary}.")
+            args = ([a.strip() for a in var_match.group(1).split(',')]
+                    if var_match else [])
+            guards = "".join(f"dom({a}), " for a in args if a[:1].isupper())
+            lines.append(f"{asm} :- {guards}not {contrary}.")
         return "\n".join(lines)
 
     def to_natural_language(self) -> str:

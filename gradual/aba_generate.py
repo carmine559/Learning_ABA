@@ -115,7 +115,10 @@ def generate_random_abaf(
         # always including ALL assumptions as available leaves
         earlier = [x for x in order if position[x] < h_pos]
         later   = [x for x in order if position[x] >= h_pos and x != head]
-        base_candidates = list(set(earlier) | set(assumptions))
+        # sorted(), not list(set(...)): set iteration order over strings varies
+        # with PYTHONHASHSEED, which would make rng.sample below differ between
+        # processes and silently break the seeded reproducibility claim.
+        base_candidates = sorted(set(earlier) | set(assumptions))
         base_candidates = [x for x in base_candidates if x != head]
         if not base_candidates:
             continue

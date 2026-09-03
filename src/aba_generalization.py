@@ -22,7 +22,9 @@ from dataclasses import dataclass, field, replace
 from typing import List, Tuple, Optional, Dict
 
 from src.aba_types import Rule, ABAFramework, LearningProblem
-from src.aba_validator import check_brave_entailment
+from src.aba_validator import (
+    check_brave_entailment, conditioned_status, witness_extension, _norm,
+)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -94,23 +96,14 @@ _KEYWORDS = {"not", "true", "false", "dom"}
 
 def rule_contains_constant(rule: Rule) -> bool:
     """
-    True if the rule head or body mentions any individual constant
-    (a lowercase atom that is not a predicate symbol or keyword).
+    True if the rule head or body mentions any individual constant — both the
+    normalised form ``p(X) :- X = c`` and a bare ground fact ``p(c).``.
     A genuinely intensional rule contains only variables.
+
+    Single implementation, shared with ``Rule.is_intensional`` so the strict
+    and permissive notions can never drift apart again.
     """
-    # Explicit equality X = const
-    for atom in rule.body:
-        if re.search(r'\b[A-Z]\w*\s*=\s*[a-z]\w*', atom):
-            return True
-    # Constant appearing as a predicate argument, e.g. flies(tweety)
-    for token in [rule.head, *rule.body]:
-        # arguments inside parentheses
-        for arg_group in re.findall(r'\(([^)]*)\)', token):
-            for arg in arg_group.split(','):
-                arg = arg.strip()
-                if arg and arg[0].islower() and arg not in _KEYWORDS:
-                    return True
-    return False
+    return rule.contains_constant()
 
 
 def is_degenerate_solution(
@@ -168,33 +161,33 @@ def wellformed_violations(
 
       (ii)  every NEW rule head whose predicate already occurs in the
             background language must be a LEARNABLE predicate; heads with
-            genuinely new predicates (e.g. contraries of new assumptions)
-            are unrestricted;
+            genuinely new predicates (e.g. the contrary of a NEW assumption)
+            are unrestricted. Note this covers contraries too: the contrary of
+            a BACKGROUND assumption is part of the background language, so
+            learning rules for it requires it to be in T -- exactly as the
+            paper does in Example 3 (T = {pacifist, abnormal_quaker});
       (iv)  the contrary of every BACKGROUND assumption must be unchanged;
       flatness: no assumption predicate (old or new) may occur as a rule head;
-      freshness: a NEW assumption's predicate must not already occur in the
-            background language (the paper introduces new assumption symbols,
-            or reuses EXISTING assumptions - it never repurposes background
-            predicates as assumptions).
+      freshness: a NEW assumption's predicate must not REPURPOSE a background
+            NON-assumption predicate. Re-listing an EXISTING background
+            assumption is legal reuse (Definition 4) and is NOT a violation,
+            even though the parser files it under "NEW ASSUMPTIONS".
     """
     viol: List[str] = []
 
-    # Background language: predicates of rules (heads + bodies), assumptions,
-    # and contraries.
-    bg_lang: set = set()
+    # Background predicates split by role: assumptions vs everything else.
+    bg_asm_preds: set = {_pred_of(a) for a in background.assumptions} - {None}
+    bg_nonasm: set = set()
     for r in background.rules:
         for atom in [r.head, *r.body]:
             p = _pred_of(atom)
-            if p:
-                bg_lang.add(p)
-    for a in background.assumptions:
-        p = _pred_of(a)
-        if p:
-            bg_lang.add(p)
+            if p and p not in bg_asm_preds:
+                bg_nonasm.add(p)
     for c in background.contraries.values():
         p = _pred_of(c)
-        if p:
-            bg_lang.add(p)
+        if p and p not in bg_asm_preds:
+            bg_nonasm.add(p)
+    bg_lang = bg_asm_preds | bg_nonasm
 
     asm_preds = {_pred_of(a) for a in candidate.assumptions} - {None}
     learn = set(learnable)
@@ -219,9 +212,11 @@ def wellformed_violations(
 
     for a in candidate.new_assumptions:
         p = _pred_of(a)
-        if p and p in bg_lang:
-            viol.append(f"new assumption predicate '{p}' already occurs in "
-                        f"the background language")
+        # Legal reuse of an existing assumption (Def 4) is fine; only flag a
+        # predicate that is defined in the background as a NON-assumption.
+        if p and p in bg_nonasm:
+            viol.append(f"new assumption predicate '{p}' repurposes background "
+                        f"non-assumption predicate '{p}'")
 
     return viol
 
@@ -244,6 +239,14 @@ class GeneralizationResult:
     test_pos_correct: int  = 0              # held-out positives correctly entailed
     test_neg_correct: int  = 0              # held-out negatives correctly rejected
 
+    # Strict generalisation: every held-out example gets the right label in
+    # EVERY extension consistent with the training examples. Rules out the
+    # free-choice frameworks that brave entailment cannot distinguish from
+    # genuine learning.
+    gen_determined:    bool  = False
+    n_free_heldout:    int   = 0            # held-out atoms the framework leaves open
+    determinacy_score: float = 0.0          # fraction determined AND correct
+
     # Derived
     generalization_score: float = 0.0       # fraction of test examples correct
     overfit_gap:          float = 0.0       # fit (1/0) − gen_score
@@ -253,6 +256,11 @@ class GeneralizationResult:
     # Structured error profile (M9)
     unentailed_positives:   int = 0         # train positives NOT entailed
     spurious_negatives:     int = 0         # train negatives wrongly entailed
+    # The same failures as atoms rather than counts. Recorded in the loops that
+    # already compute the counts (no extra solver calls) so the self-verification
+    # turn can tell the model WHICH examples broke, not just how many.
+    unentailed_positive_atoms: List[str] = field(default_factory=list)
+    spurious_negative_atoms:   List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict:
         from dataclasses import asdict
@@ -289,10 +297,12 @@ def evaluate_generalization(
         ok, _, _ = check_brave_entailment(framework, [e], [], dom, timeout)
         if not ok:
             res.unentailed_positives += 1
+            res.unentailed_positive_atoms.append(e)
     for e in train_neg:
         ok, _, _ = check_brave_entailment(framework, [], [e], dom, timeout)
         if not ok:                       # ':- e' unsat ⟺ e entailed
             res.spurious_negatives += 1
+            res.spurious_negative_atoms.append(e)
 
     # ── Generalisation ───────────────────────────────────────────────────────
     # HEADLINE CHECK (Definition 1 of De Angelis et al. 2024, on the FULL
@@ -311,17 +321,17 @@ def evaluate_generalization(
         dom, timeout,
     )
 
-    # DIAGNOSTIC per-example score on the held-out set only (each example
-    # checked in isolation; brave per example). Used for the graded
-    # generalization_score and error localisation, NOT for validity.
-    for e in split.test_positive:
-        ok, _, _ = check_brave_entailment(framework, [e], [], dom, timeout)
-        if ok:
-            res.test_pos_correct += 1
-    for e in split.test_negative:
-        ok, _, _ = check_brave_entailment(framework, [], [e], dom, timeout)
-        if ok:                           # correctly NOT entailed
-            res.test_neg_correct += 1
+    # DIAGNOSTIC per-example score, read off ONE witness extension of the
+    # training problem. Checking each held-out example in isolation instead
+    # asks "does SOME extension get this right", which is near-vacuous for a
+    # negative on a multi-extension framework and made this score routinely
+    # exceed fit.
+    witness = witness_extension(framework, train_pos, train_neg, dom, timeout)
+    if witness is not None:
+        res.test_pos_correct = sum(1 for e in split.test_positive
+                                   if _norm(e) in witness)
+        res.test_neg_correct = sum(1 for e in split.test_negative
+                                   if _norm(e) not in witness)
 
     n_test = res.n_test_pos + res.n_test_neg
     if n_test > 0:
@@ -331,6 +341,23 @@ def evaluate_generalization(
     else:
         # No held-out set (problem too small): score falls back to fit
         res.generalization_score = 1.0 if res.fit_valid else 0.0
+
+    # STRICT CHECK: is each held-out label forced, or merely achievable?
+    if n_test > 0:
+        status = conditioned_status(
+            framework, train_pos, train_neg,
+            split.test_positive + split.test_negative, dom, timeout,
+        )
+        res.n_free_heldout = sum(1 for v in status.values() if v == "FREE")
+        determined_ok = (
+            sum(1 for e in split.test_positive if status.get(e) == "ALWAYS")
+            + sum(1 for e in split.test_negative if status.get(e) == "NEVER")
+        )
+        res.determinacy_score = determined_ok / n_test
+        res.gen_determined = res.fit_valid and determined_ok == n_test
+    else:
+        res.determinacy_score = 1.0 if res.fit_valid else 0.0
+        res.gen_determined = res.fit_valid
 
     res.overfit_gap = (1.0 if res.fit_valid else 0.0) - res.generalization_score
     res.is_degenerate = is_degenerate_solution(framework, train_pos)

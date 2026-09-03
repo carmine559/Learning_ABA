@@ -12,6 +12,7 @@ Key methodological upgrades over the original:
 """
 from __future__ import annotations
 import json
+import re
 import time
 import statistics
 from dataclasses import dataclass, field, asdict
@@ -48,13 +49,21 @@ class SampleResult:
     # Parsing
     parse_success: bool = False
     raw_output:    str  = ""
+    # Every repair the parser applied to reach a framework (misfiled rules,
+    # multiple answer blocks, echoed problem statement). Kept so a score can
+    # always be traced back to what the model literally wrote.
+    parse_repairs: List[str] = field(default_factory=list)
 
     # Stability
     has_extension: bool = False
 
     # Fit + generalisation (the core signals)
     fit_valid:            bool  = False
-    gen_valid:            bool  = False
+    gen_valid:            bool  = False       # brave: SOME extension is right
+    gen_determined:       bool  = False       # strict: EVERY train-consistent
+                                              # extension is right
+    determinacy_score:    float = 0.0
+    n_free_heldout:       int   = 0
     generalization_score: float = 0.0
     overfit_gap:          float = 0.0
 
@@ -67,6 +76,12 @@ class SampleResult:
     # Error profile
     unentailed_positives: int = 0
     spurious_negatives:   int = 0
+    # The failing TRAIN examples themselves, not just how many. Makes the
+    # qualitative error analysis possible directly from results_<mode>.jsonl
+    # ("which examples does this model systematically get wrong?") without
+    # re-running the solver.
+    unentailed_positive_atoms: List[str] = field(default_factory=list)
+    spurious_negative_atoms:   List[str] = field(default_factory=list)
     error_type:           str = "none"
     # Definition-1 side conditions ((ii), (iv), flatness) violated by the
     # candidate, if any — such samples are ill-formed regardless of entailment.
@@ -112,46 +127,34 @@ def _classify_error(
 # One sample
 # ──────────────────────────────────────────────────────────────────────────────
 
-def evaluate_one_sample(
+def score_llm_output(
     entry: DatasetEntry,
     split: SplitProblem,
-    backend: LLMBackend,
+    raw_output: str,
     mode: str,
+    model_name: str,
     sample_idx: int = 0,
-    temperature: float = 0.7,
-    max_tokens: int = 1024,
-    precomputed_role_facts: Optional[List[Rule]] = None,
 ) -> SampleResult:
+    """Score one raw LLM answer. The single source of truth for every metric.
+
+    Kept separate from generation so that `rescore.py` can recompute metrics
+    from the `raw_output` already stored in results_<mode>.jsonl, without
+    spending GPU time again — and so that no second copy of the scoring logic
+    can drift from this one.
+    """
     problem = split.train          # the LLM only ever sees the training problem
     r = SampleResult(
         problem_id=entry.problem.problem_id,
         mode=mode,
-        model_name=getattr(backend, "model", type(backend).__name__),
+        model_name=model_name,
         source=entry.source,
         sample_idx=sample_idx,
     )
-
-    # 1. Prompt + generate
-    prompt = problem_to_prompt(
-        problem, mode=mode, precomputed_role_facts=precomputed_role_facts
-    )
-    try:
-        resp = backend.generate(prompt, temperature=temperature, max_tokens=max_tokens)
-    except Exception as exc:
-        import traceback
-        r.error_type = "llm_error"
-        # Keep the full traceback: an opaque "AttributeError:" with no frames
-        # cost us a cluster run to diagnose. This lands in results_<mode>.jsonl.
-        r.raw_output = (f"[LLM ERROR] {type(exc).__name__}: {exc}\n"
-                        + traceback.format_exc())
-        return r
-    r.llm_latency_s     = resp.latency_s
-    r.raw_output        = resp.text
-    r.prompt_tokens     = resp.prompt_tokens
-    r.completion_tokens = resp.completion_tokens
+    r.raw_output = raw_output
 
     # 2. Parse
-    candidate = parse_llm_output(resp.text, problem.background)
+    candidate = parse_llm_output(raw_output, problem.background,
+                                 repairs=r.parse_repairs)
     r.parse_success = candidate is not None
     if candidate is None:
         r.error_type = "parse_error"
@@ -182,12 +185,17 @@ def evaluate_one_sample(
 
     r.fit_valid            = gen.fit_valid
     r.gen_valid            = gen.gen_valid
+    r.gen_determined       = gen.gen_determined
+    r.determinacy_score    = gen.determinacy_score
+    r.n_free_heldout       = gen.n_free_heldout
     r.generalization_score = gen.generalization_score
     r.overfit_gap          = gen.overfit_gap
     r.intensional          = gen.is_intensional
     r.is_degenerate        = gen.is_degenerate
     r.unentailed_positives = gen.unentailed_positives
     r.spurious_negatives   = gen.spurious_negatives
+    r.unentailed_positive_atoms = list(gen.unentailed_positive_atoms)
+    r.spurious_negative_atoms   = list(gen.spurious_negative_atoms)
     r.error_type           = _classify_error(r.parse_success, r.has_extension, gen)
 
     # 4. Semantic comparison with the symbolic reference (if available)
@@ -200,6 +208,58 @@ def evaluate_one_sample(
             r.semantic_match     = match
             r.semantic_agreement = frac
 
+    return r
+
+
+def evaluate_one_sample(
+    entry: DatasetEntry,
+    split: SplitProblem,
+    backend: LLMBackend,
+    mode: str,
+    sample_idx: int = 0,
+    temperature: float = 0.7,
+    max_tokens: int = 1024,
+    precomputed_role_facts: Optional[List[Rule]] = None,
+) -> SampleResult:
+    """Prompt the model once, then score its answer with `score_llm_output`.
+
+    Deliberately ONE turn. The thesis measures whether a model can execute
+    ASP-ABAlearnB unaided; any follow-up turn that carries the solver's verdict
+    back to the model would be measuring oracle-guided search instead, and a
+    result obtained that way could not be reported as replication.
+    """
+    model_name = getattr(backend, "model", type(backend).__name__)
+
+    prompt = problem_to_prompt(
+        split.train, mode=mode, precomputed_role_facts=precomputed_role_facts
+    )
+    try:
+        resp = backend.generate(prompt, temperature=temperature, max_tokens=max_tokens)
+    except Exception as exc:
+        import traceback
+        r = SampleResult(
+            problem_id=entry.problem.problem_id, mode=mode,
+            model_name=model_name, source=entry.source, sample_idx=sample_idx,
+        )
+        r.error_type = "llm_error"
+        # Keep the full traceback: an opaque "AttributeError:" with no frames
+        # cost us a cluster run to diagnose. This lands in results_<mode>.jsonl.
+        r.raw_output = (f"[LLM ERROR] {type(exc).__name__}: {exc}\n"
+                        + traceback.format_exc())
+        return r
+
+    r = score_llm_output(entry, split, resp.text, mode, model_name, sample_idx)
+    r.llm_latency_s     = resp.latency_s
+    r.prompt_tokens     = resp.prompt_tokens
+    r.completion_tokens = resp.completion_tokens
+    # A truncated answer is a budget failure, not a reasoning failure — record
+    # it so --max-tokens can be ruled in or out as a cause. Prefer the
+    # backend's own finish_reason where it reports one; fall back to the token
+    # count, which is all some backends expose.
+    if getattr(resp, "finish_reason", None) == "length" or (
+        resp.completion_tokens and resp.completion_tokens >= max_tokens
+    ):
+        r.parse_repairs.append(f"output hit the {max_tokens}-token cap")
     return r
 
 
@@ -222,6 +282,13 @@ class ProblemResult:
     # pass@k — success if ANY sample succeeds
     fit_at_k:  bool  = False
     gen_at_k:  bool  = False
+    # STRICT generalisation (every train-consistent extension gets the held-out
+    # examples right). gen_* alone cannot separate learning from a framework
+    # that merely leaves the unseen atoms free.
+    det_at_1:  float = 0.0
+    det_at_k:  bool  = False
+    determinacy_mean: float = 0.0
+    free_heldout_mean: float = 0.0
     # STRICT success (the ABA-Learning definition): the sample fits ALL
     # training examples AND generalises to held-out AND is stable AND is not
     # degenerate — i.e. error_type == "none". gen@k alone flatters solutions
@@ -246,6 +313,12 @@ class ProblemResult:
         self.gen_at_1   = sum(s.gen_valid for s in self.samples) / n
         self.fit_at_k   = any(s.fit_valid for s in self.samples)
         self.gen_at_k   = any(s.gen_valid for s in self.samples)
+        self.det_at_1   = sum(s.gen_determined for s in self.samples) / n
+        self.det_at_k   = any(s.gen_determined for s in self.samples)
+        self.determinacy_mean  = statistics.mean(s.determinacy_score
+                                                 for s in self.samples)
+        self.free_heldout_mean = statistics.mean(float(s.n_free_heldout)
+                                                 for s in self.samples)
         clean = [s.error_type == "none" for s in self.samples]
         self.clean_at_1 = sum(clean) / n
         self.clean_at_k = any(clean)
@@ -364,6 +437,23 @@ def evaluate_dataset(
 # Aggregation
 # ──────────────────────────────────────────────────────────────────────────────
 
+def wilson_interval(successes: float, n: int, z: float = 1.96) -> List[float]:
+    """Wilson 95% score interval for a proportion.
+
+    Reported alongside every headline rate: at n≈103 problems the sampling
+    error is several points wide, which matters when comparing model×mode
+    cells that differ by less than that.
+    """
+    if n <= 0:
+        return [0.0, 0.0]
+    p = successes / n
+    denom = 1 + z * z / n
+    centre = p + z * z / (2 * n)
+    half = z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5)
+    return [round(max(0.0, (centre - half) / denom), 3),
+            round(min(1.0, (centre + half) / denom), 3)]
+
+
 def aggregate_results(results: List[ProblemResult]) -> Dict:
     if not results:
         return {}
@@ -372,26 +462,88 @@ def aggregate_results(results: List[ProblemResult]) -> Dict:
     def _mean(key):
         return sum(getattr(r, key) for r in results) / n
 
+    def _rate(key):
+        """Mean of a per-problem @k boolean, with its Wilson interval."""
+        s = sum(bool(getattr(r, key)) for r in results)
+        return round(s / n, 3), wilson_interval(s, n)
+
     error_counts: Dict[str, int] = {}
+    repair_counts: Dict[str, int] = {}
     for r in results:
         for s in r.samples:
             error_counts[s.error_type] = error_counts.get(s.error_type, 0) + 1
+            for rep in s.parse_repairs:
+                key = rep.split(":")[0]
+                repair_counts[key] = repair_counts.get(key, 0) + 1
+
+    # Quality rates are only defined over samples that produced a fitting
+    # solution. Averaging the 0.0 that a problem with no such sample carries
+    # would report "0% intensional" where the honest answer is "undefined".
+    with_fit = [r for r in results if any(s.fit_valid for s in r.samples)]
+    n_fit = len(with_fit)
+
+    def _quality(key):
+        if not with_fit:
+            return None
+        return round(sum(getattr(r, key) for r in with_fit) / n_fit, 3)
+
+    fit_k, fit_ci     = _rate("fit_at_k")
+    gen_k, gen_ci     = _rate("gen_at_k")
+    det_k, det_ci     = _rate("det_at_k")
+    clean_k, clean_ci = _rate("clean_at_k")
 
     return {
         "n_problems":        n,
         "parse_rate":        round(_mean("parse_rate"), 3),
         "fit_at_1":          round(_mean("fit_at_1"), 3),
         "gen_at_1":          round(_mean("gen_at_1"), 3),
-        "fit_at_k":          round(sum(r.fit_at_k for r in results) / n, 3),
-        "gen_at_k":          round(sum(r.gen_at_k for r in results) / n, 3),
+        "det_at_1":          round(_mean("det_at_1"), 3),
+        "fit_at_k":          fit_k,
+        "gen_at_k":          gen_k,
+        "det_at_k":          det_k,
         "clean_at_1":        round(_mean("clean_at_1"), 3),
-        "clean_at_k":        round(sum(r.clean_at_k for r in results) / n, 3),
+        "clean_at_k":        clean_k,
+        "ci95": {
+            "fit_at_k":   fit_ci,
+            "gen_at_k":   gen_ci,
+            "det_at_k":   det_ci,
+            "clean_at_k": clean_ci,
+        },
         "gen_score_mean":    round(_mean("gen_score_mean"), 3),
+        "determinacy_mean":  round(_mean("determinacy_mean"), 3),
+        "free_heldout_mean": round(_mean("free_heldout_mean"), 3),
         "mean_overfit_gap":  round(_mean("mean_overfit_gap"), 3),
-        "intensional_rate":  round(_mean("intensional_rate"), 3),
-        "degenerate_rate":   round(_mean("degenerate_rate"), 3),
+        "n_problems_with_fit": n_fit,
+        "intensional_rate":  _quality("intensional_rate"),
+        "degenerate_rate":   _quality("degenerate_rate"),
         "error_breakdown":   error_counts,
+        "parse_repairs":     repair_counts,
     }
+
+
+_TIER_RE = re.compile(r"^(t\d+_[a-z]+)_\d+")
+
+
+def tier_breakdown(
+    results_by_mode: Dict[str, List[ProblemResult]],
+) -> Dict[str, Dict[str, Dict]]:
+    """Aggregate per benchmark tier: mode -> tier -> metrics.
+
+    The tier is read from the problem-id prefix (``t1_mono_0007[_anon]`` ->
+    ``t1_mono``); the three built-ins group as ``builtin``. Returns {} when no
+    benchmark problems are present, so the section only appears for
+    ``--benchmark`` runs.
+    """
+    out: Dict[str, Dict[str, Dict]] = {}
+    any_tier = False
+    for mode, results in results_by_mode.items():
+        groups: Dict[str, List[ProblemResult]] = {}
+        for pr in results:
+            m = _TIER_RE.match(pr.problem_id)
+            any_tier = any_tier or bool(m)
+            groups.setdefault(m.group(1) if m else "builtin", []).append(pr)
+        out[mode] = {tier: aggregate_results(prs) for tier, prs in groups.items()}
+    return out if any_tier else {}
 
 
 # ──────────────────────────────────────────────────────────────────────────────

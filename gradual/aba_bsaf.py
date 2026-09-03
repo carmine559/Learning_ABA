@@ -228,9 +228,12 @@ def ground_framework(
             gc = _subst(contr_tmpl, binding)
             ground_asms.append(ga)
             ground_contr[ga] = gc
-            ground_tau[ga] = (scores.get(ga)
-                              or scores.get(_pred(ga))
-                              or default_score)
+            # Explicit None checks: `or` chaining silently turns a legitimate
+            # elicited score of 0.0 into the default.
+            tau = scores.get(ga)
+            if tau is None:
+                tau = scores.get(_pred(ga))
+            ground_tau[ga] = default_score if tau is None else tau
     return GroundABAF(ground_rules, ground_asms, ground_contr, ground_tau)
 
 
