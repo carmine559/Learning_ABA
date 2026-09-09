@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 import copy
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple, Dict
+from typing import List, Optional, Tuple, Dict, Callable
 
 from src.aba_types import Rule, ABAFramework, LearningProblem, TransformStep, LearningTrace
 from src.aba_validator import (
@@ -317,13 +317,29 @@ def gen_phase(
     ground_facts: List[Rule],
     problem: LearningProblem,
     verbose: bool = False,
+    observer: Optional[Callable[..., None]] = None,
 ) -> Tuple[ABAFramework, LearningTrace]:
     """
     Apply Fact Subsumption, Folding and Assumption Introduction to
     turn ground facts into an intensional solution.
 
     Returns (final_framework, trace).
+
+    `observer`, when given, is called at every decision point with
+    ``(kind, learnt, new_asms, idx, rule, extra)`` where `kind` is one of
+    "subsume" / "fold" / "check" / "asm_intro". It is a pure spectator: it
+    receives copies and its return value is ignored, so passing None (the
+    default) leaves behaviour bit-for-bit unchanged.
+
+    It exists so that the step probes in `aba_probes.py` can be built from the
+    states this loop actually visits. Re-implementing the loop in a separate
+    harvester would let the probe states drift away from the reference
+    algorithm, which is the one thing that must not happen.
     """
+    def _notify(kind: str, learnt, new_asms, idx, rule, **extra) -> None:
+        if observer is not None:
+            observer(kind, list(learnt), dict(new_asms), idx, rule, extra)
+
     background = problem.background
     dom = problem.get_domain()
     trace = LearningTrace(problem_id=problem.problem_id)
@@ -345,7 +361,9 @@ def gen_phase(
 
         # ── R4: Fact Subsumption ─────────────────────────────────────────────
         others = learnt[:idx] + learnt[idx + 1:]
-        if fact_subsumption(rule, background, others, new_asms, problem):
+        _subsumable = fact_subsumption(rule, background, others, new_asms, problem)
+        _notify("subsume", learnt, new_asms, idx, rule, answer=_subsumable)
+        if _subsumable:
             learnt.pop(idx)
             queue = [i - 1 if i > idx else i for i in queue]
             trace.steps.append(TransformStep(
@@ -364,6 +382,7 @@ def gen_phase(
 
         fold_candidates = apply_folding(rule, background)
         accepted = False
+        _notify("fold", learnt, new_asms, idx, rule, candidates=list(fold_candidates))
 
         # Pass 1: try direct folding (no assumption needed)
         for folded in fold_candidates:
@@ -372,6 +391,7 @@ def gen_phase(
             sat, _, _ = check_brave_entailment(
                 fw, problem.positive, problem.negative, dom
             )
+            _notify("check", learnt, new_asms, idx, rule, folded=folded, answer=sat)
             if sat:
                 trace.steps.append(TransformStep(
                     step_type="folding",
@@ -394,6 +414,8 @@ def gen_phase(
                 result = assumption_introduction(
                     folded, background, fw_now, problem, test_learnt, new_asms
                 )
+                _notify("asm_intro", learnt, new_asms, idx, rule,
+                        folded=folded, answer=result)
                 if result is not None:
                     defeasible, asm, contrary, contra_facts = result
                     learnt[idx] = defeasible

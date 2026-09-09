@@ -30,6 +30,9 @@ from src.aba_evaluation import (
     ProblemResult, evaluate_dataset, aggregate_results, complexity_analysis,
     tier_breakdown,
 )
+from src.aba_probes import (
+    run_probes, aggregate_probes, KINDS as PROBE_KINDS,
+)
 from extras.aba_visualization import save_all_plots
 
 
@@ -105,7 +108,8 @@ def build_dataset(
 # Symbolic baseline  (ASP-ABAlearnB)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def run_symbolic_baseline(ds: ABADataset, verbose: bool = False) -> Dict:
+def run_symbolic_baseline(ds: ABADataset, verbose: bool = False,
+                          output_dir: Optional[str] = None) -> Dict:
     """Run ASP-ABAlearnB twice per problem, for two different purposes.
 
       * on the FULL problem — the reference solution used for export and for
@@ -123,6 +127,7 @@ def run_symbolic_baseline(ds: ABADataset, verbose: bool = False) -> Dict:
         "train_solved": 0, "train_gen": 0, "train_determined": 0,
         "problems": [],
     }
+    traces: List[Dict] = []
 
     for entry in ds:
         problem = entry.problem
@@ -138,6 +143,13 @@ def run_symbolic_baseline(ds: ABADataset, verbose: bool = False) -> Dict:
         # rather than the raw RoLe ground facts stored by _solve_with_role.
         if ok and solution is not None:
             entry.solution = solution
+
+        # The execution trace, not just its length. `DatasetEntry.trace` has
+        # existed all along but was never assigned, so the only thing about the
+        # symbolic run that reached disk was `n_steps`. The trace is what makes
+        # the step probes possible: it names the states the algorithm visits.
+        entry.trace = trace
+        traces.append(trace.to_dict())
 
         # ── the comparable, train-only run ───────────────────────────────────
         split = split_problem_examples(problem)
@@ -173,6 +185,14 @@ def run_symbolic_baseline(ds: ABADataset, verbose: bool = False) -> Dict:
     print(f"Symbolic (train only, comparable with the LLM rows): "
           f"{results['train_gen']}/{n} generalise, "
           f"{results['train_determined']}/{n} determined")
+
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+        path = os.path.join(output_dir, "symbolic_traces.jsonl")
+        with open(path, "w", encoding="utf-8") as fh:
+            for t in traces:
+                fh.write(json.dumps(t) + "\n")
+        print(f"Symbolic traces saved to {path}")
     return results
 
 
@@ -221,6 +241,59 @@ def run_prompt_experiments(
                     f.write(json.dumps(s.to_dict()) + "\n")
 
     return results_by_mode
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step probes  (src/aba_probes.py)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def run_probe_experiment(
+    ds: ABADataset,
+    backend: LLMBackend,
+    max_per_kind: int = 2,
+    n_samples: int = 1,
+    max_tokens: int = 512,
+    output_dir: str = "./results",
+    verbose: bool = True,
+) -> Dict:
+    """Ask the model one ASP-ABAlearnB decision at a time.
+
+    Complements the end-to-end modes rather than replacing them: those measure
+    whether a Definition-1 solution comes out, these measure whether each step
+    of the algorithm can be performed. The gap between the two is the point.
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    print(f"\n=== Step probes (max {max_per_kind}/kind/problem, "
+          f"k={n_samples}, greedy) ===")
+    results = run_probes(ds, backend, max_per_kind=max_per_kind,
+                         n_samples=n_samples, temperature=0.0,
+                         max_tokens=max_tokens, verbose=verbose)
+
+    path = os.path.join(output_dir, "probes.jsonl")
+    with open(path, "w", encoding="utf-8") as f:
+        for r in results:
+            f.write(json.dumps(r.to_dict()) + "\n")
+
+    summary = aggregate_probes(results)
+    with open(os.path.join(output_dir, "probe_summary.json"),
+              "w", encoding="utf-8") as f:
+        json.dump(summary, f, indent=2)
+
+    print(f"\n  {'probe':<12}{'n':>5}{'acc':>8}{'score':>8}"
+          f"{'balanced':>10}{'chance':>8}")
+    for kind in PROBE_KINDS:
+        e = summary.get(kind)
+        if not e:
+            continue
+        ba = e.get("balanced_accuracy")
+        print(f"  {kind:<12}{e['n']:>5}{e['accuracy']:>8.3f}{e['score']:>8.3f}"
+              f"{(f'{ba:.3f}' if ba is not None else '-'):>10}"
+              f"{e['chance']:>8.2f}")
+    print("\n  Binary probes (check, subsume) must be read against the 0.50 "
+          "floor:\n  balanced accuracy puts a constant YES/NO answer at exactly "
+          "0.50.")
+    print(f"  -> {path}")
+    return summary
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -768,6 +841,21 @@ def parse_args() -> argparse.Namespace:
     g_t1.add_argument("--symbolic-only", action="store_true",
                       help="Run only the symbolic ASP-ABAlearnB reference, no LLM.")
 
+    # ── Task 1b: step probes ─────────────────────────────────────────────────
+    g_pr = p.add_argument_group("Task 1b - step probes")
+    g_pr.add_argument("--probes", action="store_true",
+                      help=("Run STEP PROBES instead of the end-to-end modes: "
+                            "one decision of ASP-ABAlearnB per prompt, each with "
+                            "a Clingo or syntactic oracle (R1 RoLe, R2 Folding, "
+                            "the solution check, R3 Assumption Introduction, "
+                            "R4 Fact Subsumption)."))
+    g_pr.add_argument("--probes-per-kind", type=int, default=2, metavar="N",
+                      help="Max probes of each kind per problem (default 2, "
+                           "giving ~7-8 probes per problem).")
+    g_pr.add_argument("--probe-samples", type=int, default=1, metavar="K",
+                      help="Samples per probe (default 1: power comes from the "
+                           "~780 probe items, not from repeated draws).")
+
     # ── Task 2: gradual semantics ────────────────────────────────────────────
     g_t2 = p.add_argument_group("Task 2 - gradual semantics")
     g_t2.add_argument("--graded", action="store_true",
@@ -838,7 +926,8 @@ def main() -> None:
 
     # ── Symbolic baseline ─────────────────────────────────────────────────────
     print("\n[2/4] Symbolic baseline (ASP-ABAlearnB)...")
-    symbolic_results = run_symbolic_baseline(ds, verbose=args.verbose)
+    symbolic_results = run_symbolic_baseline(ds, verbose=args.verbose,
+                                             output_dir=args.output)
 
     if args.symbolic_only:
         report_path = os.path.join(args.output, "symbolic_results.json")
@@ -873,6 +962,17 @@ def main() -> None:
           f"model={args.model or 'default'})...")
     backend_kwargs = _build_backend_kwargs(args)
     backend = get_backend(args.backend, model=args.model, **backend_kwargs)
+
+    if args.probes:
+        run_probe_experiment(
+            ds, backend,
+            max_per_kind=args.probes_per_kind,
+            n_samples=args.probe_samples,
+            max_tokens=min(args.max_tokens, 512),
+            output_dir=args.output,
+            verbose=True,
+        )
+        return
 
     results_by_mode = run_prompt_experiments(
         ds, backend,

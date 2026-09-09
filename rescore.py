@@ -33,7 +33,7 @@ import argparse
 import glob
 import json
 import os
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from src.aba_dataset import ABADataset, DatasetEntry
 from src.aba_evaluation import (
@@ -41,6 +41,8 @@ from src.aba_evaluation import (
     tier_breakdown,
 )
 from src.aba_generalization import split_problem_examples
+from src.aba_algorithm import solve_aba_learning
+from src.aba_trace import score_trace
 
 
 MODES = ["direct", "cot", "guided", "algorithm"]
@@ -132,13 +134,52 @@ def rescore_mode(
     return results, skipped
 
 
+def trace_stats_for_mode(path: str, mode: str,
+                         entries: Dict[str, DatasetEntry],
+                         gold: Dict[str, Any]) -> Optional[Dict]:
+    """Secondary, descriptive trace-fidelity statistics for one mode.
+
+    Rule-keyed only. An earlier symbol-sequence measure was dropped because
+    random sequences scored 0.28-0.49 on it — matching a canonical RULE has a
+    chance rate of ~0 instead. Averaged over samples that produced a trace at
+    all, with that rate reported, since `algorithm` mode at Qwen2.5-3B has a
+    median output of 73 characters and nothing to score.
+    """
+    import statistics
+    f1s, r2s, r3s, ht, n = [], [], [], 0, 0
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            entry = entries.get(row["problem_id"])
+            tr = gold.get(row["problem_id"])
+            if entry is None or tr is None:
+                continue
+            n += 1
+            sc = score_trace(row.get("raw_output") or "", tr,
+                             entry.problem.background, entry.problem.learnable)
+            if sc.has_trace:
+                ht += 1
+                f1s.append(sc.f1)
+                r2s.append(sc.r2_recall)
+                r3s.append(sc.r3_recall)
+    if not n:
+        return None
+    m = lambda v: round(statistics.mean(v), 3) if v else 0.0
+    return {"n": n, "n_with_trace": ht, "has_trace_rate": round(ht / n, 3),
+            "f1": m(f1s), "r2_recall": m(r2s), "r3_recall": m(r3s)}
+
+
 def rescore_run(run_dir: str, entries: Dict[str, DatasetEntry],
-                out_dir: Optional[str] = None) -> Dict:
+                out_dir: Optional[str] = None,
+                gold_traces: Optional[Dict[str, Any]] = None) -> Dict:
     out_dir = out_dir or run_dir
     os.makedirs(out_dir, exist_ok=True)
 
     summary: Dict[str, dict] = {}
     results_by_mode: Dict[str, List[ProblemResult]] = {}
+    trace_stats: Dict[str, Dict] = {}
     print(f"\n=== {run_dir} ===")
     for mode in MODES:
         path = os.path.join(run_dir, f"results_{mode}.jsonl")
@@ -162,6 +203,23 @@ def rescore_run(run_dir: str, entries: Dict[str, DatasetEntry],
             for pr in results:
                 for s in pr.samples:
                     fh.write(json.dumps(s.to_dict()) + "\n")
+
+        # `direct` is excluded deliberately: it asks for an answer, not a
+        # derivation, so it has no trace to score and any hits are artefacts.
+        if gold_traces and mode != "direct":
+            st = trace_stats_for_mode(path, mode, entries, gold_traces)
+            if st:
+                trace_stats[mode] = st
+
+    if summary and trace_stats:
+        summary["trace_fidelity"] = trace_stats
+        print("\n  Trace fidelity (rule-keyed; 'direct' excluded, it has no "
+              "trace by construction)")
+        print(f"  {'mode':<10}{'has_trace':>11}{'f1':>8}{'r2_rec':>8}"
+              f"{'r3_rec':>8}")
+        for mode, st in trace_stats.items():
+            print(f"  {mode:<10}{st['has_trace_rate']:>10.1%}{st['f1']:>8.3f}"
+                  f"{st['r2_recall']:>8.3f}{st['r3_recall']:>8.3f}")
 
     if summary:
         by_tier = tier_breakdown(results_by_mode)
@@ -202,6 +260,11 @@ def main() -> None:
     p.add_argument("--out", default=None,
                    help="Write rescored files here instead of in place. A "
                         "subdirectory per run is created.")
+    p.add_argument("--trace", action="store_true",
+                   help="Also compute the secondary trace-fidelity statistics "
+                        "(how much of the symbolic execution the model's own "
+                        "reasoning reproduces). Solves every problem "
+                        "symbolically first; adds a couple of seconds.")
     args = p.parse_args()
 
     # Shell globs are not expanded by cmd/PowerShell — do it here so the
@@ -225,13 +288,25 @@ def main() -> None:
     )
     print(f"  {len(entries)} problems rebuilt.")
 
+    gold_traces: Optional[Dict[str, Any]] = None
+    if args.trace:
+        print("Solving each problem symbolically for the trace reference...")
+        gold_traces = {}
+        for pid, entry in entries.items():
+            try:
+                _, tr = solve_aba_learning(entry.problem)
+                gold_traces[pid] = tr
+            except Exception as exc:
+                print(f"  [skip] {pid}: {type(exc).__name__}: {exc}")
+        print(f"  {len(gold_traces)} reference traces.")
+
     for run_dir in run_dirs:
         if not os.path.isdir(run_dir):
             print(f"[skip] not a directory: {run_dir}")
             continue
         out = (os.path.join(args.out, os.path.basename(run_dir.rstrip("/\\")))
                if args.out else None)
-        rescore_run(run_dir, entries, out_dir=out)
+        rescore_run(run_dir, entries, out_dir=out, gold_traces=gold_traces)
 
 
 if __name__ == "__main__":

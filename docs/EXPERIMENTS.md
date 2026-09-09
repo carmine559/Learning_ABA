@@ -125,6 +125,67 @@ benchmark, not 100%).
 `summary.json` contains every aggregate, overall and per tier (`by_tier`), with
 95% Wilson intervals for the `@k` rates under `ci95`.
 
+## Step probes — measuring the algorithm, not just the answer
+
+Every metric above is an **outcome** metric: did a Definition-1 solution come
+out? None of them says whether the model *executed* ASP-ABAlearnB. Step probes
+do, by supplying the state instead of inferring it: each probe presents one
+decision point taken from the real symbolic execution (via the `observer` hook
+in `gen_phase`, so the states are exactly those the algorithm visits) and asks
+for that one decision.
+
+| probe | question | oracle | chance |
+| --- | --- | --- | --- |
+| `role` | which ground facts make this a solution? | `run_rote_learning`'s minimal set | ~0 |
+| `fold` | generalise `p(X) :- X = c` against R | `apply_folding` — the **set** of legal folds | ~0 |
+| `check` | still a solution? if not, which examples fail? | `check_brave_entailment` | 0.50 / ~0 |
+| `introduce` | which rule to guard, with what contrary? | the proposal must itself yield a Def-1 solution | ~0 |
+| `subsume` | can this fact be dropped? | `fact_subsumption` | 0.50 |
+
+Design points that matter when reading the numbers:
+
+- **`fold` and `introduce` accept any legal answer**, not the one the solver
+  happened to pick, so the nondeterminism of `applyFolding`/`applyAsmIntro`
+  costs the model nothing. `introduce` is scored by *running* the model's own
+  proposal through Clingo.
+- **`check` and `subsume` are binary and must be read as `balanced_accuracy`
+  against a 0.50 floor** — a model that always answers YES scores exactly 0.50,
+  where raw accuracy would flatter it. `check` additionally asks *which*
+  examples fail, and that half has a ~0 chance floor.
+- `introduce` does **not** require an intensional contrary. Algorithm 1 applies
+  R3 and then rote-learns the contrary as ground facts (lines 23–25); only a
+  later Gen iteration folds it — the paper's Example 10, ρ17 → ρ19. Demanding
+  it in one step would mark the reference algorithm itself wrong.
+- Reusing an existing assumption needs no contrary rule at all (line 36 sets
+  `S := ∅`), so the probe accepts an answer without one.
+
+Validation: feeding the reference algorithm's *own* decisions back through every
+probe scores 328/328 (`tests/test_probes.py::test_solver_own_decisions_score_correct`).
+A probe that rejects the algorithm's own answer is mis-specified, and two were
+found that way during development.
+
+Run with `--probes`; results land in `probes.jsonl` and `probe_summary.json`.
+
+### Trace fidelity (secondary, descriptive)
+
+`rescore.py --trace` additionally reports how much of the symbolic execution the
+model's free-text reasoning reproduces: `has_trace_rate`, rule-keyed `f1`, and
+`r2_recall` / `r3_recall`. All measures are keyed to a **canonical rule**, whose
+chance rate is ~0.
+
+> An earlier version aligned the R1/R2/R3/R4 **symbol sequence** against the
+> symbolic trace. It was dropped: random sequences of the same length score
+> 0.28–0.49 on it, i.e. at or above every cell it was meant to measure. A
+> four-symbol alphabet over length-4–8 sequences cannot discriminate.
+
+Two cautions. `direct` mode is excluded — it asks for an answer, not a
+derivation, so it has no trace and any hits are echo artefacts. And the
+aggregate `f1` is weighted towards R1 (44.8% of gold steps here); R1 is not
+merely "copy the examples" — RoLe adds a *minimal* set and 23.2% of its facts
+are contraries of assumptions that appear in no example list — but it is still
+the step overlapping most with given text. Report `r2_recall`/`r3_recall` as the
+discriminating figures.
+
 ## Reproducing
 
 ```bash

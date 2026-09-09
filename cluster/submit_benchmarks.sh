@@ -1,40 +1,74 @@
 #!/bin/bash
 # ---------------------------------------------------------------------------
-# Submit the benchmark for several models on a cluster that allows only ONE
-# running L40 job per user: the jobs are CHAINED with SLURM dependencies
-# (afterany), so they execute strictly one-after-another, each with its own
-# full --time budget. Only the first job runs immediately; the others sit in
-# the queue as PENDING (Dependency) until their predecessor finishes.
+# Submit benchmark jobs on a cluster that allows only ONE running L40 job per
+# user: jobs are CHAINED with SLURM dependencies (afterany), so they execute
+# strictly one-after-another, each with its own full --time budget. Only the
+# first runs immediately; the rest sit PENDING (Dependency) until their turn.
 #
 # Run on giano.cs.unibo.it:
 #     cd /scratch.hpc/$USER/Learning_aba
-#     bash cluster/submit_benchmarks.sh
+#     bash cluster/submit_benchmarks.sh              # end-to-end modes
+#     SPLIT_MODES=1 bash cluster/submit_benchmarks.sh   # one job PER MODE
+#     PROBES=1 bash cluster/submit_benchmarks.sh     # step probes
 #
-# If the cluster also limits the number of QUEUED jobs, fall back to one
-# sequential job instead (models looped inside a single job, shared 24 h):
-#     sbatch --export=ALL,MODEL="qwen2.5-3b qwen2.5-7b mistral-7b" \
-#            cluster/run_benchmark.sbatch
+# WHY SPLIT_MODES EXISTS
+#   Measured GPU time for the full 1236 calls: 3B 1.1 h, 7B 3.7 h, 14B 7.3 h —
+#   roughly linear in parameters. 32B extrapolates to ~17 h in bf16, and bnb
+#   nf4 runs 1.5-2.5x slower, so a four-mode 32B job is 25-42 h against a 24 h
+#   wall limit. One job per mode is 4-14 h and fits. The per-mode jobs write
+#   into the same results/bench_<model>/ directory, so the result is identical
+#   to a single job's output.
+#
+# MODELS / MODES / EXTRA can all be overridden from the environment, e.g.
+#     MODELS="qwen2.5-32b" EXTRA="--load-4bit" SPLIT_MODES=1 \
+#         bash cluster/submit_benchmarks.sh
 # ---------------------------------------------------------------------------
 set -euo pipefail
 
-MODELS=(qwen2.5-3b qwen2.5-7b mistral-7b qwen2.5-14b)
+read -r -a MODELS <<< "${MODELS:-qwen2.5-3b qwen2.5-7b mistral-7b qwen2.5-14b}"
+read -r -a MODES  <<< "${MODES:-direct cot guided algorithm}"
+EXTRA="${EXTRA:-}"                 # e.g. --load-4bit  (required for 32B)
+SPLIT_MODES="${SPLIT_MODES:-0}"
+PROBES="${PROBES:-0}"
+
+submit() {   # $1 = job name, $2 = extra --export assignments
+    local name="$1" exports="$2" jid
+    if [ -z "${prev:-}" ]; then
+        jid=$(sbatch --parsable --job-name="$name" \
+                     --export="ALL,${exports}" cluster/run_benchmark.sbatch)
+    else
+        # afterany: start when the previous job ENDS, even if it failed, so one
+        # bad model never blocks the rest of the chain.
+        jid=$(sbatch --parsable --job-name="$name" \
+                     --dependency="afterany:${prev}" \
+                     --export="ALL,${exports}" cluster/run_benchmark.sbatch)
+    fi
+    prev="$jid"
+    echo "submitted ${name} as job ${jid}"
+    n_jobs=$((n_jobs + 1))
+}
 
 prev=""
+n_jobs=0
 for m in "${MODELS[@]}"; do
-    if [ -z "$prev" ]; then
-        prev=$(sbatch --parsable --job-name="bench-${m}" \
-                      --export=ALL,MODEL="$m" \
-                      cluster/run_benchmark.sbatch)
+    if [ "$PROBES" = "1" ]; then
+        submit "probe-${m}" "MODEL=${m},PROBES=1,EXTRA=${EXTRA}"
+    elif [ "$SPLIT_MODES" = "1" ]; then
+        for mode in "${MODES[@]}"; do
+            submit "bench-${m}-${mode}" "MODEL=${m},MODES=${mode},EXTRA=${EXTRA}"
+        done
     else
-        # afterany: start when the previous job ENDS (even if it failed),
-        # so one bad model never blocks the rest of the chain.
-        prev=$(sbatch --parsable --job-name="bench-${m}" \
-                      --dependency="afterany:${prev}" \
-                      --export=ALL,MODEL="$m" \
-                      cluster/run_benchmark.sbatch)
+        submit "bench-${m}" "MODEL=${m},MODES=${MODES[*]},EXTRA=${EXTRA}"
     fi
-    echo "submitted bench-${m} as job ${prev}"
 done
 
-echo "Chain submitted (${#MODELS[@]} jobs, one runs at a time)."
+echo "Chain submitted (${n_jobs} jobs, one runs at a time)."
 echo "Monitor with: squeue -u \$USER   (PENDING/Dependency = waiting its turn)"
+if [ "$SPLIT_MODES" = "1" ]; then
+    echo
+    echo "Per-mode chain: each job leaves a summary.json for its own mode only."
+    echo "Rebuild the merged summary when the chain finishes (CPU, seconds):"
+    for m in "${MODELS[@]}"; do
+        echo "    python3 rescore.py results/bench_${m} --benchmark 20"
+    done
+fi

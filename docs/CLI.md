@@ -68,7 +68,33 @@ GPU fit, single card: L40 (48 GB) takes 7B–14B in bf16 and up to ~32B with
 | Argument | Default | Description |
 | --- | --- | --- |
 | `--modes MODE …` | all four | `direct`, `cot`, `guided`, `algorithm` — increasing guidance. |
-| `--symbolic-only` | off | Run only the ASP-ABAlearnB reference; no LLM calls. |
+| `--symbolic-only` | off | Run only the ASP-ABAlearnB reference; no LLM calls. Also writes `symbolic_traces.jsonl`. |
+
+---
+
+## Task 1b — step probes
+
+Instead of asking for a whole framework and scoring the outcome, ask for **one
+transformation at a time** and score each against a Clingo or syntactic oracle.
+See [EXPERIMENTS.md](EXPERIMENTS.md#step-probes--measuring-the-algorithm-not-just-the-answer).
+
+| Argument | Default | Description |
+| --- | --- | --- |
+| `--probes` | off | Run step probes *instead of* the end-to-end modes. Five kinds: `role` (R1), `fold` (R2), `check` (the solution test), `introduce` (R3), `subsume` (R4). |
+| `--probes-per-kind N` | `2` | Max probes of each kind per problem. The default gives ~7–8 per problem, 780 over the 103-problem suite. |
+| `--probe-samples K` | `1` | Samples per probe. Power comes from the ~780 items, not from repeated draws of one item; probes run greedy (temperature 0). |
+
+Outputs `probes.jsonl` (one row per probe, with the model's answer, the oracle's
+answer and the verdict) and `probe_summary.json`.
+
+Read `check` and `subsume` as **`balanced_accuracy` against 0.50** — they are
+binary, and a constant YES lands exactly on that floor.
+
+```bash
+# ~780 probes, short answers; roughly a third of one mode's GPU time
+python main.py --backend local --model qwen2.5-14b --benchmark 20 \
+    --probes --output results/bench_qwen2.5-14b
+```
 
 ---
 

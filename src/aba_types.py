@@ -213,6 +213,33 @@ class TransformStep:
             return f"Fact Subsumption: removed {self.input_rule}"
         return f"Step({self.step_type})"
 
+    # Short symbols matching the paper's transformation rules R1-R4, used as the
+    # alphabet of the trace-alignment scorer.
+    RULE_SYMBOL = {
+        "rote_learning":           "R1",
+        "folding":                 "R2",
+        "assumption_introduction": "R3",
+        "fact_subsumption":        "R4",
+    }
+
+    @property
+    def rule_symbol(self) -> str:
+        return self.RULE_SYMBOL.get(self.step_type, "??")
+
+    def to_dict(self) -> Dict[str, Any]:
+        """JSON-ready form. Rules become Prolog strings, so a serialised trace
+        can be compared directly against the rule lines an LLM writes."""
+        return {
+            "step_type":   self.step_type,
+            "rule_symbol": self.rule_symbol,
+            "input_rule":   self.input_rule.to_prolog() if self.input_rule else None,
+            "output_rule":  self.output_rule.to_prolog() if self.output_rule else None,
+            "folding_rule": self.folding_rule.to_prolog() if self.folding_rule else None,
+            "new_assumption": self.new_assumption,
+            "new_contrary_facts": [r.to_prolog() for r in self.new_contrary_facts],
+            "note": self.note,
+        }
+
 
 @dataclass
 class LearningTrace:
@@ -230,3 +257,29 @@ class LearningTrace:
             parts.append("\nFinal framework:")
             parts.append(self.final_framework.to_natural_language())
         return "\n".join(parts)
+
+    def symbol_sequence(self) -> List[str]:
+        """The trace as an R1/R2/R3/R4 string — the alignment alphabet."""
+        return [s.rule_symbol for s in self.steps]
+
+    def to_dict(self) -> Dict[str, Any]:
+        """JSON-ready form, written to symbolic_traces.jsonl.
+
+        Only `n_steps` used to reach disk (main.py), which made the symbolic
+        execution unavailable as a reference for scoring LLM traces.
+        """
+        return {
+            "problem_id": self.problem_id,
+            "success":    self.success,
+            "n_steps":    len(self.steps),
+            "symbols":    self.symbol_sequence(),
+            "steps":      [s.to_dict() for s in self.steps],
+            "final_rules": ([r.to_prolog() for r in self.final_framework.rules]
+                            if self.final_framework else []),
+            "final_new_rules": ([r.to_prolog() for r in self.final_framework.new_rules]
+                                if self.final_framework else []),
+            "final_assumptions": (list(self.final_framework.assumptions)
+                                  if self.final_framework else []),
+            "final_contraries": (dict(self.final_framework.contraries)
+                                 if self.final_framework else {}),
+        }
