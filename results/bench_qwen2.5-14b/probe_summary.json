@@ -1,0 +1,35 @@
+{
+  "n": 780,
+  "role": {
+    "n": 103,
+    "accuracy": 0.534,
+    "score": 0.548,
+    "chance": 0.0
+  },
+  "fold": {
+    "n": 184,
+    "accuracy": 0.196,
+    "score": 0.196,
+    "chance": 0.0
+  },
+  "check": {
+    "n": 186,
+    "accuracy": 0.769,
+    "score": 0.653,
+    "chance": 0.5,
+    "balanced_accuracy": 0.78
+  },
+  "introduce": {
+    "n": 103,
+    "accuracy": 0.718,
+    "score": 0.718,
+    "chance": 0.0
+  },
+  "subsume": {
+    "n": 204,
+    "accuracy": 0.525,
+    "score": 0.525,
+    "chance": 0.5,
+    "balanced_accuracy": 0.52
+  }
+}
