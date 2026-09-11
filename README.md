@@ -18,8 +18,6 @@ increasing guidance, and a Clingo-verified evaluation.
 2. **Evaluate gradually** — BSAF gradual ABA semantics (Rapberger, Russo, Rago
    & Toni, KR 2025) against an argument-tree baseline, over the learned
    frameworks. See [docs/GRADED.md](docs/GRADED.md).
-3. **Attribute strengths** *(planned, no code yet)* — ArgLLMs + RAG. See
-   [argllm/README.md](argllm/README.md).
 
 ---
 
