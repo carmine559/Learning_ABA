@@ -10,7 +10,7 @@ reference implementation of the published algorithm, a stratified anonymised
 benchmark that isolates each of its capabilities, four prompting strategies of
 increasing guidance, and a Clingo-verified evaluation.
 
-**Three tasks.**
+**Two tasks.**
 
 1. **Learn** *(the core question)* — LLM vs. ASP-ABAlearnB (De Angelis,
    Proietti & Toni, ECAI 2024), on problems **anonymised** so the model cannot
@@ -18,8 +18,6 @@ increasing guidance, and a Clingo-verified evaluation.
 2. **Evaluate gradually** — BSAF gradual ABA semantics (Rapberger, Russo, Rago
    & Toni, KR 2025) against an argument-tree baseline, over the learned
    frameworks. See [docs/GRADED.md](docs/GRADED.md).
-3. **Attribute strengths** *(planned, no code yet)* — ArgLLMs + RAG. See
-   [argllm/README.md](argllm/README.md).
 
 ---
 
