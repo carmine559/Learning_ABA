@@ -10,7 +10,7 @@ reference implementation of the published algorithm, a stratified anonymised
 benchmark that isolates each of its capabilities, four prompting strategies of
 increasing guidance, and a Clingo-verified evaluation.
 
-**Three tasks.**
+**Two tasks.**
 
 1. **Learn** *(the core question)* — LLM vs. ASP-ABAlearnB (De Angelis,
    Proietti & Toni, ECAI 2024), on problems **anonymised** so the model cannot
