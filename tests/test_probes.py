@@ -114,6 +114,80 @@ def test_solver_own_decisions_score_correct(problems):
         assert n > 0, f"no {kind} probes were exercised"
 
 
+def test_introduce_ignores_a_model_supplied_contrary():
+    """R3 is two choices; the contrary's extension is not one of them.
+
+    `applyAsmIntro` returns S, but S is computed by ASP (Algorithm 1 line 44)
+    and rote-learnt at lines 23-25 — the algorithm never chooses it. Scoring it
+    would demand more of the model than of the reference.
+    """
+    problem, _ = make_nixon_diamond()
+    probes = [p for p in generate_probes(problem, max_per_kind=4)
+              if p.kind == "introduce"]
+    assert probes, "the Nixon problem must produce an R3 probe"
+    folded = _parse_rule_line(probes[0].state["folded"])
+    two_lines = ("RULE: %s :- %s, alpha(X).\n"
+                 "ASSUMPTION: alpha(X) defeated_by c_alpha(X)"
+                 % (folded.head, ", ".join(folded.body)))
+    with_junk = two_lines + "\nCONTRARY: c_alpha(X) :- X = zzz_nonexistent."
+    assert score_probe(probes[0], two_lines, problem)[:2] == \
+           score_probe(probes[0], with_junk, problem)[:2]
+
+
+def test_both_answer_formats_score_identically(problems):
+    """`RULE:`/`ASSUMPTION:` and `NEW RULES:`/`NEW ASSUMPTIONS:` are one answer.
+
+    The probe prompt asks for the first, the shared SYSTEM_PROMPT for the
+    second, so the corpus contains both: Qwen2.5-14B wrote `RULE:` on 103/103
+    introduce probes, 32B on 11/103. Scoring only the labelled form measured
+    which instruction a model obeyed, not whether its R3 was legal.
+    """
+    compared = 0
+    for problem in problems:
+        for probe in generate_probes(problem, max_per_kind=2):
+            if probe.kind != "introduce":
+                continue
+            labelled = _solver_answer(probe, problem)
+            if labelled is None:
+                continue
+            rules, asms = [], []
+            for ln in labelled.split("\n"):
+                if ln.startswith(("RULE:", "CONTRARY:")):
+                    rules.append(ln.split(":", 1)[1].strip())
+                elif ln.startswith("ASSUMPTION:"):
+                    asms.append(ln.split(":", 1)[1].strip())
+            block = ("NEW RULES:\n" + "\n".join(rules)
+                     + "\n\nNEW ASSUMPTIONS:\n" + "\n".join(asms))
+            assert score_probe(probe, block, problem)[:2] == \
+                   score_probe(probe, labelled, problem)[:2], \
+                   f"{probe.probe_id}: formats disagree\n{block!r}"
+            compared += 1
+    assert compared > 0, "no introduce probes were exercised"
+
+
+def test_echoed_contraries_are_not_read_as_the_proposal():
+    """The echoed problem declares `<asm> defeated_by <contrary>` of its own.
+
+    Qwen2.5-7B echoes the problem after its answer in 415/780 probes. Accepting
+    a bare `defeated_by` line without stripping that region first would score
+    the BACKGROUND's contraries as the model's proposed assumption.
+    """
+    problem, _ = make_nixon_diamond()
+    probes = [p for p in generate_probes(problem, max_per_kind=4)
+              if p.kind == "introduce"]
+    assert probes, "the Nixon problem must produce an R3 probe"
+    folded = _parse_rule_line(probes[0].state["folded"])
+    echo = "\n".join("  %s defeated_by %s" % (a, c)
+                     for a, c in problem.background.contraries.items())
+    answer = ("NEW RULES:\n%s :- %s, alpha(X).\n\n"
+              "NEW ASSUMPTIONS:\nalpha(X) defeated_by c_alpha(X)\n\n"
+              "=== BACKGROUND KNOWLEDGE (ABA framework) ===\n"
+              "%% Assumptions A, with their contraries\n%s\n"
+              % (folded.head, ", ".join(folded.body), echo))
+    _, _, parsed = score_probe(probes[0], answer, problem)
+    assert "alpha" in parsed, f"read the echoed background instead: {parsed!r}"
+
+
 def test_assumption_reuse_needs_no_contrary_rule():
     """Algorithm 1 line 36: reusing an existing assumption sets S := empty."""
     problem, _ = make_nixon_diamond()

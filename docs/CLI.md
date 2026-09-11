@@ -155,6 +155,15 @@ The dataset flags must match the ones the run used (`--benchmark`, `--seed`,
 `--anonymize`), otherwise the rebuilt problems will not line up and the script
 reports how many samples it had to skip.
 
+`--probes` rescores `probes.jsonl` instead of the end-to-end modes. Probe
+generation is deterministic, so the regenerated probes are the exact items the
+run was given and each stored answer can be scored again offline — add
+`--probes-per-kind N` if the run did not use the default 2.
+
+```bash
+python rescore.py "results/bench_qwen2.5-*" --benchmark 20 --probes --out rescored/
+```
+
 ---
 
 ## Recipes

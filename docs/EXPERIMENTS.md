@@ -134,30 +134,57 @@ decision point taken from the real symbolic execution (via the `observer` hook
 in `gen_phase`, so the states are exactly those the algorithm visits) and asks
 for that one decision.
 
-| probe | question | oracle | chance |
-| --- | --- | --- | --- |
-| `role` | which ground facts make this a solution? | `run_rote_learning`'s minimal set | ~0 |
-| `fold` | generalise `p(X) :- X = c` against R | `apply_folding` — the **set** of legal folds | ~0 |
-| `check` | still a solution? if not, which examples fail? | `check_brave_entailment` | 0.50 / ~0 |
-| `introduce` | which rule to guard, with what contrary? | the proposal must itself yield a Def-1 solution | ~0 |
-| `subsume` | can this fact be dropped? | `fact_subsumption` | 0.50 |
+Each probe is keyed to a line of Algorithm 1, which is what fixes its
+granularity:
+
+| probe | Algorithm 1 | question | oracle | chance |
+| --- | --- | --- | --- | --- |
+| `role` | lines 3–12, **RoLe** | which ground facts make this a solution? | `run_rote_learning`'s minimal set | ~0 |
+| `subsume` | line 16, **R4** | can this fact be dropped? | `fact_subsumption` | 0.50 |
+| `fold` | line 17, **applyFolding** | generalise `p(X) :- X = c` | `apply_folding` — the **set** of legal results | ~0 |
+| `check` | line 18 | still a solution? if not, which examples fail? | `check_brave_entailment` | 0.50 / ~0 |
+| `introduce` | lines 19, 34–46, **R3** | which rule to guard, with which assumption? | RoLe on the contrary must complete it | ~0 |
+
+`role` tests the **RoLe procedure**, not R1: R1 alone adds a single fact
+(`p(X) ← X = t`), and minimality comes from the `#minimize` directive of
+Definition 2(e). Likewise `fold` tests `applyFolding` — a bounded *sequence* of
+R2 applications returning an intensional rule (Prop. 3) — not one R2 step.
 
 Design points that matter when reading the numbers:
 
 - **`fold` and `introduce` accept any legal answer**, not the one the solver
   happened to pick, so the nondeterminism of `applyFolding`/`applyAsmIntro`
-  costs the model nothing. `introduce` is scored by *running* the model's own
-  proposal through Clingo.
+  costs the model nothing. This is not a convenience: the paper's own
+  conclusion names Folding's nondeterminism as *"the most critical issue"* and
+  reports work in progress on controlling it, which is precisely what `fold`
+  measures.
+- **`fold` accepts folds that break solution-hood.** Example 6 folds ρ12/ρ13 to
+  ρ14/ρ15 and the result "is no longer a solution"; R3 then repairs it.
+  Legality (line 17) and solution-preservation (line 18) are separate steps and
+  so separate probes.
 - **`check` and `subsume` are binary and must be read as `balanced_accuracy`
   against a 0.50 floor** — a model that always answers YES scores exactly 0.50,
   where raw accuracy would flatter it. `check` additionally asks *which*
   examples fail, and that half has a ~0 chance floor.
-- `introduce` does **not** require an intensional contrary. Algorithm 1 applies
-  R3 and then rote-learns the contrary as ground facts (lines 23–25); only a
-  later Gen iteration folds it — the paper's Example 10, ρ17 → ρ19. Demanding
-  it in one step would mark the reference algorithm itself wrong.
-- Reusing an existing assumption needs no contrary rule at all (line 36 sets
-  `S := ∅`), so the probe accepts an answer without one.
+- **`introduce` asks for two things only**: which rule to guard and which
+  assumption to use. `applyAsmIntro` returns `⟨ρ, α(X), S⟩`, but **S is not
+  chosen by the algorithm** — it is computed by ASP at line 44 and rote-learnt
+  at lines 23–25, with Prop. 2 guaranteeing it exists. So the oracle runs that
+  same RoLe (T = {c_α}) rather than asking the model for it. Demanding a
+  contrary would require more of the model than of the reference.
+- **`introduce` credits the reuse → fresh fallback.** Line 36 prefers an
+  existing assumption; if it fails, line 39 backtracks and line 41 mints a new
+  one. A model gets one shot, so scoring the literal answer penalises it for
+  obeying REUSE FIRST — measured, that inverted the scale trend, with all 24 of
+  32B's failed reuses rescued by the fallback.
+
+`reuse_rate` is reported alongside, **descriptively, not as an accuracy**. An
+assumption relative to the body (Definition 4) exists in only 2.9% of these
+probes, so the algorithm mints a fresh assumption almost always; agreement with
+line 36 would therefore be a degenerate 97/3 class split. It is still worth
+reading, because it shows *process* divergence behind identical outcomes: 32B
+reuses on 99% of probes where the algorithm would reuse on 3%, and reaches a
+legal result anyway.
 
 Validation: feeding the reference algorithm's *own* decisions back through every
 probe scores 328/328 (`tests/test_probes.py::test_solver_own_decisions_score_correct`).

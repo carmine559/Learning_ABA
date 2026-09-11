@@ -43,6 +43,10 @@ from src.aba_evaluation import (
 from src.aba_generalization import split_problem_examples
 from src.aba_algorithm import solve_aba_learning
 from src.aba_trace import score_trace
+from src.aba_probes import (
+    KINDS as PROBE_KINDS, ProbeResult, aggregate_probes, generate_probes,
+    score_probe,
+)
 
 
 MODES = ["direct", "cot", "guided", "algorithm"]
@@ -171,6 +175,94 @@ def trace_stats_for_mode(path: str, mode: str,
             "f1": m(f1s), "r2_recall": m(r2s), "r3_recall": m(r3s)}
 
 
+def rescore_probes(run_dir: str, entries: Dict[str, DatasetEntry],
+                   out_dir: Optional[str] = None,
+                   max_per_kind: int = 2, seed: int = 42) -> Optional[Dict]:
+    """Re-score a finished probe run from its stored answers.
+
+    Probe generation is deterministic — ids are `<pid>::<kind>::<n>` plus
+    `#<sample>`, and the sampling RNG is seeded per problem — so regenerating
+    the probes reproduces the exact items the run was given, and each stored
+    `raw_output` can be scored again offline.
+    """
+    path = os.path.join(run_dir, "probes.jsonl")
+    if not os.path.exists(path):
+        return None
+
+    rows: List[dict] = []
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if line:
+                rows.append(json.loads(line))
+
+    by_problem: Dict[str, List[dict]] = {}
+    for row in rows:
+        by_problem.setdefault(row["problem_id"], []).append(row)
+
+    results: List[ProbeResult] = []
+    skipped = 0
+    for pid, prows in by_problem.items():
+        entry = entries.get(pid)
+        if entry is None:
+            skipped += len(prows)
+            continue
+        probes = {p.probe_id: p for p in
+                  generate_probes(entry.problem, max_per_kind=max_per_kind,
+                                  seed=seed)}
+        for row in prows:
+            # Stored ids carry the sample suffix the probe ids do not.
+            probe = probes.get(row["probe_id"].rsplit("#", 1)[0])
+            if probe is None:
+                skipped += 1
+                continue
+            correct, score, parsed = score_probe(
+                probe, row.get("raw_output") or "", entry.problem)
+            results.append(ProbeResult(
+                probe_id=row["probe_id"], problem_id=pid, kind=probe.kind,
+                model_name=row.get("model_name", "unknown"),
+                raw_output=row.get("raw_output", ""),
+                parsed=parsed, oracle_repr=row.get("oracle_repr", ""),
+                correct=correct, score=score,
+                oracle_bool=probe.oracle if isinstance(probe.oracle, bool)
+                else None,
+                error=row.get("error", ""),
+                # Costs belong to the original generation, not to scoring.
+                llm_latency_s=row.get("llm_latency_s", 0.0),
+                prompt_tokens=row.get("prompt_tokens", 0),
+                completion_tokens=row.get("completion_tokens", 0),
+            ))
+
+    if not results:
+        print(f"  probes    no items matched the rebuilt dataset "
+              f"({skipped} skipped) — check --benchmark/--seed")
+        return None
+
+    out_dir = out_dir or run_dir
+    os.makedirs(out_dir, exist_ok=True)
+    with open(os.path.join(out_dir, "probes.jsonl"), "w", encoding="utf-8") as fh:
+        for r in results:
+            fh.write(json.dumps(r.to_dict()) + "\n")
+
+    summary = aggregate_probes(results)
+    with open(os.path.join(out_dir, "probe_summary.json"),
+              "w", encoding="utf-8") as fh:
+        json.dump(summary, fh, indent=2)
+
+    print(f"  {'probe':<12}{'n':>5}{'acc':>8}{'score':>8}{'balanced':>10}"
+          f"{'chance':>8}" + (f"   [{skipped} skipped]" if skipped else ""))
+    for kind in PROBE_KINDS:
+        e = summary.get(kind)
+        if not e:
+            continue
+        ba = e.get("balanced_accuracy")
+        print(f"  {kind:<12}{e['n']:>5}{e['accuracy']:>8.3f}{e['score']:>8.3f}"
+              f"{(f'{ba:.3f}' if ba is not None else '-'):>10}"
+              f"{e['chance']:>8.2f}")
+    print(f"  -> {os.path.join(out_dir, 'probe_summary.json')}")
+    return summary
+
+
 def rescore_run(run_dir: str, entries: Dict[str, DatasetEntry],
                 out_dir: Optional[str] = None,
                 gold_traces: Optional[Dict[str, Any]] = None) -> Dict:
@@ -260,6 +352,12 @@ def main() -> None:
     p.add_argument("--out", default=None,
                    help="Write rescored files here instead of in place. A "
                         "subdirectory per run is created.")
+    p.add_argument("--probes", action="store_true",
+                   help="Rescore probes.jsonl instead of the end-to-end modes "
+                        "(step probes: role, fold, check, introduce, subsume).")
+    p.add_argument("--probes-per-kind", type=int, default=2, metavar="N",
+                   help="Must match the value the probe run used (default 2), "
+                        "otherwise the regenerated probes will not line up.")
     p.add_argument("--trace", action="store_true",
                    help="Also compute the secondary trace-fidelity statistics "
                         "(how much of the symbolic execution the model's own "
@@ -306,6 +404,13 @@ def main() -> None:
             continue
         out = (os.path.join(args.out, os.path.basename(run_dir.rstrip("/\\")))
                if args.out else None)
+        if args.probes:
+            print(f"\n=== {run_dir} ===")
+            if rescore_probes(run_dir, entries, out_dir=out,
+                              max_per_kind=args.probes_per_kind,
+                              seed=args.seed) is None:
+                print("  no probes.jsonl here")
+            continue
         rescore_run(run_dir, entries, out_dir=out, gold_traces=gold_traces)
 
 

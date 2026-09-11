@@ -13,7 +13,7 @@ from src.aba_validator import run_rote_learning
 # System prompt — shared across all modes
 # ---------------------------------------------------------------------------
 
-SYSTEM_PROMPT = """You are an expert in Assumption-Based Argumentation (ABA).
+SYSTEM_PROMPT_DEFS = """You are an expert in Assumption-Based Argumentation (ABA).
 Terminology follows De Angelis, Proietti & Toni, "Learning Brave Assumption-
 Based Argumentation Frameworks via ASP" (ECAI 2024).
 
@@ -65,7 +65,19 @@ does not violate the definition.
 A solution is INTENSIONAL when the new rules R' \\ R are non-ground rule
 schemata, i.e. contain no equalities "X = constant" binding variables to
 specific individuals.
+"""
 
+# Everything above is DEFINITIONS ONLY; everything below states the end-to-end
+# task and its output format. The split exists because the step probes need the
+# first half and are CONTRADICTED by the second: `_P1` asks for the output of
+# RoLe, which the paper itself calls "a (non-intensional) solution" (Sec. 6,
+# Example 5), while the task half forbids ground facts outright; and every probe
+# gives its own answer format, which the task half overrides.
+#
+# The split is text-only: SYSTEM_PROMPT below is the two halves concatenated, so
+# the mode prompts stay byte-identical to v3 and sets 01-03 remain comparable.
+# EDITING EITHER HALF BREAKS THAT — it makes a new prompt version, not a refactor.
+_SYSTEM_PROMPT_TASK = """
 YOUR TASK: given an ABA Learning problem, construct a solution satisfying
 Definition 1. In this task an INTENSIONAL solution is REQUIRED:
 - NEVER leave ground facts  <pred>(X) :- X = <const>.  or bare facts
@@ -105,6 +117,8 @@ NEW ASSUMPTIONS:
 <assumption>(X) defeated_by <contrary>(X)
 
 If no new rules or assumptions are needed, write NONE under that section."""
+
+SYSTEM_PROMPT = SYSTEM_PROMPT_DEFS + _SYSTEM_PROMPT_TASK
 
 
 # ---------------------------------------------------------------------------
