@@ -24,7 +24,7 @@
 #SBATCH --job-name=aba-bench
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=carmine.santella@studio.unibo.it
-#SBATCH --time=24:00:00
+#SBATCH --time=48:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
@@ -48,7 +48,8 @@ BENCH_N="${BENCH_N:-20}"         # problems PER TIER (5 tiers)
 N_SAMPLES="${N_SAMPLES:-3}"      # LLM samples per problem (pass@k)
 MODES="${MODES:-direct cot guided algorithm}"   # subset, for per-mode jobs
 EXTRA="${EXTRA:-}"               # e.g. --load-4bit   (needed for 32B on an L40)
-PROBES="${PROBES:-0}"            # 1 = run step probes instead of the modes
+PROBES="${PROBES:-0}"            # 1 = probes instead of the modes
+                                 # both = the modes AND then the probes
 
 # Per-mode jobs write into the SAME results/bench_<model>/ directory, one
 # results_<mode>.jsonl each. Required for 32B: the full four-mode run is 25-42 h
@@ -74,10 +75,14 @@ for m in $MODEL; do
              --benchmark "$BENCH_N" --probes --max-tokens 512
              --output "$OUT")
     else
+        # PROBES=both appends the probes to the SAME process, so the weights are
+        # loaded once for both halves of the run.
+        WITH_PROBES=""
+        [ "$PROBES" = "both" ] && WITH_PROBES="--with-probes"
         CMD=(python3 main.py --backend local --model "$m"
              --benchmark "$BENCH_N" --modes $MODES
              --n-samples "$N_SAMPLES" --max-tokens 1536 --export
-             --output "$OUT")
+             $WITH_PROBES --output "$OUT")
     fi
     # shellcheck disable=SC2086
     if "${CMD[@]}" $EXTRA; then

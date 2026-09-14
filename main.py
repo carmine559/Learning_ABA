@@ -849,6 +849,11 @@ def parse_args() -> argparse.Namespace:
                             "a Clingo or syntactic oracle (R1 RoLe, R2 Folding, "
                             "the solution check, R3 Assumption Introduction, "
                             "R4 Fact Subsumption)."))
+    g_pr.add_argument("--with-probes", action="store_true",
+                      help=("Run the step probes AFTER the end-to-end modes, in "
+                            "the same process and on the same loaded model, "
+                            "rather than instead of them. One cluster job then "
+                            "covers both without reloading the weights."))
     g_pr.add_argument("--probes-per-kind", type=int, default=2, metavar="N",
                       help="Max probes of each kind per problem (default 2, "
                            "giving ~7-8 probes per problem).")
@@ -982,6 +987,21 @@ def main() -> None:
         max_tokens=args.max_tokens,
         output_dir=args.output,
     )
+
+    # ── Step probes on the SAME loaded backend ───────────────────────────────
+    # Running `--probes` as a second process would reload the weights, which at
+    # 32B in 4-bit is minutes of GPU time for nothing. The two write disjoint
+    # files into `--output`: results_<mode>.jsonl + summary.json here,
+    # probes.jsonl + probe_summary.json there.
+    if args.with_probes:
+        run_probe_experiment(
+            ds, backend,
+            max_per_kind=args.probes_per_kind,
+            n_samples=args.probe_samples,
+            max_tokens=min(args.max_tokens, 512),
+            output_dir=args.output,
+            verbose=True,
+        )
 
     # ── Report ────────────────────────────────────────────────────────────────
     print("\n[4/4] Generating report and figures...")

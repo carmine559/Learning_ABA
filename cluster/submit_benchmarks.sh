@@ -53,6 +53,11 @@ n_jobs=0
 for m in "${MODELS[@]}"; do
     if [ "$PROBES" = "1" ]; then
         submit "probe-${m}" "MODEL=${m},PROBES=1,EXTRA=${EXTRA}"
+    elif [ "$PROBES" = "both" ]; then
+        # One job per model covering the modes AND the probes, on a single load
+        # of the weights. Incompatible with SPLIT_MODES, which would re-run the
+        # probes once per mode.
+        submit "bench-${m}" "MODEL=${m},MODES=${MODES[*]},PROBES=both,EXTRA=${EXTRA}"
     elif [ "$SPLIT_MODES" = "1" ]; then
         for mode in "${MODES[@]}"; do
             submit "bench-${m}-${mode}" "MODEL=${m},MODES=${mode},EXTRA=${EXTRA}"

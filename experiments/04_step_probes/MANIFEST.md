@@ -29,8 +29,12 @@ PROBES=1 MODELS="qwen2.5-3b qwen2.5-7b qwen2.5-14b qwen2.5-32b" \
 
 ## Results
 
-Re-scored offline from stored answers with
-`python rescore.py "results/bench_qwen2.5-*" --benchmark 20 --probes --out rescored_v2/`.
+Re-scored offline from the stored answers with
+
+```bash
+python rescore.py "experiments/04_step_probes/bench_qwen2.5-*" \
+    --benchmark 20 --probes --out rescored_v2/
+```
 
 | probe (Algorithm 1 line) | chance | 3B | 7B | 14B | 32B |
 | --- | --- | --- | --- | --- | --- |
@@ -116,13 +120,20 @@ is a convention, not a fact about the answer.
 
 ## Files
 
-Not copied into this folder — they are already committed in the tree, and a third
-copy of 4 × 780 rows is not worth it:
+- `bench_qwen2.5-{3b,7b,14b,32b}/probes.jsonl` — the raw answers **as generated**,
+  scored at rev 1. Every row keeps its `raw_output`, which is what made all three
+  scoring revisions possible without GPU time.
+- `bench_*/probe_summary.json` — rev-1 aggregates, kept as the as-run record.
+- `bench_*/symbolic_traces.jsonl`, `name_maps.json` — the reference traces and
+  the anonymisation maps needed to read the answers back.
+- `../../rescored/` — rev 2 (superseded).
+- `../../rescored_v2/` — **rev 3, the table above**; its `probe_summary.json`
+  carries `probe_prompt_version: v1`, because re-scoring does not change which
+  prompts produced the answers.
 
-- `results/bench_qwen2.5-{3b,7b,14b,32b}/probes.jsonl` — as generated (rev 1)
-- `rescored/` — rev 2
-- `rescored_v2/` — **rev 3, the table above**; `probe_summary.json` there carries
-  `probe_prompt_version: v1`
+These files were moved here out of `results/` so that `results/` is scratch, as
+every doc describes it: a probe run writes to `results/bench_<model>/` and would
+otherwise overwrite this set's raw data in place.
 
 ## Successor
 
