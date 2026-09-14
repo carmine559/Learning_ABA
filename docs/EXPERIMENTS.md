@@ -12,11 +12,17 @@ keeping are *promoted* into `experiments/` together with a manifest.
 | [`01_bench_prompts_v1`](../experiments/01_bench_prompts_v1/MANIFEST.md) | Jul 2026 | Qwen2.5-7B | local (L40) | v1 | rev 2 | 103 problems, 5 tiers, anonymised | done |
 | [`02_bench_prompts_v2`](../experiments/02_bench_prompts_v2/MANIFEST.md) | Jul 2026 | Qwen2.5-3B/7B/14B, Mistral-7B | local (L40) | v2 | rev 2 | 103 problems, 5 tiers, anonymised | done |
 | [`03_bench_prompts_v3`](../experiments/03_bench_prompts_v3/MANIFEST.md) | Jul 2026 | Qwen2.5-3B/7B/14B, Mistral-7B | local (L40) | v3 | **rev 4** (re-scored offline) | 103 problems, 5 tiers, anonymised | done |
+| [`04_step_probes`](../experiments/04_step_probes/MANIFEST.md) | Sep 2026 | Qwen2.5-3B/7B/14B/**32B**, 4-bit | local (L40) | probes **v1** | probe **rev 3** (re-scored offline) | 780 probes/model over the same 103 problems | done; `role` superseded |
 
 Sets are comparable only when **both** the prompt version and the metric
 revision match. Set 03 was generated under rev-3 scoring and re-scored to rev 4
 with `rescore.py` from its stored raw answers; nothing about the model outputs
 changed.
+
+Probe sets carry their **own** prompt version, independent of the mode prompts:
+`PROBE_PROMPT_VERSION` in [`src/aba_probes.py`](../src/aba_probes.py), stamped
+into every `probe_summary.json`. Re-scoring carries the generating version
+through rather than restamping it, so a v1 run re-scored today still reads v1.
 
 ## The benchmark at a glance
 

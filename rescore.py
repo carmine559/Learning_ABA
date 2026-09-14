@@ -244,7 +244,16 @@ def rescore_probes(run_dir: str, entries: Dict[str, DatasetEntry],
         for r in results:
             fh.write(json.dumps(r.to_dict()) + "\n")
 
-    summary = aggregate_probes(results)
+    # Carry the generating prompt version through: re-scoring does not change
+    # which prompts produced the answers. Runs made before the field existed
+    # are v1 by definition.
+    old = os.path.join(run_dir, "probe_summary.json")
+    version = "v1"
+    if os.path.exists(old):
+        with open(old, encoding="utf-8") as fh:
+            version = json.load(fh).get("probe_prompt_version", "v1")
+
+    summary = aggregate_probes(results, prompt_version=version)
     with open(os.path.join(out_dir, "probe_summary.json"),
               "w", encoding="utf-8") as fh:
         json.dump(summary, fh, indent=2)

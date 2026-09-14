@@ -1,5 +1,6 @@
 {
   "n": 780,
+  "probe_prompt_version": "v1",
   "role": {
     "n": 103,
     "accuracy": 0.777,

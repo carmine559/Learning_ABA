@@ -1,5 +1,6 @@
 {
   "n": 780,
+  "probe_prompt_version": "v1",
   "role": {
     "n": 103,
     "accuracy": 0.534,
@@ -21,8 +22,8 @@
   },
   "introduce": {
     "n": 103,
-    "accuracy": 0.922,
-    "score": 0.922,
+    "accuracy": 1.0,
+    "score": 1.0,
     "chance": 0.0,
     "reuse_rate": 0.602,
     "line36_reuse_available": 0.029,

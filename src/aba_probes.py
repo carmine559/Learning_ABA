@@ -48,6 +48,17 @@ from src.aba_trace import _strip_echo, _RULES_HDR, _ASMS_HDR
 KINDS = ("role", "fold", "check", "introduce", "subsume")
 BINARY_KINDS = ("check", "subsume")
 
+# Probe prompts version themselves, independently of the end-to-end mode prompts
+# (frozen at v3). Probe results are comparable only within one version.
+#   v1  the committed Sept-2026 run. Two defects: `_head` prepended the whole
+#       SYSTEM_PROMPT, whose format block contradicted every probe's own format,
+#       and whose "NEVER leave ground facts" contradicted the RoLe probe.
+#   v2  definitions-only preamble; RoLe states that ground facts are expected;
+#       R3 asks for the two choices `applyAsmIntro` makes and not for the
+#       contrary, which ASP computes at line 44.
+# Bump this when any probe prompt changes, and record it in the set MANIFEST.
+PROBE_PROMPT_VERSION = "v2"
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Probe / result records
@@ -431,6 +442,17 @@ _ASM_LABELLED = re.compile(
 _ASM_BARE = re.compile(r'^\s*(.+?)\s+defeated_by\s+(.+?)\s*$', re.IGNORECASE)
 
 
+def _atom(s: str) -> str:
+    """Trim an atom written as a sentence: `c_alpha(X).` -> `c_alpha(X)`.
+
+    The trailing full stop is Prolog punctuation, not part of the atom, but it
+    used to be captured into the contrary and then registered AS the contrary,
+    so nothing could ever defeat the assumption. Eight 14B answers were scored
+    wrong for a full stop.
+    """
+    return s.strip().rstrip(".").strip()
+
+
 def _assumption_decl(lines: List[str]) -> Optional[Tuple[str, str]]:
     """(assumption, contrary) from either answer format.
 
@@ -446,7 +468,7 @@ def _assumption_decl(lines: List[str]) -> Optional[Tuple[str, str]]:
     """
     m = _ASM_LABELLED.search("\n".join(lines))
     if m:
-        return m.group(1).strip(), m.group(2).strip()
+        return _atom(m.group(1)), _atom(m.group(2))
     for i, ln in enumerate(lines):
         if _ASMS_HDR.match(ln):
             for nxt in lines[i + 1:]:
@@ -454,12 +476,12 @@ def _assumption_decl(lines: List[str]) -> Optional[Tuple[str, str]]:
                     break
                 m = _ASM_BARE.match(nxt)
                 if m:
-                    return m.group(1).strip(), m.group(2).strip()
+                    return _atom(m.group(1)), _atom(m.group(2))
             break
     for ln in lines:
         m = _ASM_BARE.match(ln)
         if m:
-            return m.group(1).strip(), m.group(2).strip()
+            return _atom(m.group(1)), _atom(m.group(2))
     return None
 
 
@@ -683,8 +705,12 @@ def run_probes(dataset, backend, max_per_kind: int = 2, n_samples: int = 1,
     return results
 
 
-def aggregate_probes(results: List[ProbeResult]) -> Dict[str, Any]:
-    out: Dict[str, Any] = {"n": len(results)}
+def aggregate_probes(results: List[ProbeResult],
+                     prompt_version: str = PROBE_PROMPT_VERSION) -> Dict[str, Any]:
+    # The version belongs to the GENERATION of the answers, not to this scoring
+    # pass — re-scoring a v1 run must not stamp it v2. `rescore.py` therefore
+    # passes through whatever the original summary recorded.
+    out: Dict[str, Any] = {"n": len(results), "probe_prompt_version": prompt_version}
     for kind in KINDS:
         rs = [r for r in results if r.kind == kind]
         if not rs:
