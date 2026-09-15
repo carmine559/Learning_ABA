@@ -1,0 +1,1453 @@
+{
+  "direct": {
+    "n_problems": 103,
+    "parse_rate": 1.0,
+    "fit_at_1": 0.181,
+    "gen_at_1": 0.159,
+    "det_at_1": 0.159,
+    "fit_at_k": 0.301,
+    "gen_at_k": 0.291,
+    "det_at_k": 0.291,
+    "clean_at_1": 0.159,
+    "clean_at_k": 0.291,
+    "ci95": {
+      "fit_at_k": [
+        0.221,
+        0.395
+      ],
+      "gen_at_k": [
+        0.212,
+        0.385
+      ],
+      "det_at_k": [
+        0.212,
+        0.385
+      ],
+      "clean_at_k": [
+        0.212,
+        0.385
+      ]
+    },
+    "gen_score_mean": 0.168,
+    "determinacy_mean": 0.168,
+    "free_heldout_mean": 0.0,
+    "mean_overfit_gap": 0.013,
+    "n_problems_with_fit": 31,
+    "intensional_rate": 1.0,
+    "degenerate_rate": 0.0,
+    "error_breakdown": {
+      "illformed_solution": 13,
+      "soundness_error": 6,
+      "completeness_error": 162,
+      "stability_error": 34,
+      "none": 49,
+      "both_errors": 38,
+      "generalization_error": 7
+    },
+    "parse_repairs": {
+      "truncated an echoed problem statement": 161,
+      "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "re-listed existing assumption(s)": 268,
+      "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1
+    }
+  },
+  "cot": {
+    "n_problems": 103,
+    "parse_rate": 1.0,
+    "fit_at_1": 0.12,
+    "gen_at_1": 0.078,
+    "det_at_1": 0.078,
+    "fit_at_k": 0.252,
+    "gen_at_k": 0.184,
+    "det_at_k": 0.184,
+    "clean_at_1": 0.078,
+    "clean_at_k": 0.184,
+    "ci95": {
+      "fit_at_k": [
+        0.178,
+        0.344
+      ],
+      "gen_at_k": [
+        0.121,
+        0.27
+      ],
+      "det_at_k": [
+        0.121,
+        0.27
+      ],
+      "clean_at_k": [
+        0.121,
+        0.27
+      ]
+    },
+    "gen_score_mean": 0.091,
+    "determinacy_mean": 0.091,
+    "free_heldout_mean": 0.0,
+    "mean_overfit_gap": 0.029,
+    "n_problems_with_fit": 26,
+    "intensional_rate": 0.962,
+    "degenerate_rate": 0.038,
+    "error_breakdown": {
+      "soundness_error": 48,
+      "generalization_error": 13,
+      "completeness_error": 105,
+      "both_errors": 92,
+      "illformed_solution": 17,
+      "none": 24,
+      "stability_error": 10
+    },
+    "parse_repairs": {
+      "output contained 2 'NEW RULES": 80,
+      "truncated an echoed problem statement": 265,
+      "re-listed existing assumption(s)": 161,
+      "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 11,
+      "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 2
+    }
+  },
+  "guided": {
+    "n_problems": 103,
+    "parse_rate": 1.0,
+    "fit_at_1": 0.023,
+    "gen_at_1": 0.006,
+    "det_at_1": 0.006,
+    "fit_at_k": 0.058,
+    "gen_at_k": 0.019,
+    "det_at_k": 0.019,
+    "clean_at_1": 0.006,
+    "clean_at_k": 0.019,
+    "ci95": {
+      "fit_at_k": [
+        0.027,
+        0.121
+      ],
+      "gen_at_k": [
+        0.005,
+        0.068
+      ],
+      "det_at_k": [
+        0.005,
+        0.068
+      ],
+      "clean_at_k": [
+        0.005,
+        0.068
+      ]
+    },
+    "gen_score_mean": 0.011,
+    "determinacy_mean": 0.011,
+    "free_heldout_mean": 0.0,
+    "mean_overfit_gap": 0.011,
+    "n_problems_with_fit": 6,
+    "intensional_rate": 0.667,
+    "degenerate_rate": 0.0,
+    "error_breakdown": {
+      "illformed_solution": 7,
+      "stability_error": 83,
+      "soundness_error": 37,
+      "none": 2,
+      "completeness_error": 34,
+      "both_errors": 141,
+      "generalization_error": 5
+    },
+    "parse_repairs": {
+      "truncated an echoed problem statement": 297,
+      "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 3,
+      "re-listed existing assumption(s)": 103,
+      "output contained 2 'NEW RULES": 3,
+      "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1
+    }
+  },
+  "algorithm": {
+    "n_problems": 103,
+    "parse_rate": 1.0,
+    "fit_at_1": 0.058,
+    "gen_at_1": 0.019,
+    "det_at_1": 0.019,
+    "fit_at_k": 0.165,
+    "gen_at_k": 0.058,
+    "det_at_k": 0.058,
+    "clean_at_1": 0.016,
+    "clean_at_k": 0.049,
+    "ci95": {
+      "fit_at_k": [
+        0.106,
+        0.249
+      ],
+      "gen_at_k": [
+        0.027,
+        0.121
+      ],
+      "det_at_k": [
+        0.027,
+        0.121
+      ],
+      "clean_at_k": [
+        0.021,
+        0.109
+      ]
+    },
+    "gen_score_mean": 0.037,
+    "determinacy_mean": 0.037,
+    "free_heldout_mean": 0.0,
+    "mean_overfit_gap": 0.021,
+    "n_problems_with_fit": 17,
+    "intensional_rate": 0.382,
+    "degenerate_rate": 0.265,
+    "error_breakdown": {
+      "soundness_error": 37,
+      "illformed_solution": 45,
+      "both_errors": 42,
+      "generalization_error": 12,
+      "completeness_error": 158,
+      "stability_error": 9,
+      "degenerate": 1,
+      "none": 5
+    },
+    "parse_repairs": {
+      "truncated an echoed problem statement": 269,
+      "re-listed existing assumption(s)": 239,
+      "output hit the 1536-token cap": 37,
+      "output contained 2 'NEW RULES": 135,
+      "empty answer (NONE / NONE)": 8,
+      "output contained 4 'NEW RULES": 2,
+      "output contained 3 'NEW RULES": 8,
+      "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "output contained 5 'NEW RULES": 1,
+      "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "used answer block 1 of 2": 2,
+      "output contained 6 'NEW RULES": 1
+    }
+  },
+  "symbolic_full_problem": {
+    "n_problems": 103,
+    "parse_rate": 1.0,
+    "fit_at_1": 1.0,
+    "gen_at_1": 1.0,
+    "det_at_1": 1.0,
+    "fit_at_k": 1.0,
+    "gen_at_k": 1.0,
+    "det_at_k": 1.0,
+    "clean_at_1": 1.0,
+    "clean_at_k": 1.0,
+    "intensional_rate": 1.0,
+    "degenerate_rate": 0.0,
+    "mean_overfit_gap": 0.0,
+    "note": "sees ALL examples; not an LLM-comparable ceiling"
+  },
+  "symbolic_train_only": {
+    "n_problems": 103,
+    "parse_rate": 1.0,
+    "fit_at_1": 1.0,
+    "gen_at_1": 0.7378640776699029,
+    "det_at_1": 0.7378640776699029,
+    "fit_at_k": 1.0,
+    "gen_at_k": 0.7378640776699029,
+    "det_at_k": 0.7378640776699029,
+    "clean_at_1": 0.7378640776699029,
+    "clean_at_k": 0.7378640776699029,
+    "intensional_rate": 1.0,
+    "degenerate_rate": 0.0,
+    "mean_overfit_gap": 0.0,
+    "note": "same split and scoring as the LLM rows"
+  },
+  "by_tier": {
+    "direct": {
+      "builtin": {
+        "n_problems": 3,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.0,
+            0.562
+          ],
+          "gen_at_k": [
+            0.0,
+            0.562
+          ],
+          "det_at_k": [
+            0.0,
+            0.562
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 0,
+        "intensional_rate": null,
+        "degenerate_rate": null,
+        "error_breakdown": {
+          "illformed_solution": 3,
+          "soundness_error": 5,
+          "completeness_error": 1
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 6,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "re-listed existing assumption(s)": 6
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.033,
+        "gen_at_1": 0.033,
+        "det_at_1": 0.033,
+        "fit_at_k": 0.1,
+        "gen_at_k": 0.1,
+        "det_at_k": 0.1,
+        "clean_at_1": 0.033,
+        "clean_at_k": 0.1,
+        "ci95": {
+          "fit_at_k": [
+            0.028,
+            0.301
+          ],
+          "gen_at_k": [
+            0.028,
+            0.301
+          ],
+          "det_at_k": [
+            0.028,
+            0.301
+          ],
+          "clean_at_k": [
+            0.028,
+            0.301
+          ]
+        },
+        "gen_score_mean": 0.033,
+        "determinacy_mean": 0.033,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 2,
+        "intensional_rate": 1.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "completeness_error": 48,
+          "stability_error": 4,
+          "illformed_solution": 5,
+          "none": 2,
+          "soundness_error": 1
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 25,
+          "re-listed existing assumption(s)": 48,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.0,
+            0.161
+          ],
+          "gen_at_k": [
+            0.0,
+            0.161
+          ],
+          "det_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 0,
+        "intensional_rate": null,
+        "degenerate_rate": null,
+        "error_breakdown": {
+          "both_errors": 10,
+          "completeness_error": 45,
+          "stability_error": 3,
+          "illformed_solution": 2
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 34,
+          "re-listed existing assumption(s)": 49
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.25,
+        "gen_at_1": 0.233,
+        "det_at_1": 0.233,
+        "fit_at_k": 0.55,
+        "gen_at_k": 0.5,
+        "det_at_k": 0.5,
+        "clean_at_1": 0.233,
+        "clean_at_k": 0.5,
+        "ci95": {
+          "fit_at_k": [
+            0.342,
+            0.742
+          ],
+          "gen_at_k": [
+            0.299,
+            0.701
+          ],
+          "det_at_k": [
+            0.299,
+            0.701
+          ],
+          "clean_at_k": [
+            0.299,
+            0.701
+          ]
+        },
+        "gen_score_mean": 0.242,
+        "determinacy_mean": 0.242,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.008,
+        "n_problems_with_fit": 11,
+        "intensional_rate": 1.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "stability_error": 23,
+          "completeness_error": 9,
+          "none": 14,
+          "both_errors": 13,
+          "generalization_error": 1
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 32,
+          "re-listed existing assumption(s)": 60
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.0,
+            0.161
+          ],
+          "gen_at_k": [
+            0.0,
+            0.161
+          ],
+          "det_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 0,
+        "intensional_rate": null,
+        "degenerate_rate": null,
+        "error_breakdown": {
+          "illformed_solution": 3,
+          "completeness_error": 39,
+          "both_errors": 14,
+          "stability_error": 4
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 39,
+          "re-listed existing assumption(s)": 52
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.65,
+        "gen_at_1": 0.55,
+        "det_at_1": 0.55,
+        "fit_at_k": 0.9,
+        "gen_at_k": 0.9,
+        "det_at_k": 0.9,
+        "clean_at_1": 0.55,
+        "clean_at_k": 0.9,
+        "ci95": {
+          "fit_at_k": [
+            0.699,
+            0.972
+          ],
+          "gen_at_k": [
+            0.699,
+            0.972
+          ],
+          "det_at_k": [
+            0.699,
+            0.972
+          ],
+          "clean_at_k": [
+            0.699,
+            0.972
+          ]
+        },
+        "gen_score_mean": 0.592,
+        "determinacy_mean": 0.592,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.058,
+        "n_problems_with_fit": 18,
+        "intensional_rate": 1.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "generalization_error": 6,
+          "none": 33,
+          "completeness_error": 20,
+          "both_errors": 1
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 25,
+          "re-listed existing assumption(s)": 53
+        }
+      }
+    },
+    "cot": {
+      "builtin": {
+        "n_problems": 3,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.0,
+            0.562
+          ],
+          "gen_at_k": [
+            0.0,
+            0.562
+          ],
+          "det_at_k": [
+            0.0,
+            0.562
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 0,
+        "intensional_rate": null,
+        "degenerate_rate": null,
+        "error_breakdown": {
+          "soundness_error": 9
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 4,
+          "truncated an echoed problem statement": 8,
+          "re-listed existing assumption(s)": 3
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.25,
+        "gen_at_1": 0.133,
+        "det_at_1": 0.133,
+        "fit_at_k": 0.55,
+        "gen_at_k": 0.35,
+        "det_at_k": 0.35,
+        "clean_at_1": 0.133,
+        "clean_at_k": 0.35,
+        "ci95": {
+          "fit_at_k": [
+            0.342,
+            0.742
+          ],
+          "gen_at_k": [
+            0.181,
+            0.567
+          ],
+          "det_at_k": [
+            0.181,
+            0.567
+          ],
+          "clean_at_k": [
+            0.181,
+            0.567
+          ]
+        },
+        "gen_score_mean": 0.175,
+        "determinacy_mean": 0.175,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.075,
+        "n_problems_with_fit": 11,
+        "intensional_rate": 0.909,
+        "degenerate_rate": 0.091,
+        "error_breakdown": {
+          "soundness_error": 12,
+          "generalization_error": 7,
+          "completeness_error": 20,
+          "both_errors": 8,
+          "illformed_solution": 3,
+          "none": 8,
+          "stability_error": 2
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 30,
+          "truncated an echoed problem statement": 47,
+          "re-listed existing assumption(s)": 16,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 4
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.017,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.05,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.009,
+            0.236
+          ],
+          "gen_at_k": [
+            0.0,
+            0.161
+          ],
+          "det_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "gen_score_mean": 0.008,
+        "determinacy_mean": 0.008,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.008,
+        "n_problems_with_fit": 1,
+        "intensional_rate": 1.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "stability_error": 2,
+          "completeness_error": 27,
+          "both_errors": 17,
+          "soundness_error": 7,
+          "generalization_error": 1,
+          "illformed_solution": 6
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 48,
+          "re-listed existing assumption(s)": 39,
+          "output contained 2 'NEW RULES": 19,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.25,
+        "gen_at_1": 0.25,
+        "det_at_1": 0.25,
+        "fit_at_k": 0.55,
+        "gen_at_k": 0.55,
+        "det_at_k": 0.55,
+        "clean_at_1": 0.25,
+        "clean_at_k": 0.55,
+        "ci95": {
+          "fit_at_k": [
+            0.342,
+            0.742
+          ],
+          "gen_at_k": [
+            0.342,
+            0.742
+          ],
+          "det_at_k": [
+            0.342,
+            0.742
+          ],
+          "clean_at_k": [
+            0.342,
+            0.742
+          ]
+        },
+        "gen_score_mean": 0.25,
+        "determinacy_mean": 0.25,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 11,
+        "intensional_rate": 1.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "completeness_error": 12,
+          "none": 15,
+          "both_errors": 24,
+          "soundness_error": 7,
+          "illformed_solution": 2
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 55,
+          "re-listed existing assumption(s)": 44,
+          "output contained 2 'NEW RULES": 7
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.0,
+            0.161
+          ],
+          "gen_at_k": [
+            0.0,
+            0.161
+          ],
+          "det_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 0,
+        "intensional_rate": null,
+        "degenerate_rate": null,
+        "error_breakdown": {
+          "completeness_error": 29,
+          "both_errors": 22,
+          "illformed_solution": 6,
+          "stability_error": 2,
+          "soundness_error": 1
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 54,
+          "re-listed existing assumption(s)": 42,
+          "output contained 2 'NEW RULES": 8,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.1,
+        "gen_at_1": 0.017,
+        "det_at_1": 0.017,
+        "fit_at_k": 0.15,
+        "gen_at_k": 0.05,
+        "det_at_k": 0.05,
+        "clean_at_1": 0.017,
+        "clean_at_k": 0.05,
+        "ci95": {
+          "fit_at_k": [
+            0.052,
+            0.36
+          ],
+          "gen_at_k": [
+            0.009,
+            0.236
+          ],
+          "det_at_k": [
+            0.009,
+            0.236
+          ],
+          "clean_at_k": [
+            0.009,
+            0.236
+          ]
+        },
+        "gen_score_mean": 0.033,
+        "determinacy_mean": 0.033,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.067,
+        "n_problems_with_fit": 3,
+        "intensional_rate": 1.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "generalization_error": 5,
+          "stability_error": 4,
+          "both_errors": 21,
+          "completeness_error": 17,
+          "soundness_error": 12,
+          "none": 1
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 53,
+          "output contained 2 'NEW RULES": 12,
+          "re-listed existing assumption(s)": 17,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 2
+        }
+      }
+    },
+    "guided": {
+      "builtin": {
+        "n_problems": 3,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.0,
+            0.562
+          ],
+          "gen_at_k": [
+            0.0,
+            0.562
+          ],
+          "det_at_k": [
+            0.0,
+            0.562
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 0,
+        "intensional_rate": null,
+        "degenerate_rate": null,
+        "error_breakdown": {
+          "illformed_solution": 4,
+          "stability_error": 2,
+          "soundness_error": 3
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 9,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "re-listed existing assumption(s)": 2
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.083,
+        "gen_at_1": 0.033,
+        "det_at_1": 0.033,
+        "fit_at_k": 0.25,
+        "gen_at_k": 0.1,
+        "det_at_k": 0.1,
+        "clean_at_1": 0.033,
+        "clean_at_k": 0.1,
+        "ci95": {
+          "fit_at_k": [
+            0.112,
+            0.469
+          ],
+          "gen_at_k": [
+            0.028,
+            0.301
+          ],
+          "det_at_k": [
+            0.028,
+            0.301
+          ],
+          "clean_at_k": [
+            0.028,
+            0.301
+          ]
+        },
+        "gen_score_mean": 0.058,
+        "determinacy_mean": 0.058,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.025,
+        "n_problems_with_fit": 5,
+        "intensional_rate": 0.6,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 3,
+          "stability_error": 12,
+          "none": 2,
+          "completeness_error": 26,
+          "both_errors": 3,
+          "soundness_error": 11,
+          "generalization_error": 3
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 59,
+          "re-listed existing assumption(s)": 11,
+          "output contained 2 'NEW RULES": 1
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.0,
+            0.161
+          ],
+          "gen_at_k": [
+            0.0,
+            0.161
+          ],
+          "det_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 0,
+        "intensional_rate": null,
+        "degenerate_rate": null,
+        "error_breakdown": {
+          "stability_error": 15,
+          "both_errors": 45
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 60,
+          "re-listed existing assumption(s)": 36
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.0,
+            0.161
+          ],
+          "gen_at_k": [
+            0.0,
+            0.161
+          ],
+          "det_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 0,
+        "intensional_rate": null,
+        "degenerate_rate": null,
+        "error_breakdown": {
+          "both_errors": 42,
+          "stability_error": 5,
+          "soundness_error": 13
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 60,
+          "re-listed existing assumption(s)": 18
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.0,
+            0.161
+          ],
+          "gen_at_k": [
+            0.0,
+            0.161
+          ],
+          "det_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 0,
+        "intensional_rate": null,
+        "degenerate_rate": null,
+        "error_breakdown": {
+          "stability_error": 29,
+          "both_errors": 31
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 50,
+          "re-listed existing assumption(s)": 36,
+          "output contained 2 'NEW RULES": 2,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.033,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.05,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.009,
+            0.236
+          ],
+          "gen_at_k": [
+            0.0,
+            0.161
+          ],
+          "det_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.033,
+        "n_problems_with_fit": 1,
+        "intensional_rate": 1.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "stability_error": 20,
+          "generalization_error": 2,
+          "both_errors": 20,
+          "completeness_error": 8,
+          "soundness_error": 10
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 59,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 2
+        }
+      }
+    },
+    "algorithm": {
+      "builtin": {
+        "n_problems": 3,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.0,
+            0.562
+          ],
+          "gen_at_k": [
+            0.0,
+            0.562
+          ],
+          "det_at_k": [
+            0.0,
+            0.562
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 0,
+        "intensional_rate": null,
+        "degenerate_rate": null,
+        "error_breakdown": {
+          "soundness_error": 4,
+          "illformed_solution": 4,
+          "both_errors": 1
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 8,
+          "re-listed existing assumption(s)": 5,
+          "output hit the 1536-token cap": 1,
+          "output contained 2 'NEW RULES": 5
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.083,
+        "gen_at_1": 0.017,
+        "det_at_1": 0.017,
+        "fit_at_k": 0.25,
+        "gen_at_k": 0.05,
+        "det_at_k": 0.05,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.112,
+            0.469
+          ],
+          "gen_at_k": [
+            0.009,
+            0.236
+          ],
+          "det_at_k": [
+            0.009,
+            0.236
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "gen_score_mean": 0.05,
+        "determinacy_mean": 0.05,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.033,
+        "n_problems_with_fit": 5,
+        "intensional_rate": 0.0,
+        "degenerate_rate": 0.4,
+        "error_breakdown": {
+          "generalization_error": 4,
+          "completeness_error": 39,
+          "illformed_solution": 12,
+          "both_errors": 1,
+          "stability_error": 2,
+          "degenerate": 1,
+          "soundness_error": 1
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 54,
+          "re-listed existing assumption(s)": 38,
+          "output hit the 1536-token cap": 8,
+          "output contained 2 'NEW RULES": 28,
+          "empty answer (NONE / NONE)": 6,
+          "output contained 4 'NEW RULES": 2
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.017,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.05,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.009,
+            0.236
+          ],
+          "gen_at_k": [
+            0.0,
+            0.161
+          ],
+          "det_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "gen_score_mean": 0.008,
+        "determinacy_mean": 0.008,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.008,
+        "n_problems_with_fit": 1,
+        "intensional_rate": 0.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "completeness_error": 42,
+          "both_errors": 12,
+          "stability_error": 2,
+          "generalization_error": 1,
+          "soundness_error": 2,
+          "illformed_solution": 1
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 28,
+          "truncated an echoed problem statement": 49,
+          "re-listed existing assumption(s)": 46,
+          "output contained 3 'NEW RULES": 3,
+          "empty answer (NONE / NONE)": 1,
+          "output hit the 1536-token cap": 5,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "output contained 5 'NEW RULES": 1,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.15,
+        "gen_at_1": 0.083,
+        "det_at_1": 0.083,
+        "fit_at_k": 0.4,
+        "gen_at_k": 0.25,
+        "det_at_k": 0.25,
+        "clean_at_1": 0.083,
+        "clean_at_k": 0.25,
+        "ci95": {
+          "fit_at_k": [
+            0.219,
+            0.613
+          ],
+          "gen_at_k": [
+            0.112,
+            0.469
+          ],
+          "det_at_k": [
+            0.112,
+            0.469
+          ],
+          "clean_at_k": [
+            0.112,
+            0.469
+          ]
+        },
+        "gen_score_mean": 0.117,
+        "determinacy_mean": 0.117,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.033,
+        "n_problems_with_fit": 8,
+        "intensional_rate": 0.812,
+        "degenerate_rate": 0.188,
+        "error_breakdown": {
+          "generalization_error": 4,
+          "soundness_error": 22,
+          "stability_error": 1,
+          "none": 5,
+          "completeness_error": 17,
+          "both_errors": 4,
+          "illformed_solution": 7
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 55,
+          "re-listed existing assumption(s)": 48,
+          "output hit the 1536-token cap": 8,
+          "output contained 2 'NEW RULES": 15,
+          "output contained 3 'NEW RULES": 1,
+          "empty answer (NONE / NONE)": 1
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.033,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.1,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.028,
+            0.301
+          ],
+          "gen_at_k": [
+            0.0,
+            0.161
+          ],
+          "det_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "gen_score_mean": 0.017,
+        "determinacy_mean": 0.017,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.017,
+        "n_problems_with_fit": 2,
+        "intensional_rate": 0.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "completeness_error": 47,
+          "both_errors": 4,
+          "soundness_error": 3,
+          "stability_error": 3,
+          "generalization_error": 2,
+          "illformed_solution": 1
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 55,
+          "re-listed existing assumption(s)": 50,
+          "output hit the 1536-token cap": 7,
+          "output contained 2 'NEW RULES": 24,
+          "used answer block 1 of 2": 2,
+          "output contained 3 'NEW RULES": 2,
+          "output contained 6 'NEW RULES": 1
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.017,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.05,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.009,
+            0.236
+          ],
+          "gen_at_k": [
+            0.0,
+            0.161
+          ],
+          "det_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.017,
+        "n_problems_with_fit": 1,
+        "intensional_rate": 0.0,
+        "degenerate_rate": 1.0,
+        "error_breakdown": {
+          "completeness_error": 13,
+          "illformed_solution": 20,
+          "both_errors": 20,
+          "soundness_error": 5,
+          "generalization_error": 1,
+          "stability_error": 1
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 35,
+          "re-listed existing assumption(s)": 52,
+          "output contained 3 'NEW RULES": 2,
+          "truncated an echoed problem statement": 48,
+          "output hit the 1536-token cap": 8
+        }
+      }
+    }
+  }
+}

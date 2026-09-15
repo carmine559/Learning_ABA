@@ -1,0 +1,1650 @@
+{
+  "direct": {
+    "n_problems": 103,
+    "parse_rate": 1.0,
+    "fit_at_1": 0.097,
+    "gen_at_1": 0.081,
+    "det_at_1": 0.081,
+    "fit_at_k": 0.233,
+    "gen_at_k": 0.194,
+    "det_at_k": 0.194,
+    "clean_at_1": 0.081,
+    "clean_at_k": 0.194,
+    "ci95": {
+      "fit_at_k": [
+        0.162,
+        0.323
+      ],
+      "gen_at_k": [
+        0.129,
+        0.281
+      ],
+      "det_at_k": [
+        0.129,
+        0.281
+      ],
+      "clean_at_k": [
+        0.129,
+        0.281
+      ]
+    },
+    "gen_score_mean": 0.089,
+    "determinacy_mean": 0.089,
+    "free_heldout_mean": 0.0,
+    "mean_overfit_gap": 0.008,
+    "n_problems_with_fit": 24,
+    "intensional_rate": 1.0,
+    "degenerate_rate": 0.0,
+    "error_breakdown": {
+      "illformed_solution": 240,
+      "soundness_error": 6,
+      "completeness_error": 24,
+      "stability_error": 6,
+      "generalization_error": 5,
+      "none": 25,
+      "both_errors": 3
+    },
+    "parse_repairs": {
+      "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 18,
+      "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 109,
+      "re-listed existing assumption(s)": 271,
+      "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 109,
+      "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 1
+    }
+  },
+  "cot": {
+    "n_problems": 103,
+    "parse_rate": 1.0,
+    "fit_at_1": 0.181,
+    "gen_at_1": 0.11,
+    "det_at_1": 0.11,
+    "fit_at_k": 0.427,
+    "gen_at_k": 0.282,
+    "det_at_k": 0.282,
+    "clean_at_1": 0.11,
+    "clean_at_k": 0.282,
+    "ci95": {
+      "fit_at_k": [
+        0.336,
+        0.524
+      ],
+      "gen_at_k": [
+        0.204,
+        0.375
+      ],
+      "det_at_k": [
+        0.204,
+        0.375
+      ],
+      "clean_at_k": [
+        0.204,
+        0.375
+      ]
+    },
+    "gen_score_mean": 0.142,
+    "determinacy_mean": 0.142,
+    "free_heldout_mean": 0.0,
+    "mean_overfit_gap": 0.039,
+    "n_problems_with_fit": 44,
+    "intensional_rate": 0.716,
+    "degenerate_rate": 0.17,
+    "error_breakdown": {
+      "stability_error": 8,
+      "illformed_solution": 140,
+      "soundness_error": 17,
+      "none": 34,
+      "generalization_error": 22,
+      "completeness_error": 61,
+      "both_errors": 27
+    },
+    "parse_repairs": {
+      "output contained 2 'NEW RULES": 39,
+      "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 29,
+      "re-listed existing assumption(s)": 128,
+      "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 16,
+      "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 16,
+      "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 11,
+      "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 13,
+      "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 15,
+      "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 14,
+      "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 7,
+      "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 17,
+      "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 3,
+      "recovered 12 rule(s) written under 'NEW ASSUMPTIONS": 5,
+      "recovered 15 rule(s) written under 'NEW ASSUMPTIONS": 3,
+      "recovered 16 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "recovered 11 rule(s) written under 'NEW ASSUMPTIONS": 4,
+      "recovered 14 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "empty answer (NONE / NONE)": 1
+    }
+  },
+  "guided": {
+    "n_problems": 103,
+    "parse_rate": 1.0,
+    "fit_at_1": 0.016,
+    "gen_at_1": 0.006,
+    "det_at_1": 0.006,
+    "fit_at_k": 0.029,
+    "gen_at_k": 0.019,
+    "det_at_k": 0.019,
+    "clean_at_1": 0.006,
+    "clean_at_k": 0.019,
+    "ci95": {
+      "fit_at_k": [
+        0.01,
+        0.082
+      ],
+      "gen_at_k": [
+        0.005,
+        0.068
+      ],
+      "det_at_k": [
+        0.005,
+        0.068
+      ],
+      "clean_at_k": [
+        0.005,
+        0.068
+      ]
+    },
+    "gen_score_mean": 0.006,
+    "determinacy_mean": 0.006,
+    "free_heldout_mean": 0.0,
+    "mean_overfit_gap": 0.01,
+    "n_problems_with_fit": 3,
+    "intensional_rate": 0.333,
+    "degenerate_rate": 0.0,
+    "error_breakdown": {
+      "illformed_solution": 275,
+      "soundness_error": 7,
+      "generalization_error": 3,
+      "none": 2,
+      "stability_error": 3,
+      "both_errors": 17,
+      "completeness_error": 2
+    },
+    "parse_repairs": {
+      "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 43,
+      "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 70,
+      "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 20,
+      "re-listed existing assumption(s)": 50,
+      "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 54,
+      "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 23,
+      "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 35,
+      "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 6,
+      "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 16,
+      "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 6,
+      "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 11,
+      "recovered 15 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "recovered 11 rule(s) written under 'NEW ASSUMPTIONS": 1
+    }
+  },
+  "algorithm": {
+    "n_problems": 103,
+    "parse_rate": 0.997,
+    "fit_at_1": 0.074,
+    "gen_at_1": 0.049,
+    "det_at_1": 0.049,
+    "fit_at_k": 0.175,
+    "gen_at_k": 0.126,
+    "det_at_k": 0.126,
+    "clean_at_1": 0.049,
+    "clean_at_k": 0.126,
+    "ci95": {
+      "fit_at_k": [
+        0.113,
+        0.259
+      ],
+      "gen_at_k": [
+        0.075,
+        0.204
+      ],
+      "det_at_k": [
+        0.075,
+        0.204
+      ],
+      "clean_at_k": [
+        0.075,
+        0.204
+      ]
+    },
+    "gen_score_mean": 0.055,
+    "determinacy_mean": 0.055,
+    "free_heldout_mean": 0.0,
+    "mean_overfit_gap": 0.019,
+    "n_problems_with_fit": 18,
+    "intensional_rate": 0.611,
+    "degenerate_rate": 0.0,
+    "error_breakdown": {
+      "illformed_solution": 163,
+      "soundness_error": 29,
+      "generalization_error": 8,
+      "none": 15,
+      "completeness_error": 41,
+      "stability_error": 5,
+      "both_errors": 47,
+      "parse_error": 1
+    },
+    "parse_repairs": {
+      "recovered 11 rule(s) written under 'NEW ASSUMPTIONS": 10,
+      "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 9,
+      "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 12,
+      "output contained 2 'NEW RULES": 97,
+      "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 16,
+      "output contained 5 'NEW RULES": 2,
+      "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 9,
+      "re-listed existing assumption(s)": 67,
+      "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 15,
+      "output contained 7 'NEW RULES": 1,
+      "output contained 4 'NEW RULES": 2,
+      "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 14,
+      "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 10,
+      "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 9,
+      "recovered 13 rule(s) written under 'NEW ASSUMPTIONS": 6,
+      "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 11,
+      "recovered 12 rule(s) written under 'NEW ASSUMPTIONS": 4,
+      "output contained 3 'NEW RULES": 4,
+      "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 20,
+      "recovered 22 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "recovered 15 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "recovered 18 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "recovered 14 rule(s) written under 'NEW ASSUMPTIONS": 4,
+      "truncated an echoed problem statement": 1,
+      "recovered 19 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "recovered 16 rule(s) written under 'NEW ASSUMPTIONS": 4,
+      "recovered 23 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "recovered 21 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "recovered 17 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "output contained 6 'NEW RULES": 1,
+      "recovered 20 rule(s) written under 'NEW ASSUMPTIONS": 1
+    }
+  },
+  "symbolic_full_problem": {
+    "n_problems": 103,
+    "parse_rate": 1.0,
+    "fit_at_1": 1.0,
+    "gen_at_1": 1.0,
+    "det_at_1": 1.0,
+    "fit_at_k": 1.0,
+    "gen_at_k": 1.0,
+    "det_at_k": 1.0,
+    "clean_at_1": 1.0,
+    "clean_at_k": 1.0,
+    "intensional_rate": 1.0,
+    "degenerate_rate": 0.0,
+    "mean_overfit_gap": 0.0,
+    "note": "sees ALL examples; not an LLM-comparable ceiling"
+  },
+  "symbolic_train_only": {
+    "n_problems": 103,
+    "parse_rate": 1.0,
+    "fit_at_1": 1.0,
+    "gen_at_1": 0.7378640776699029,
+    "det_at_1": 0.7378640776699029,
+    "fit_at_k": 1.0,
+    "gen_at_k": 0.7378640776699029,
+    "det_at_k": 0.7378640776699029,
+    "clean_at_1": 0.7378640776699029,
+    "clean_at_k": 0.7378640776699029,
+    "intensional_rate": 1.0,
+    "degenerate_rate": 0.0,
+    "mean_overfit_gap": 0.0,
+    "note": "same split and scoring as the LLM rows"
+  },
+  "by_tier": {
+    "direct": {
+      "builtin": {
+        "n_problems": 3,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.0,
+            0.562
+          ],
+          "gen_at_k": [
+            0.0,
+            0.562
+          ],
+          "det_at_k": [
+            0.0,
+            0.562
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 0,
+        "intensional_rate": null,
+        "degenerate_rate": null,
+        "error_breakdown": {
+          "illformed_solution": 6,
+          "soundness_error": 3
+        },
+        "parse_repairs": {
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "re-listed existing assumption(s)": 6,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 3
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.217,
+        "gen_at_1": 0.133,
+        "det_at_1": 0.133,
+        "fit_at_k": 0.45,
+        "gen_at_k": 0.25,
+        "det_at_k": 0.25,
+        "clean_at_1": 0.133,
+        "clean_at_k": 0.25,
+        "ci95": {
+          "fit_at_k": [
+            0.258,
+            0.658
+          ],
+          "gen_at_k": [
+            0.112,
+            0.469
+          ],
+          "det_at_k": [
+            0.112,
+            0.469
+          ],
+          "clean_at_k": [
+            0.112,
+            0.469
+          ]
+        },
+        "gen_score_mean": 0.175,
+        "determinacy_mean": 0.175,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.042,
+        "n_problems_with_fit": 9,
+        "intensional_rate": 1.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 37,
+          "completeness_error": 8,
+          "stability_error": 2,
+          "generalization_error": 5,
+          "none": 8
+        },
+        "parse_repairs": {
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "re-listed existing assumption(s)": 49,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 15,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 20
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.067,
+        "gen_at_1": 0.067,
+        "det_at_1": 0.067,
+        "fit_at_k": 0.15,
+        "gen_at_k": 0.15,
+        "det_at_k": 0.15,
+        "clean_at_1": 0.067,
+        "clean_at_k": 0.15,
+        "ci95": {
+          "fit_at_k": [
+            0.052,
+            0.36
+          ],
+          "gen_at_k": [
+            0.052,
+            0.36
+          ],
+          "det_at_k": [
+            0.052,
+            0.36
+          ],
+          "clean_at_k": [
+            0.052,
+            0.36
+          ]
+        },
+        "gen_score_mean": 0.067,
+        "determinacy_mean": 0.067,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 3,
+        "intensional_rate": 1.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "soundness_error": 1,
+          "illformed_solution": 47,
+          "completeness_error": 8,
+          "none": 4
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 52,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 24,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 17,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 7
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.067,
+        "gen_at_1": 0.067,
+        "det_at_1": 0.067,
+        "fit_at_k": 0.2,
+        "gen_at_k": 0.2,
+        "det_at_k": 0.2,
+        "clean_at_1": 0.067,
+        "clean_at_k": 0.2,
+        "ci95": {
+          "fit_at_k": [
+            0.081,
+            0.416
+          ],
+          "gen_at_k": [
+            0.081,
+            0.416
+          ],
+          "det_at_k": [
+            0.081,
+            0.416
+          ],
+          "clean_at_k": [
+            0.081,
+            0.416
+          ]
+        },
+        "gen_score_mean": 0.067,
+        "determinacy_mean": 0.067,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 4,
+        "intensional_rate": 1.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 46,
+          "none": 4,
+          "soundness_error": 2,
+          "stability_error": 3,
+          "both_errors": 1,
+          "completeness_error": 4
+        },
+        "parse_repairs": {
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 22,
+          "re-listed existing assumption(s)": 53,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 24,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 3
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.067,
+        "gen_at_1": 0.067,
+        "det_at_1": 0.067,
+        "fit_at_k": 0.2,
+        "gen_at_k": 0.2,
+        "det_at_k": 0.2,
+        "clean_at_1": 0.067,
+        "clean_at_k": 0.2,
+        "ci95": {
+          "fit_at_k": [
+            0.081,
+            0.416
+          ],
+          "gen_at_k": [
+            0.081,
+            0.416
+          ],
+          "det_at_k": [
+            0.081,
+            0.416
+          ],
+          "clean_at_k": [
+            0.081,
+            0.416
+          ]
+        },
+        "gen_score_mean": 0.067,
+        "determinacy_mean": 0.067,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 4,
+        "intensional_rate": 1.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 49,
+          "none": 4,
+          "stability_error": 1,
+          "completeness_error": 4,
+          "both_errors": 2
+        },
+        "parse_repairs": {
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 31,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 18,
+          "re-listed existing assumption(s)": 51,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 3
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.083,
+        "gen_at_1": 0.083,
+        "det_at_1": 0.083,
+        "fit_at_k": 0.2,
+        "gen_at_k": 0.2,
+        "det_at_k": 0.2,
+        "clean_at_1": 0.083,
+        "clean_at_k": 0.2,
+        "ci95": {
+          "fit_at_k": [
+            0.081,
+            0.416
+          ],
+          "gen_at_k": [
+            0.081,
+            0.416
+          ],
+          "det_at_k": [
+            0.081,
+            0.416
+          ],
+          "clean_at_k": [
+            0.081,
+            0.416
+          ]
+        },
+        "gen_score_mean": 0.083,
+        "determinacy_mean": 0.083,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 4,
+        "intensional_rate": 1.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 55,
+          "none": 5
+        },
+        "parse_repairs": {
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 27,
+          "re-listed existing assumption(s)": 60,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 16,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      }
+    },
+    "cot": {
+      "builtin": {
+        "n_problems": 3,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.222,
+        "gen_at_1": 0.222,
+        "det_at_1": 0.222,
+        "fit_at_k": 0.333,
+        "gen_at_k": 0.333,
+        "det_at_k": 0.333,
+        "clean_at_1": 0.222,
+        "clean_at_k": 0.333,
+        "ci95": {
+          "fit_at_k": [
+            0.061,
+            0.792
+          ],
+          "gen_at_k": [
+            0.061,
+            0.792
+          ],
+          "det_at_k": [
+            0.061,
+            0.792
+          ],
+          "clean_at_k": [
+            0.061,
+            0.792
+          ]
+        },
+        "gen_score_mean": 0.222,
+        "determinacy_mean": 0.222,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 1,
+        "intensional_rate": 1.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "stability_error": 1,
+          "illformed_solution": 5,
+          "soundness_error": 1,
+          "none": 2
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 1,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "re-listed existing assumption(s)": 1,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.217,
+        "gen_at_1": 0.133,
+        "det_at_1": 0.133,
+        "fit_at_k": 0.55,
+        "gen_at_k": 0.35,
+        "det_at_k": 0.35,
+        "clean_at_1": 0.133,
+        "clean_at_k": 0.35,
+        "ci95": {
+          "fit_at_k": [
+            0.342,
+            0.742
+          ],
+          "gen_at_k": [
+            0.181,
+            0.567
+          ],
+          "det_at_k": [
+            0.181,
+            0.567
+          ],
+          "clean_at_k": [
+            0.181,
+            0.567
+          ]
+        },
+        "gen_score_mean": 0.175,
+        "determinacy_mean": 0.175,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.042,
+        "n_problems_with_fit": 11,
+        "intensional_rate": 0.818,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "generalization_error": 5,
+          "none": 8,
+          "illformed_solution": 36,
+          "completeness_error": 7,
+          "stability_error": 1,
+          "soundness_error": 2,
+          "both_errors": 1
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 28,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 6,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 8,
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 5,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "output contained 2 'NEW RULES": 7,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 6,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.2,
+        "gen_at_1": 0.1,
+        "det_at_1": 0.1,
+        "fit_at_k": 0.45,
+        "gen_at_k": 0.3,
+        "det_at_k": 0.3,
+        "clean_at_1": 0.1,
+        "clean_at_k": 0.3,
+        "ci95": {
+          "fit_at_k": [
+            0.258,
+            0.658
+          ],
+          "gen_at_k": [
+            0.145,
+            0.519
+          ],
+          "det_at_k": [
+            0.145,
+            0.519
+          ],
+          "clean_at_k": [
+            0.145,
+            0.519
+          ]
+        },
+        "gen_score_mean": 0.15,
+        "determinacy_mean": 0.15,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.05,
+        "n_problems_with_fit": 9,
+        "intensional_rate": 0.611,
+        "degenerate_rate": 0.167,
+        "error_breakdown": {
+          "stability_error": 3,
+          "illformed_solution": 21,
+          "completeness_error": 14,
+          "none": 6,
+          "generalization_error": 6,
+          "soundness_error": 3,
+          "both_errors": 7
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 30,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "output contained 2 'NEW RULES": 10,
+          "recovered 12 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 8,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 15 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 16 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.217,
+        "gen_at_1": 0.167,
+        "det_at_1": 0.167,
+        "fit_at_k": 0.5,
+        "gen_at_k": 0.4,
+        "det_at_k": 0.4,
+        "clean_at_1": 0.167,
+        "clean_at_k": 0.4,
+        "ci95": {
+          "fit_at_k": [
+            0.299,
+            0.701
+          ],
+          "gen_at_k": [
+            0.219,
+            0.613
+          ],
+          "det_at_k": [
+            0.219,
+            0.613
+          ],
+          "clean_at_k": [
+            0.219,
+            0.613
+          ]
+        },
+        "gen_score_mean": 0.192,
+        "determinacy_mean": 0.192,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.025,
+        "n_problems_with_fit": 10,
+        "intensional_rate": 0.8,
+        "degenerate_rate": 0.1,
+        "error_breakdown": {
+          "illformed_solution": 34,
+          "soundness_error": 6,
+          "none": 10,
+          "generalization_error": 3,
+          "completeness_error": 5,
+          "both_errors": 1,
+          "stability_error": 1
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 8,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 5,
+          "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 11 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "re-listed existing assumption(s)": 24,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 15 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 5,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.167,
+        "gen_at_1": 0.117,
+        "det_at_1": 0.117,
+        "fit_at_k": 0.45,
+        "gen_at_k": 0.3,
+        "det_at_k": 0.3,
+        "clean_at_1": 0.117,
+        "clean_at_k": 0.3,
+        "ci95": {
+          "fit_at_k": [
+            0.258,
+            0.658
+          ],
+          "gen_at_k": [
+            0.145,
+            0.519
+          ],
+          "det_at_k": [
+            0.145,
+            0.519
+          ],
+          "clean_at_k": [
+            0.145,
+            0.519
+          ]
+        },
+        "gen_score_mean": 0.142,
+        "determinacy_mean": 0.142,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.025,
+        "n_problems_with_fit": 9,
+        "intensional_rate": 0.667,
+        "degenerate_rate": 0.333,
+        "error_breakdown": {
+          "illformed_solution": 25,
+          "both_errors": 8,
+          "none": 7,
+          "generalization_error": 3,
+          "completeness_error": 14,
+          "soundness_error": 3
+        },
+        "parse_repairs": {
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "re-listed existing assumption(s)": 32,
+          "output contained 2 'NEW RULES": 9,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 6,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 11 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 6,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 12 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 14 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.1,
+        "gen_at_1": 0.017,
+        "det_at_1": 0.017,
+        "fit_at_k": 0.2,
+        "gen_at_k": 0.05,
+        "det_at_k": 0.05,
+        "clean_at_1": 0.017,
+        "clean_at_k": 0.05,
+        "ci95": {
+          "fit_at_k": [
+            0.081,
+            0.416
+          ],
+          "gen_at_k": [
+            0.009,
+            0.236
+          ],
+          "det_at_k": [
+            0.009,
+            0.236
+          ],
+          "clean_at_k": [
+            0.009,
+            0.236
+          ]
+        },
+        "gen_score_mean": 0.042,
+        "determinacy_mean": 0.042,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.058,
+        "n_problems_with_fit": 4,
+        "intensional_rate": 0.5,
+        "degenerate_rate": 0.5,
+        "error_breakdown": {
+          "illformed_solution": 19,
+          "generalization_error": 5,
+          "both_errors": 10,
+          "none": 1,
+          "completeness_error": 21,
+          "soundness_error": 2,
+          "stability_error": 2
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 4,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "re-listed existing assumption(s)": 13,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 11 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "empty answer (NONE / NONE)": 1,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      }
+    },
+    "guided": {
+      "builtin": {
+        "n_problems": 3,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.333,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.333,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.061,
+            0.792
+          ],
+          "gen_at_k": [
+            0.0,
+            0.562
+          ],
+          "det_at_k": [
+            0.0,
+            0.562
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.333,
+        "n_problems_with_fit": 1,
+        "intensional_rate": 0.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 4,
+          "soundness_error": 2,
+          "generalization_error": 3
+        },
+        "parse_repairs": {
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "re-listed existing assumption(s)": 2
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.033,
+        "gen_at_1": 0.033,
+        "det_at_1": 0.033,
+        "fit_at_k": 0.1,
+        "gen_at_k": 0.1,
+        "det_at_k": 0.1,
+        "clean_at_1": 0.033,
+        "clean_at_k": 0.1,
+        "ci95": {
+          "fit_at_k": [
+            0.028,
+            0.301
+          ],
+          "gen_at_k": [
+            0.028,
+            0.301
+          ],
+          "det_at_k": [
+            0.028,
+            0.301
+          ],
+          "clean_at_k": [
+            0.028,
+            0.301
+          ]
+        },
+        "gen_score_mean": 0.033,
+        "determinacy_mean": 0.033,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 2,
+        "intensional_rate": 0.5,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 57,
+          "none": 2,
+          "stability_error": 1
+        },
+        "parse_repairs": {
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 11,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 10,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 20,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 5,
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.0,
+            0.161
+          ],
+          "gen_at_k": [
+            0.0,
+            0.161
+          ],
+          "det_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 0,
+        "intensional_rate": null,
+        "degenerate_rate": null,
+        "error_breakdown": {
+          "illformed_solution": 56,
+          "soundness_error": 2,
+          "both_errors": 2
+        },
+        "parse_repairs": {
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 5,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 6,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 15,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 6,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 12,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "re-listed existing assumption(s)": 13,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 10,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 4
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.0,
+            0.161
+          ],
+          "gen_at_k": [
+            0.0,
+            0.161
+          ],
+          "det_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 0,
+        "intensional_rate": null,
+        "degenerate_rate": null,
+        "error_breakdown": {
+          "illformed_solution": 48,
+          "both_errors": 11,
+          "stability_error": 1
+        },
+        "parse_repairs": {
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 12,
+          "re-listed existing assumption(s)": 1,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 11,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 9,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 7,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 3
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.0,
+            0.161
+          ],
+          "gen_at_k": [
+            0.0,
+            0.161
+          ],
+          "det_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 0,
+        "intensional_rate": null,
+        "degenerate_rate": null,
+        "error_breakdown": {
+          "illformed_solution": 55,
+          "both_errors": 3,
+          "stability_error": 1,
+          "soundness_error": 1
+        },
+        "parse_repairs": {
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 6,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 5,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 12,
+          "re-listed existing assumption(s)": 13,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 6,
+          "recovered 15 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 6,
+          "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 7,
+          "recovered 11 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.0,
+            0.161
+          ],
+          "gen_at_k": [
+            0.0,
+            0.161
+          ],
+          "det_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 0,
+        "intensional_rate": null,
+        "degenerate_rate": null,
+        "error_breakdown": {
+          "illformed_solution": 55,
+          "soundness_error": 2,
+          "completeness_error": 2,
+          "both_errors": 1
+        },
+        "parse_repairs": {
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 14,
+          "re-listed existing assumption(s)": 21,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 10,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 12,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 7,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 5,
+          "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      }
+    },
+    "algorithm": {
+      "builtin": {
+        "n_problems": 3,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.0,
+            0.562
+          ],
+          "gen_at_k": [
+            0.0,
+            0.562
+          ],
+          "det_at_k": [
+            0.0,
+            0.562
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 0,
+        "intensional_rate": null,
+        "degenerate_rate": null,
+        "error_breakdown": {
+          "illformed_solution": 8,
+          "soundness_error": 1
+        },
+        "parse_repairs": {
+          "recovered 11 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "output contained 2 'NEW RULES": 2,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.183,
+        "gen_at_1": 0.117,
+        "det_at_1": 0.117,
+        "fit_at_k": 0.4,
+        "gen_at_k": 0.25,
+        "det_at_k": 0.25,
+        "clean_at_1": 0.117,
+        "clean_at_k": 0.25,
+        "ci95": {
+          "fit_at_k": [
+            0.219,
+            0.613
+          ],
+          "gen_at_k": [
+            0.112,
+            0.469
+          ],
+          "det_at_k": [
+            0.112,
+            0.469
+          ],
+          "clean_at_k": [
+            0.112,
+            0.469
+          ]
+        },
+        "gen_score_mean": 0.15,
+        "determinacy_mean": 0.15,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.033,
+        "n_problems_with_fit": 8,
+        "intensional_rate": 0.625,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "generalization_error": 4,
+          "illformed_solution": 31,
+          "none": 7,
+          "completeness_error": 13,
+          "stability_error": 3,
+          "soundness_error": 2
+        },
+        "parse_repairs": {
+          "output contained 5 'NEW RULES": 1,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "output contained 2 'NEW RULES": 16,
+          "re-listed existing assumption(s)": 19,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 6,
+          "output contained 7 'NEW RULES": 1,
+          "output contained 4 'NEW RULES": 1,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 13 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 11 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 12 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "output contained 3 'NEW RULES": 1,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 22 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.017,
+        "gen_at_1": 0.017,
+        "det_at_1": 0.017,
+        "fit_at_k": 0.05,
+        "gen_at_k": 0.05,
+        "det_at_k": 0.05,
+        "clean_at_1": 0.017,
+        "clean_at_k": 0.05,
+        "ci95": {
+          "fit_at_k": [
+            0.009,
+            0.236
+          ],
+          "gen_at_k": [
+            0.009,
+            0.236
+          ],
+          "det_at_k": [
+            0.009,
+            0.236
+          ],
+          "clean_at_k": [
+            0.009,
+            0.236
+          ]
+        },
+        "gen_score_mean": 0.017,
+        "determinacy_mean": 0.017,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 1,
+        "intensional_rate": 0.0,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 26,
+          "both_errors": 17,
+          "completeness_error": 10,
+          "stability_error": 1,
+          "soundness_error": 5,
+          "none": 1
+        },
+        "parse_repairs": {
+          "recovered 13 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "re-listed existing assumption(s)": 15,
+          "output contained 2 'NEW RULES": 19,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 8,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 15 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 12 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "output contained 4 'NEW RULES": 1,
+          "recovered 18 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "output contained 5 'NEW RULES": 1,
+          "recovered 11 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "parse_rate": 0.983,
+        "fit_at_1": 0.05,
+        "gen_at_1": 0.05,
+        "det_at_1": 0.05,
+        "fit_at_k": 0.15,
+        "gen_at_k": 0.15,
+        "det_at_k": 0.15,
+        "clean_at_1": 0.05,
+        "clean_at_k": 0.15,
+        "ci95": {
+          "fit_at_k": [
+            0.052,
+            0.36
+          ],
+          "gen_at_k": [
+            0.052,
+            0.36
+          ],
+          "det_at_k": [
+            0.052,
+            0.36
+          ],
+          "clean_at_k": [
+            0.052,
+            0.36
+          ]
+        },
+        "gen_score_mean": 0.05,
+        "determinacy_mean": 0.05,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 3,
+        "intensional_rate": 0.333,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "illformed_solution": 40,
+          "none": 3,
+          "soundness_error": 8,
+          "parse_error": 1,
+          "completeness_error": 5,
+          "stability_error": 1,
+          "both_errors": 2
+        },
+        "parse_repairs": {
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "output contained 3 'NEW RULES": 1,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "re-listed existing assumption(s)": 6,
+          "recovered 14 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "truncated an echoed problem statement": 1,
+          "output contained 2 'NEW RULES": 20,
+          "recovered 12 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 19 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 11 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 5,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 16 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.0,
+        "gen_at_1": 0.0,
+        "det_at_1": 0.0,
+        "fit_at_k": 0.0,
+        "gen_at_k": 0.0,
+        "det_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "ci95": {
+          "fit_at_k": [
+            0.0,
+            0.161
+          ],
+          "gen_at_k": [
+            0.0,
+            0.161
+          ],
+          "det_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "gen_score_mean": 0.0,
+        "determinacy_mean": 0.0,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.0,
+        "n_problems_with_fit": 0,
+        "intensional_rate": null,
+        "degenerate_rate": null,
+        "error_breakdown": {
+          "illformed_solution": 36,
+          "both_errors": 20,
+          "completeness_error": 2,
+          "soundness_error": 2
+        },
+        "parse_repairs": {
+          "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 5,
+          "output contained 2 'NEW RULES": 19,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "re-listed existing assumption(s)": 6,
+          "recovered 16 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 13 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 11 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 23 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 5,
+          "recovered 19 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 21 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 17 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 15 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 14 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "parse_rate": 1.0,
+        "fit_at_1": 0.133,
+        "gen_at_1": 0.067,
+        "det_at_1": 0.067,
+        "fit_at_k": 0.3,
+        "gen_at_k": 0.2,
+        "det_at_k": 0.2,
+        "clean_at_1": 0.067,
+        "clean_at_k": 0.2,
+        "ci95": {
+          "fit_at_k": [
+            0.145,
+            0.519
+          ],
+          "gen_at_k": [
+            0.081,
+            0.416
+          ],
+          "det_at_k": [
+            0.081,
+            0.416
+          ],
+          "clean_at_k": [
+            0.081,
+            0.416
+          ]
+        },
+        "gen_score_mean": 0.067,
+        "determinacy_mean": 0.067,
+        "free_heldout_mean": 0.0,
+        "mean_overfit_gap": 0.067,
+        "n_problems_with_fit": 6,
+        "intensional_rate": 0.833,
+        "degenerate_rate": 0.0,
+        "error_breakdown": {
+          "completeness_error": 11,
+          "generalization_error": 4,
+          "soundness_error": 11,
+          "illformed_solution": 22,
+          "both_errors": 8,
+          "none": 4
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 21,
+          "re-listed existing assumption(s)": 21,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "output contained 3 'NEW RULES": 2,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 13 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 16 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 14 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 11 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "output contained 6 'NEW RULES": 1,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 20 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      }
+    }
+  }
+}
