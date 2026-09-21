@@ -22,7 +22,12 @@ the difference between them.
       reuse (lines 36-38) vs mint fresh (lines 41-44) — and whether the contrary
       rule that the fresh branch obliges was actually learnt.
 
-  R4  Fact Subsumption (line 16). See the caveat below: NOT separable from R1.
+  R4  Fact Subsumption (line 16). Asked of each ground fact the model left, by
+      running R4's own decision procedure on the model's answer: is that answer
+      still a solution without the fact? Removable = an R4 the model skipped;
+      load-bearing = it never generalised the fact, which is R1/R2 residue.
+      Read R4 GATE below before using the result — the question turns out to be
+      well-posed for only 17 samples in set 05, so R4 fidelity stays UNMEASURED.
 
   The line-18 solution check is an INTERNAL decision that leaves no trace in a
   final answer. It is measurable only by the `check` step probe, not here.
@@ -33,11 +38,35 @@ reasoning scores 0.786 raw agreement on R3. Raw agreement is therefore reported
 only beside the balanced score, which puts any constant responder at 0.500.
 Read the balanced column.
 
-CAVEAT — R4 IS NOT SEPARABLE END-TO-END. The algorithm leaves zero ground facts
-on every problem in this benchmark, so "R1 residue not folded away" and "R4 not
-applied" are the same observable in a final answer; the R4 column is reported
-but is structurally identical to R1. Separating them needs either a redesigned
-`subsume` probe or problems whose algorithm answer retains ground facts.
+R4 GATE — AND WHY THE `ground` COLUMN IS NOT AN R4 RESULT. `fact_subsumption`
+asks "is the framework still a solution without this rule?". On an answer that
+is not a solution to begin with it returns False for every rule, which would
+silently relabel every broken answer as load-bearing R1 residue. The candidate
+is therefore checked for brave entailment first, and only sound answers are
+classified; the rest are counted as `unsound`. (Gate verified: it accepts all
+725 samples stored as gen_valid, and the 14 of those carrying ground facts
+match conformance.py's independent intensionality-gate count.)
+
+The gate turns out to be most of the story. On set 05, 1 449 of the 1 466
+ground-fact samples are unsound, so the `ground` column is overwhelmingly a
+measure of ANSWERS THAT ARE NOT SOLUTIONS, not of R4 under-application — 14B's
+49-87% in particular is unsoundness, not skipped subsumption. Only 17 samples
+pose R4's question well-posedly, which is far too few to score. R4 FIDELITY
+REMAINS UNMEASURED; what changed is the reason. An earlier version of this
+script said R4 was not separable because the algorithm leaves no ground facts
+for it to differ on. That reasoning was too strong — R4 fires 213 times across
+101/103 problems, and its decision procedure runs directly on the model's own
+answer — but the conclusion stands on the sample size instead.
+
+Two limits on reading the R4 columns at all:
+  * "removable rule present" is a divergence only for GROUND FACTS, and only
+    because the algorithm's answers on this benchmark contain none. It is NOT a
+    divergence in general: the reference implementation tests subsumption once,
+    when a fact is popped, and never retests a rule that a LATER assumption
+    introduction makes redundant, so 8/103 of its own answers retain a
+    removable (intensional) rule. Do not extend this measure to non-ground
+    rules without dealing with that.
+  * n=17 supports no claim about how a model handles R4.
 
 RETRACTED — DO NOT REINTRODUCE. An earlier version of this script gated R3 on
 `n_new_assumptions <= the algorithm's R3 count`. That is wrong:
@@ -62,7 +91,9 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from main import build_dataset
+from src.aba_algorithm import fact_subsumption
 from src.aba_prompts import parse_llm_output
+from src.aba_validator import check_brave_entailment
 
 MODES = ["direct", "cot", "guided", "algorithm"]
 
@@ -204,9 +235,29 @@ def score_file(path, problems, ref):
         # ---- R1: ground facts surviving in the answer ----
         gf = [x for x in new_rules if x.contains_constant()]
         acc["ground"] += bool(gf)
-        # ---- R4: identical to R1 while the algorithm leaves none (see caveat)
-        if gf and R["n_ground"] == 0:
-            acc["redundant"] += 1
+
+        # ---- R4: run R4's own test on the model's ground facts -------------
+        # Gated on the answer being a solution at all: fact_subsumption returns
+        # False for every rule of a broken answer, which would relabel it as
+        # load-bearing residue. See R4 GATE in the module docstring.
+        if gf:
+            sound, _, _ = check_brave_entailment(cand, p.positive, p.negative,
+                                                 p.get_domain())
+            if not sound:
+                acc["unsound"] += 1
+            else:
+                acc["sound_gf"] += 1
+                new_asms = {a: cand.contraries.get(a)
+                            for a in cand.new_assumptions}
+                removable = load_bearing = 0
+                for g in gf:
+                    others = [x for x in new_rules if x is not g]
+                    if fact_subsumption(g, p.background, others, new_asms, p):
+                        removable += 1
+                    else:
+                        load_bearing += 1
+                acc["r4_skipped"] += bool(removable)
+                acc["r12_residue"] += bool(load_bearing)
 
         # ---- R3 ----
         fresh_preds = {pred_of(x) for x in cand.new_assumptions}
@@ -281,15 +332,16 @@ def main():
 
     print("=" * 100)
     print("R1 ROTE LEARNING  |  R2 FOLDING (non-assumption body vs algorithm)      "
-          "| R4*  | whole")
+          "| whole")
     print("=" * 100)
     hdr = (f"{'model':<13}{'mode':<11}{'n':>5}{'ground':>8} | "
            f"{'cmp':>5}{'exact':>8}{'ovspec':>8}{'ovgen':>7}{'other':>7} | "
-           f"{'redund':>6} | {'rules=':>6}")
+           f"{'rules=':>6}")
     print(hdr)
     print("-" * len(hdr))
 
     r3rows = []
+    r4rows = []
     for model in models:
         for mode in MODES:
             path = os.path.join(args.set, f"bench_{model}", f"results_{mode}.jsonl")
@@ -304,18 +356,21 @@ def main():
                   f"{cmp_n['n']:>5}{100*cmp_n['exact']/c:>7.0f}%"
                   f"{100*cmp_n['over']/c:>7.0f}%{100*cmp_n['under']/c:>6.0f}%"
                   f"{100*cmp_n['other']/c:>6.0f}% | "
-                  f"{100*acc['redundant']/n:>5.0f}% | {100*acc['rules_eq']/n:>5.0f}%")
+                  f"{100*acc['rules_eq']/n:>5.0f}%")
+            r4rows.append((model, mode, acc["ground"], acc["unsound"],
+                           acc["sound_gf"], acc["r4_skipped"],
+                           acc["r12_residue"]))
             aD = D[0] / D[1] if D[1] else 0.0
             aM = M[0] / M[1] if M[1] else 0.0
             r3rows.append((model, mode, n, aD, aM, (aD + aM) / 2,
                            acc["raw_agree"] / n, acc["reuse"] / n, acc["fresh"] / n,
                            acc["con_hit"] / acc["con_tot"] if acc["con_tot"] else None))
 
-    print("\n  * R4 is structurally identical to R1 on this benchmark — see the "
-          "caveat in the module docstring.")
-    print("  cmp = comparisons made; R2 only scores a head the model gave exactly "
+    print("\n  cmp = comparisons made; R2 only scores a head the model gave exactly "
           "one rule for,\n        so a low cmp means that row rests on a small "
           "self-selected subset.")
+    print("  ground = left a ground fact. The R4 table below shows this is "
+          "mostly unsoundness.")
 
     print("\n" + "=" * 100)
     print("R3 ASSUMPTION INTRODUCTION — balanced agreement, and which branch of "
@@ -333,6 +388,30 @@ def main():
     print("  agr_M = credit for being monotonic where the algorithm is")
     print("  BALANCED = (agr_D + agr_M)/2. Read this one, not raw.")
     print("  contrary = learnt a rule headed by a contrary, where the algorithm did")
+
+    print("\n" + "=" * 100)
+    print("R4 FACT SUBSUMPTION — what the ground facts in an answer actually are")
+    print("=" * 100)
+    hdr = (f"{'model':<13}{'mode':<11}{'ground':>8}{'unsound':>9}"
+           f"{'sound':>7}{'R4 skipped':>12}{'R1/R2 residue':>15}")
+    print(hdr)
+    print("-" * len(hdr))
+    tot = collections.Counter()
+    for (model, mode, ground, unsound, sound, skipped, residue) in r4rows:
+        tot["ground"] += ground
+        tot["unsound"] += unsound
+        tot["sound"] += sound
+        print(f"{model:<13}{mode:<11}{ground:>8}{unsound:>9}{sound:>7}"
+              f"{skipped:>12}{residue:>15}")
+    print(f"\n  {tot['unsound']} of {tot['ground']} ground-fact samples are NOT "
+          f"SOLUTIONS, so R4's question does not\n  arise for them: the `ground` "
+          f"column above is largely a soundness measure.")
+    print(f"  Only {tot['sound']} samples pose it well-posedly — too few to "
+          f"score. R4 fidelity is UNMEASURED.")
+    print("  A sample can be counted in both of the last two columns.")
+    print("  Divergence here is defined for GROUND FACTS only: the reference "
+          "implementation\n  itself is not at an R4 fixpoint (8/103 of its "
+          "answers keep a removable rule).")
 
 
 if __name__ == "__main__":

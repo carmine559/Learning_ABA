@@ -52,15 +52,45 @@ The same trap applies to the probes, which is what `null_baselines.py` measures:
 `introduce` has a floor of **1.000** because Proposition 2 makes it satisfied by
 construction — it must be reported inverted, as an error count.
 
-## Known limitation: R4 is not separable end-to-end
+## Known limitation: R4 is unmeasured — for a sample-size reason
 
-The algorithm leaves zero ground facts on every problem in this benchmark
-(Theorem 3), so "R1 residue never folded away" and "R4 Fact Subsumption not
-applied" are the **same observable** in a final answer. `step_fidelity.py`
-prints an R4 column, but it is structurally identical to R1. Separating them
-needs either a redesigned `subsume` probe or problems whose algorithm answer
-retains ground facts. **Currently Fact Subsumption is measured by neither
-instrument** — the `subsume` probe sits at its surface-cue floor for every model.
+**Fact Subsumption is measured by neither instrument.** The `subsume` probe
+sits at its surface-cue floor for every model, and end-to-end the sample is
+almost empty. But the *reason* is not the one an earlier version of this file
+gave, and the difference matters for anyone trying to fix it.
+
+That earlier reasoning was: the algorithm leaves zero ground facts, so "R1
+residue" and "R4 not applied" are one observable, and separating them needs new
+problems whose algorithm answer retains ground facts. That is too strong. R4
+fires **213 times across 101/103 problems** — zero ground facts survive
+*because* R4 removes them — and R4's decision procedure can be run directly on
+the **model's** answer rather than inferred from the algorithm's. So the
+question is posable today, with no new problems.
+
+`step_fidelity.py` now poses it: for each ground fact in an answer, is that
+answer still a solution without it? Removable means a skipped R4; load-bearing
+means the fact was never generalised, which is R1/R2 residue. Two things came
+out of actually running it:
+
+1. **The `ground` column is a soundness measure, not an R4 result.** 1 449 of
+   the 1 466 ground-fact samples in set 05 are **not solutions at all**, so R4's
+   question never arises for them. 14B's 49-87% is unsoundness, not skipped
+   subsumption. Only **17** samples pose the question well-posedly — far too few
+   to score, which is why R4 fidelity is still unmeasured.
+2. **The reference implementation is not at an R4 fixpoint.** It tests
+   subsumption once, when a fact is popped, and never retests a rule that a
+   *later* assumption introduction makes redundant. So **8/103** of the
+   algorithm's own answers retain a removable rule — e.g. `t2_defeas_0006_anon`
+   answers `v(X) :- r(X).` beside `v(X) :- p(X), alpha_0(X).`, and the first is
+   removable. Consequently "contains a removable rule" is a divergence **only
+   for ground facts**, and only because the algorithm's answers here have none.
+   Do not extend the measure to intensional rules without handling this.
+
+Both instrument checks were verified before the numbers were reported: the
+soundness gate accepts all 725 samples stored as `gen_valid`, and the 14 of
+those carrying ground facts match `conformance.py`'s independent
+intensionality-gate count; the subsumption oracle re-accepts all 213 facts the
+algorithm itself removed.
 
 The line-18 solution check is an internal decision that leaves no trace in a
 final answer, and is measurable only by the `check` step probe.
