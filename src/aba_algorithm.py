@@ -96,22 +96,36 @@ def fact_subsumption(
 # R2 — Folding
 # ──────────────────────────────────────────────────────────────────────────────
 
-def _candidate_folds(rule: Rule, background: ABAFramework) -> List[Rule]:
+def _candidate_folds_traced(
+    rule: Rule,
+    background: ABAFramework,
+) -> List[Tuple[Rule, Rule]]:
     """
     Given a (possibly non-intensional) rule, return all candidate
-    rules obtainable by one application of the Folding transformation.
+    rules obtainable by one application of the Folding transformation,
+    each paired with the BACKGROUND RULE that produced it.
 
     Strategy: for every equality  VAR = const  in the body, find
     background rules whose head  pred(VAR)  would be implied if
     VAR=const — i.e. whose body includes  VAR=const  or whose
     head is the ground fact  pred(const).
+
+    The paired rule is the paper's rho2 — the rule used for folding. It is not
+    recorded on `TransformStep.folding_rule`, which stays None: writing it would
+    change `LearningTrace.to_dict()` and break the golden master that pins this
+    algorithm against the committed set-05 traces. The provenance is carried
+    here instead, for the trace log to pick up.
+
+    `_candidate_folds` below is the plain-rule view of this function and is what
+    the algorithm itself uses; the two must stay in lockstep, including ORDER,
+    because `gen_phase` accepts the first candidate that passes its check.
     """
     eq_info = _extract_eq(rule.body)
     if eq_info is None:
         return []                    # already intensional
 
     var, const, eq_idx = eq_info
-    candidates: List[Rule] = []
+    candidates: List[Tuple[Rule, Rule]] = []
     seen_bodies: set = set()
 
     for bg in background.rules:
@@ -141,7 +155,7 @@ def _candidate_folds(rule: Rule, background: ABAFramework) -> List[Rule]:
                 key = tuple(sorted(new_body))
                 if key not in seen_bodies:
                     seen_bodies.add(key)
-                    candidates.append(Rule(head=rule.head, body=new_body))
+                    candidates.append((Rule(head=rule.head, body=new_body), bg))
 
         # ── Case B: bg is a ground fact  pred(const)
         elif fact_m and fact_m.group(2) == const and not bg.body:
@@ -153,9 +167,61 @@ def _candidate_folds(rule: Rule, background: ABAFramework) -> List[Rule]:
             key = tuple(sorted(new_body))
             if key not in seen_bodies:
                 seen_bodies.add(key)
-                candidates.append(Rule(head=rule.head, body=new_body))
+                candidates.append((Rule(head=rule.head, body=new_body), bg))
 
     return candidates
+
+
+def _candidate_folds(rule: Rule, background: ABAFramework) -> List[Rule]:
+    """One folding step, candidates only — the view the algorithm runs on."""
+    return [c for c, _ in _candidate_folds_traced(rule, background)]
+
+
+def apply_folding_traced(
+    rule: Rule,
+    background: ABAFramework,
+    max_depth: int = 4,
+) -> List[Tuple[Rule, List[Rule]]]:
+    """
+    Exhaustively fold *rule* (up to max_depth steps) using background rules.
+    Returns intensional candidates, shortest first, each paired with the CHAIN
+    of background rules folded in to reach it (one entry per step, in order).
+
+    A depth-2 fold therefore reports both rho2's. Note that `gen_phase` records
+    such a chain as a SINGLE `TransformStep`, so the chain is the only place the
+    intermediate step survives.
+    """
+    frontier: List[Tuple[Rule, List[Rule]]] = [(rule, [])]
+    intensional: List[Tuple[Rule, List[Rule]]] = []
+    # Track rules already in the frontier to avoid re-adding, but
+    # do NOT pre-mark candidates as visited before we process them.
+    queued = {rule.to_prolog()}
+
+    for _ in range(max_depth):
+        next_frontier: List[Tuple[Rule, List[Rule]]] = []
+        for r, chain in frontier:
+            if _extract_eq(r.body) is None:
+                # This rule is already intensional — collect it.
+                intensional.append((r, chain))
+            else:
+                for candidate, via in _candidate_folds_traced(r, background):
+                    key = candidate.to_prolog()
+                    if key not in queued:
+                        queued.add(key)
+                        next_frontier.append((candidate, chain + [via]))
+        frontier = next_frontier
+        if not frontier:
+            break
+
+    # Deduplicate while preserving order
+    seen: set = set()
+    result: List[Tuple[Rule, List[Rule]]] = []
+    for r, chain in intensional:
+        k = r.to_prolog()
+        if k not in seen:
+            seen.add(k)
+            result.append((r, chain))
+    return result
 
 
 def apply_folding(
@@ -167,37 +233,7 @@ def apply_folding(
     Exhaustively fold *rule* (up to max_depth steps) using background rules.
     Returns a list of intensional candidates, shortest first.
     """
-    frontier = [rule]
-    intensional: List[Rule] = []
-    # Track rules already in the frontier to avoid re-adding, but
-    # do NOT pre-mark candidates as visited before we process them.
-    queued = {rule.to_prolog()}
-
-    for _ in range(max_depth):
-        next_frontier: List[Rule] = []
-        for r in frontier:
-            if _extract_eq(r.body) is None:
-                # This rule is already intensional — collect it.
-                intensional.append(r)
-            else:
-                for candidate in _candidate_folds(r, background):
-                    key = candidate.to_prolog()
-                    if key not in queued:
-                        queued.add(key)
-                        next_frontier.append(candidate)
-        frontier = next_frontier
-        if not frontier:
-            break
-
-    # Deduplicate while preserving order
-    seen: set = set()
-    result: List[Rule] = []
-    for r in intensional:
-        k = r.to_prolog()
-        if k not in seen:
-            seen.add(k)
-            result.append(r)
-    return result
+    return [r for r, _ in apply_folding_traced(rule, background, max_depth)]
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -242,6 +278,7 @@ def assumption_introduction(
     problem: LearningProblem,
     learnt: List[Rule],
     new_asms: Dict[str, str],
+    observer: Optional[Callable[..., None]] = None,
 ) -> Optional[Tuple[Rule, str, str, List[Rule]]]:
     """
     Attempt to recover a valid solution after folding broke brave entailment.
@@ -257,13 +294,30 @@ def assumption_introduction(
     time — leaving the un-folded ground fact in place and making every
     satisfiability check below pass for the wrong reason.
 
+    `observer`, when given, is a pure spectator with the same contract as
+    `gen_phase`'s: it receives copies and its return value is ignored, so
+    passing None (the default) leaves behaviour bit-for-bit unchanged.
+
+    It exists because the fall-through from the reuse loop to the fresh branch
+    below IS Algorithm 1's line 39 -> 41 backtrack, and it is otherwise
+    invisible: the resulting TransformStep is identical in shape whether the
+    assumption was reused or freshly minted, so no trace, scorer or stored
+    result can tell the two branches apart. Distinguishing them matters because
+    reuse-first (Definition 4) is the step the models were found NOT to take.
+
     Returns (defeasible_rule, asm_atom, contrary_atom, contrary_facts)
     or None on failure.
     """
+    def _notify(kind: str, **extra) -> None:
+        if observer is not None:
+            observer(kind, list(learnt), dict(new_asms), -1, folded_rule, extra)
+
     dom = problem.get_domain()
 
     # ── 1. Try existing assumptions relative to body ──────────────────────────
-    for asm in _assumptions_relative_to(folded_rule.body, current):
+    reusable = _assumptions_relative_to(folded_rule.body, current)
+    _notify("asm_reuse_scan", candidates=list(reusable))
+    for asm in reusable:
         defeasible = Rule(
             head=folded_rule.head,
             body=folded_rule.body + [asm],
@@ -275,11 +329,15 @@ def assumption_introduction(
         sat, _, _ = check_brave_entailment(
             fw, problem.positive, problem.negative, dom
         )
+        _notify("asm_reuse_try", asm=asm, answer=sat)
         if sat:
             contrary = current.contraries.get(asm, f"c_{asm}")
+            _notify("asm_decision", mode="reuse", asm=asm, contrary=contrary)
             return defeasible, asm, contrary, []
 
     # ── 2. Introduce a fresh assumption α_i(X) ────────────────────────────────
+    # Reaching here is the line 39 -> 41 backtrack: every reusable assumption
+    # above was tried and rejected (or there were none).
     all_asms = list(dict.fromkeys(background.assumptions + list(new_asms.keys())))
     asm, contrary = _new_assumption_name(all_asms)
     defeasible = Rule(
@@ -304,8 +362,12 @@ def assumption_introduction(
     )
     contrary_facts, ok, _ = run_rote_learning(rote_problem)
     if not ok:
+        _notify("asm_decision", mode="mint", asm=asm, contrary=contrary,
+                rote_ok=False)
         return None
 
+    _notify("asm_decision", mode="mint", asm=asm, contrary=contrary,
+            rote_ok=True, contrary_facts=list(contrary_facts))
     return defeasible, asm, contrary, contrary_facts
 
 
@@ -373,16 +435,25 @@ def gen_phase(
             ))
             if verbose:
                 print(f"    -> Subsumption: removed.")
+            _notify("fact_done", learnt, new_asms, idx, rule, outcome="subsumed")
             continue
 
         # ── R2: Folding ──────────────────────────────────────────────────────
         if not _is_ground_fact(rule):
             # Already intensional — nothing to fold
+            _notify("fact_done", learnt, new_asms, idx, rule,
+                    outcome="already_intensional")
             continue
 
-        fold_candidates = apply_folding(rule, background)
+        # Traced variant: same candidates in the same order, plus the
+        # background rule(s) folded in to reach each one. The algorithm still
+        # runs on the plain list, so this is inert.
+        folds_traced = apply_folding_traced(rule, background)
+        fold_candidates = [r for r, _ in folds_traced]
         accepted = False
-        _notify("fold", learnt, new_asms, idx, rule, candidates=list(fold_candidates))
+        _notify("fold", learnt, new_asms, idx, rule,
+                candidates=list(fold_candidates),
+                via=[list(chain) for _, chain in folds_traced])
 
         # Pass 1: try direct folding (no assumption needed)
         for folded in fold_candidates:
@@ -412,7 +483,8 @@ def gen_phase(
             for folded in fold_candidates:
                 test_learnt = learnt[:idx] + [folded] + learnt[idx + 1:]
                 result = assumption_introduction(
-                    folded, background, fw_now, problem, test_learnt, new_asms
+                    folded, background, fw_now, problem, test_learnt, new_asms,
+                    observer=observer,
                 )
                 _notify("asm_intro", learnt, new_asms, idx, rule,
                         folded=folded, answer=result)
@@ -440,6 +512,16 @@ def gen_phase(
         if not accepted and verbose:
             print(f"    -> No successful folding found; kept as ground fact.")
 
+        # The "kept as ground fact" outcome was previously a verbose-only print,
+        # so a fact the algorithm failed to generalise left NO record at all —
+        # the trace simply lacked an entry for it. Distinguishing that from a
+        # successful fold matters for scoring R1 residue end-to-end.
+        _notify("fact_done", learnt, new_asms, idx, rule,
+                outcome=("folded_with_assumption"
+                         if accepted and trace.steps
+                         and trace.steps[-1].step_type == "assumption_introduction"
+                         else "folded" if accepted else "kept_ground"))
+
     # Build final framework
     final = _current_framework(background, learnt, new_asms)
     trace.final_framework = final
@@ -457,10 +539,21 @@ def gen_phase(
 def solve_aba_learning(
     problem: LearningProblem,
     verbose: bool = False,
+    observer: Optional[Callable[..., None]] = None,
 ) -> Tuple[Optional[ABAFramework], LearningTrace]:
     """
     Full ASP-ABAlearnB pipeline: RoLe → Gen.
     Returns (solution_or_None, trace).
+
+    `observer` is forwarded to `gen_phase` and to `assumption_introduction`,
+    and additionally receives the RoLe facts as a "role" notification so that
+    R1 provenance arrives on the same stream as everything else. It is a pure
+    spectator: None (the default) is bit-for-bit the original behaviour, which
+    `tests/test_golden_traces.py` pins against the committed set-05 traces.
+
+    Before this parameter existed the observer could only be attached to
+    `gen_phase` directly, so the code path that writes `symbolic_traces.jsonl`
+    never materialised any of the algorithm's decisions.
     """
     trace = LearningTrace(problem_id=problem.problem_id)
 
@@ -476,6 +569,8 @@ def solve_aba_learning(
         trace.steps.append(TransformStep(
             step_type="rote_learning", output_rule=f
         ))
+    if observer is not None:
+        observer("role", list(facts), {}, -1, None, {"facts": list(facts)})
     if verbose:
         print(f"  {msg}")
         for f in facts:
@@ -484,7 +579,8 @@ def solve_aba_learning(
     # Phase 2: Gen
     if verbose:
         print(f"[Gen]")
-    solution, gen_trace = gen_phase(facts, problem, verbose=verbose)
+    solution, gen_trace = gen_phase(facts, problem, verbose=verbose,
+                                    observer=observer)
     trace.steps.extend(gen_trace.steps)
     trace.final_framework = solution
     trace.success = gen_trace.success
