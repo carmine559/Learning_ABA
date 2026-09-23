@@ -68,6 +68,11 @@ class FoldCandidate:
     rank: int                       # position in the candidate list
     sat: Optional[bool] = None      # the line-18 verdict, None if never checked
     accepted: bool = False
+    # Pass 2 (assumption introduction) on this candidate. `reuse_scan` is None
+    # when pass 2 never reached it — distinct from [] ("reached, but no
+    # background assumption fits the body").
+    reuse_scan: Optional[List[str]] = None
+    asm_ok: Optional[bool] = None   # did applyAsmIntro succeed on it
 
     def to_dict(self) -> Dict:
         return asdict(self)
@@ -82,6 +87,10 @@ class AsmAttempt:
     rote_ok: Optional[bool] = None  # mint: did RoLe find the contrary facts
     contrary: Optional[str] = None
     accepted: bool = False
+    # The fold candidate this attempt guards. Pass 2 walks the candidates in
+    # order and runs a full reuse-then-mint on each until one succeeds, so
+    # without this an attempt cannot be attributed once two candidates reach it.
+    for_fold: Optional[str] = None
 
     def to_dict(self) -> Dict:
         return asdict(self)
@@ -96,8 +105,8 @@ class FactEvent:
     candidates: List[FoldCandidate] = field(default_factory=list)
     chosen_fold: Optional[str] = None
     chosen_rank: Optional[int] = None
-    reuse_scanned: List[str] = field(default_factory=list)
     asm_attempts: List[AsmAttempt] = field(default_factory=list)
+    guarded_rule: Optional[str] = None       # the R3 output, chosen_fold + asm
     new_assumption: Optional[str] = None
     contrary: Optional[str] = None
     contrary_facts: List[str] = field(default_factory=list)
@@ -175,7 +184,13 @@ class TraceRecorder:
 
     `asm_*` notifications arrive from inside `assumption_introduction` with
     idx=-1, so they are attached to the open event rather than matched by index.
+    Their `rule` argument is the fold CANDIDATE being guarded, which is how an
+    attempt is attributed when pass 2 works through more than one candidate.
     """
+
+    @staticmethod
+    def _candidate(ev: FactEvent, rule: Optional[str]) -> Optional[FoldCandidate]:
+        return next((c for c in ev.candidates if c.rule == rule), None)
 
     def __init__(self) -> None:
         self.role_facts: List[str] = []
@@ -229,18 +244,22 @@ class TraceRecorder:
                         c.accepted = True
 
         elif kind == "asm_reuse_scan":
-            ev.reuse_scanned = list(extra["candidates"])
+            cand = self._candidate(ev, _p(rule))
+            if cand is not None:
+                cand.reuse_scan = list(extra["candidates"])
 
         elif kind == "asm_reuse_try":
             self.n_clingo_calls += 1
             ev.asm_attempts.append(AsmAttempt(
-                asm=extra["asm"], mode="reuse", sat=bool(extra["answer"])))
+                asm=extra["asm"], mode="reuse", sat=bool(extra["answer"]),
+                for_fold=_p(rule)))
 
         elif kind == "asm_decision":
             if extra["mode"] == "reuse":
                 # The last reuse attempt is the one that succeeded.
                 for a in reversed(ev.asm_attempts):
-                    if a.mode == "reuse" and a.asm == extra["asm"]:
+                    if (a.mode == "reuse" and a.asm == extra["asm"]
+                            and a.for_fold == _p(rule)):
                         a.accepted = True
                         a.contrary = extra.get("contrary")
                         break
@@ -250,16 +269,22 @@ class TraceRecorder:
                     asm=extra["asm"], mode="mint",
                     rote_ok=bool(extra.get("rote_ok")),
                     contrary=extra.get("contrary"),
-                    accepted=bool(extra.get("rote_ok"))))
+                    accepted=bool(extra.get("rote_ok")),
+                    for_fold=_p(rule)))
 
         elif kind == "asm_intro":
             result = extra.get("answer")
+            cand = self._candidate(ev, _p(extra["folded"]))
+            if cand is not None:
+                cand.asm_ok = result is not None
             if result is not None:
                 defeasible, asm, contrary, contra_facts = result
                 ev.chosen_fold = _p(extra["folded"])
-                ev.chosen_rank = next(
-                    (c.rank for c in ev.candidates
-                     if c.rule == ev.chosen_fold), None)
+                ev.chosen_rank = cand.rank if cand is not None else None
+                # NOT cand.accepted: that records the fold passing line 18 on
+                # its own, which every pass-2 candidate already failed. Pass-2
+                # success is `asm_ok`.
+                ev.guarded_rule = _p(defeasible)
                 ev.new_assumption = asm
                 ev.contrary = contrary
                 ev.contrary_facts = [_p(r) for r in contra_facts]

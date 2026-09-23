@@ -122,6 +122,74 @@ SYSTEM_PROMPT = SYSTEM_PROMPT_DEFS + _SYSTEM_PROMPT_TASK
 
 
 # ---------------------------------------------------------------------------
+# SFT prompt (v4-sft) — shared by BOTH training arms
+# ---------------------------------------------------------------------------
+# The trace-vs-endpoint ablation needs ONE prompt for both arms, so that the
+# target is the only thing that differs between them. SYSTEM_PROMPT cannot be
+# that prompt: `_SYSTEM_PROMPT_TASK` forbids "any explanation or commentary
+# outside the two sections", and the trace target IS working outside them.
+# Training the trace arm against it would teach the model to break its own
+# instructions — a conflict the endpoint arm would not face, which confounds the
+# ablation.
+#
+# The task half below is `_SYSTEM_PROMPT_TASK` with only the formatting rules
+# changed: working is PERMITTED, not requested (the endpoint arm is trained to
+# answer directly under the same words), and the answer is pinned to one block
+# at the very end, which is how `parse_llm_output` reads it anyway.
+#
+# It is a frozen literal, deliberately NOT derived from `_SYSTEM_PROMPT_TASK`:
+# once training data is generated against it, a later edit to the v3 text must
+# not be able to move it. Zero-shot numbers from sets 01-05 were measured under
+# v3 and are not comparable with anything produced under this prompt.
+SFT_PROMPT_VERSION = "v4-sft"
+
+_SYSTEM_PROMPT_SFT_TASK = """
+YOUR TASK: given an ABA Learning problem, construct a solution satisfying
+Definition 1. In this task an INTENSIONAL solution is REQUIRED:
+- NEVER leave ground facts  <pred>(X) :- X = <const>.  or bare facts
+  <pred>(<const>).  in your final answer: they memorise the examples without
+  generalising.
+- Every new rule must use a variable X and at least one background predicate.
+- Defeasibility: if a candidate rule makes the framework violate condition (v)
+  - either a positive example is no longer accepted in the chosen extension,
+  or a negative example becomes accepted in it - make a rule defeasible by
+  Assumption Introduction: add an assumption alpha(X) to its body and learn an
+  intensional rule for its contrary c_alpha(X). Schematically:
+    <learnable>(X) :- <support>(X), alpha(X).
+    c_alpha(X) :- <exception>(X).
+  NEW ASSUMPTIONS:  alpha(X) defeated_by c_alpha(X)
+  REUSE FIRST: if the background already declares an assumption that fits the
+  same body, put THAT assumption in the body instead of inventing alpha. Its
+  contrary is already fixed by the background - never redefine it (condition
+  (iv)), and only write rules for it if it is in the learnable set T.
+
+PLACEHOLDER RULE - critical:
+Angle-bracketed tokens such as <pred>, <support>, <exception>, <learnable> are
+PLACEHOLDERS used only to describe rule shapes. In your answer, replace each of
+them with a predicate name taken from THE PROBLEM ABOVE. Your answer must
+contain NO angle brackets and NO placeholder names - only predicates that occur
+in the problem, plus any new assumption names (alpha, c_alpha) you introduce.
+
+FORMATTING RULES - read carefully:
+- Do NOT use markdown. No backticks, no code fences, no bold, no bullet symbols.
+- You MAY write your working before the answer, in plain text.
+- Do NOT repeat or echo the problem statement.
+- END with the answer: the two sections below, in this exact plain-text
+  format, written exactly ONCE and LAST. Never write the header "NEW RULES:"
+  anywhere else.
+
+NEW RULES:
+<head> :- <body_atom_1>, <body_atom_2>.
+
+NEW ASSUMPTIONS:
+<assumption>(X) defeated_by <contrary>(X)
+
+If no new rules or assumptions are needed, write NONE under that section."""
+
+SYSTEM_PROMPT_SFT = SYSTEM_PROMPT_DEFS + _SYSTEM_PROMPT_SFT_TASK
+
+
+# ---------------------------------------------------------------------------
 # Problem serialisation
 # ---------------------------------------------------------------------------
 
@@ -383,13 +451,20 @@ alpha / c_alpha for new assumptions).
 Output your answer in the required format.
 """
 
+# The SFT task block is deliberately bare. It must be ARM-NEUTRAL: naming the
+# transformation rules or asking for steps here would tell the endpoint arm to
+# produce a trace it is never trained to write, and the trace arm would be
+# following an instruction rather than what it learnt. Whatever procedure a
+# model trained under this prompt follows, it got from its training targets.
+_TASK_SFT = """Construct an intensional solution to the problem above."""
+
 # ---------------------------------------------------------------------------
 # Public: build a prompt
 # ---------------------------------------------------------------------------
 
 def problem_to_prompt(
     problem: LearningProblem,
-    mode: str = "direct",   # "direct" | "cot" | "guided" | "algorithm"
+    mode: str = "direct",   # "direct" | "cot" | "guided" | "algorithm" | "sft"
     include_system: bool = True,
     precomputed_role_facts: Optional[List[Rule]] = None,
 ) -> str:
@@ -404,13 +479,18 @@ def problem_to_prompt(
                   four transformation rules R1-R4) for the LLM to EXECUTE. This is
                   the faithful "can the LLM replicate the algorithm?" test.
 
+    And, outside that ladder:
+      sft       — the v4-sft prompt shared by both SFT arms (trace and
+                  endpoint). Uses SYSTEM_PROMPT_SFT instead of SYSTEM_PROMPT;
+                  see the comment above SFT_PROMPT_VERSION for why.
+
     For `guided` mode, pass `precomputed_role_facts` (the output of
     run_rote_learning) to avoid an expensive ASP call on every invocation.
     If not provided, RoLe is run once here as a fallback.
     """
     parts = []
     if include_system:
-        parts.append(SYSTEM_PROMPT)
+        parts.append(SYSTEM_PROMPT_SFT if mode == "sft" else SYSTEM_PROMPT)
         parts.append("")
 
     parts.append(_format_problem(problem))
@@ -434,6 +514,8 @@ def problem_to_prompt(
         parts.append(
             _TASK_GUIDED_TEMPLATE.format(role_facts=facts_str)
         )
+    elif mode == "sft":
+        parts.append(_TASK_SFT)
 
     parts.append("\nProvide your answer below:")
     return "\n".join(parts)
