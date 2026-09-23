@@ -43,16 +43,34 @@ _BENCHMARK_PER_TIER = 20
 _ANONYMIZE_SCHEME = "letters"
 _EXPECTED_N = 103
 
+# Traces that changed DELIBERATELY since set 05, and why. Their current records
+# are pinned in tests/golden/repinned.jsonl; the other 101 still match set 05.
+_REPINNED = {
+    "nixon_diamond_anon": "line 40: a failed reuse fails the fold instead of "
+                          "minting (paper, Algorithm 1)",
+    "tax_law_anon": "line 40 as above, plus the dom(X) fold candidate "
+                    "(paper, Definition 3)",
+}
+_REPINNED_FILE = Path(__file__).resolve().parent / "golden" / "repinned.jsonl"
+
+
+def _read_jsonl(path: Path) -> dict:
+    out = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            rec = json.loads(line)
+            out[rec["problem_id"]] = rec
+    return out
+
 
 def _committed_traces() -> dict:
     paths = sorted(_SET_05.glob("bench_*/symbolic_traces.jsonl"))
     if not paths:
         pytest.skip(f"no committed traces under {_SET_05}")
-    out = {}
-    for line in paths[0].read_text(encoding="utf-8").splitlines():
-        if line.strip():
-            rec = json.loads(line)
-            out[rec["problem_id"]] = rec
+    out = _read_jsonl(paths[0])
+    repinned = _read_jsonl(_REPINNED_FILE)
+    assert set(repinned) == set(_REPINNED), "repinned.jsonl out of step with _REPINNED"
+    out.update(repinned)
     return out
 
 
@@ -102,6 +120,18 @@ def test_traces_are_byte_identical_to_the_committed_reference(
         f"{len(differing)}/{len(regenerated)} traces changed, first few: "
         f"{differing[:5]}"
     )
+
+
+def test_nixon_reproduces_the_papers_solution():
+    """The paper's own worked problem (Examples 1 and 10): our reference must
+    learn the paper's rules, up to the name of the minted assumption."""
+    from src.aba_dataset import make_nixon_diamond
+    problem, paper = make_nixon_diamond()
+    solution, trace = solve_aba_learning(problem)
+    norm = lambda rules: sorted(r.to_prolog().replace("alpha_0", "alpha")
+                                for r in rules)
+    assert trace.success
+    assert norm(solution.new_rules) == norm(paper.new_rules)
 
 
 def test_observer_none_is_the_default_path(regenerated):

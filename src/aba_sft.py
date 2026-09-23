@@ -147,8 +147,10 @@ def _render_event(ev: FactEvent) -> List[str]:
                 out.append(f"{ev.new_assumption} defeated_by {ev.contrary}")
             out.extend(f"R1 {cf}" for cf in ev.contrary_facts)
             return out
+        if c.reuse_scan:
+            out.append("R3 failed: no reusable assumption works.")   # line 40
 
-    out.append("kept ground.")
+    out.append("no option works.")    # never on a successful derivation
     return out
 
 
@@ -157,7 +159,7 @@ def render_trace_body(record: RunRecord) -> str:
     lines = ["RoLe."]
     lines.extend(f"R1 {f}" for f in record.role_facts)
     lines.append("Gen.")
-    for ev in record.events:
+    for ev in record.path:
         lines.extend(_render_event(ev))
     lines.append("Done.")
     return "\n".join(lines)
@@ -225,10 +227,15 @@ def sft_example(problem: LearningProblem) -> Dict:
     successful, intensional run is supervision.
     """
     solution, trace, record = solve_and_log(problem)
+    if record.budget_exceeded:
+        raise Untrainable("search_budget_exceeded")
     if solution is None or not record.success:
         raise Untrainable("gen_failed")
     if not record.intensional:
         raise Untrainable("not_intensional")
+    if record.n_retractions:
+        # No trace grammar for undoing an earlier fact's choice yet.
+        raise Untrainable("cross_fact_backtracking")
     return {
         "problem_id": problem.problem_id,
         "prompt_version": SFT_PROMPT_VERSION,

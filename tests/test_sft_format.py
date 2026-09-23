@@ -52,9 +52,9 @@ def test_the_reuse_branch_is_serialised(examples):
 
 
 @pytest.mark.parametrize("corrupt", [
-    # applying a candidate the algorithm rejected
-    lambda t: t.replace("R2 p1(X) :- p(X).\nR3 p1(X) :- p(X), alpha_0(X).",
-                        "R2 p1(X) :- r(X).\nR3 p1(X) :- r(X), alpha_0(X)."),
+    # minting on the fold whose reuse failed: the step line 40 forbids
+    lambda t: t.replace("R2 p1(X) :- r(X).\nR3 p1(X) :- r(X), alpha_0(X).",
+                        "R2 p1(X) :- p(X).\nR3 p1(X) :- p(X), alpha_0(X)."),
     # losing the declaration of a minted assumption
     lambda t: t.replace("alpha_0(X) defeated_by c_alpha_0(X)\nR1", "R1"),
     # a draft answer block ahead of the real one
