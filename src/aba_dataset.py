@@ -284,6 +284,13 @@ BENCHMARK_TIERS: List[Dict] = [
 ]
 
 
+_PRED_POOL = (
+    "flies", "swims", "runs", "eats", "sleeps",
+    "predator", "prey", "domestic", "wild",
+    "friendly", "dangerous", "nocturnal", "fast",
+)
+
+
 class SyntheticGenerator:
     """
     Generate random ABA learning problems by:
@@ -294,11 +301,7 @@ class SyntheticGenerator:
 
     def __init__(self, seed: int = 42):
         self.rng = random.Random(seed)
-        self.pred_names = [
-            "flies", "swims", "runs", "eats", "sleeps",
-            "predator", "prey", "domestic", "wild",
-            "friendly", "dangerous", "nocturnal", "fast",
-        ]
+        self.pred_names = list(_PRED_POOL)
 
     @staticmethod
     def _make_constants(n: int) -> List[str]:
@@ -603,6 +606,180 @@ class SyntheticGenerator:
                 problems.append(p)
             attempts += 1
         return problems
+
+
+# ---------------------------------------------------------------------------
+# Training-corpus generator (tier spec v2)
+# ---------------------------------------------------------------------------
+
+# Every problem carries exception facts, and fact and example counts do not
+# depend on the class, so only folding and checking tells whether R3 is needed.
+# BENCHMARK_TIERS (spec v1) stays as it was: set 05 regenerates from it.
+CORPUS_TIER_SPEC_VERSION = 2
+CORPUS_TIERS: List[Dict] = [
+    {"name": "t1_base",    "kind": "single",
+     "kwargs": dict(n_constants=6, n_noise=2)},
+    {"name": "t2_noise",   "kind": "single",
+     "kwargs": dict(n_constants=8, n_noise=4)},
+    {"name": "t3_domain",  "kind": "single",
+     "kwargs": dict(n_constants=12, n_noise=2, n_pos=(4, 5), n_neg=(4, 5))},
+    {"name": "t4_nested",  "kind": "single",
+     "kwargs": dict(n_constants=8, n_noise=2, nested=True, exc_first=True)},
+    {"name": "t5_twopath", "kind": "twopath",
+     "kwargs": dict(n_constants=10, n_noise=2)},
+]
+
+
+def _fact_block(rng: random.Random, pred: str, consts: List[str]) -> List[Rule]:
+    # Shuffled, so a fact's position says nothing about its constant's role.
+    cs = list(consts)
+    rng.shuffle(cs)
+    return [Rule(f"{pred}({c})", []) for c in cs]
+
+
+def _noise_facts(rng: random.Random, preds: List[str],
+                 consts: List[str]) -> List[Rule]:
+    return [Rule(f"{p}({c})", []) for p in preds for c in consts
+            if rng.random() < 0.5]
+
+
+def _finish(rng, facts, exc_rules, target_rules, asms, contr, t, pos_c, neg_c,
+            consts, learnable, problem_id) -> Optional[LearningProblem]:
+    """The problem, if the hidden target explains its examples and RoLe works."""
+    full = ABAFramework(rules=facts + exc_rules + target_rules,
+                        assumptions=list(asms), contraries=dict(contr))
+    pos = [f"{t}({c})" for c in rng.sample(pos_c, len(pos_c))]
+    neg = [f"{t}({c})" for c in rng.sample(neg_c, len(neg_c))]
+    if not check_brave_entailment(full, pos, neg, consts)[0]:
+        return None
+    problem = LearningProblem(
+        background=ABAFramework(rules=facts + exc_rules, assumptions=list(asms),
+                                contraries=dict(contr)),
+        positive=pos, negative=neg, learnable=learnable, domain=list(consts),
+        problem_id=problem_id,
+    )
+    _facts, ok, _ = run_rote_learning(problem)
+    return problem if ok else None
+
+
+def generate_corpus_single(
+    seed: object,
+    defeasible: bool,
+    n_constants: int = 6,
+    n_noise: int = 2,
+    n_pos: Tuple[int, int] = (2, 3),
+    n_neg: Tuple[int, int] = (2, 3),
+    nested: bool = False,
+    exc_first: bool = False,
+) -> Optional[Tuple[LearningProblem, Dict]]:
+    """One single-path problem, drawn from Random(seed).
+
+    Hidden target: t(X) :- key(X), normal_t(X), defeated by an exception. One
+    key constant s is special, and two exception facts are always present: one
+    on a negative, one on an unlisted constant. Defeasible: s is that negative,
+    so the fold on key covers it and R3 is needed. Monotonic: s is the unlisted
+    one, and the negative lacks key. `nested` adds an exempt positive whose
+    exception is itself defeated.
+    """
+    rng = random.Random(seed)
+    names = rng.sample(_PRED_POOL, 2 + n_noise)
+    t, key, noise = names[0], names[1], names[2:]
+    exc, exempt = f"exc_{t}", f"exempt_{t}"
+
+    sizes = [(p, n) for p in range(n_pos[0], n_pos[1] + 1)
+             for n in range(n_neg[0], n_neg[1] + 1) if p + n + 1 <= n_constants]
+    npos, nneg = rng.choice(sizes)
+    consts = [f"c{i}" for i in range(n_constants)]
+    sh = list(consts)
+    rng.shuffle(sh)
+    s, P, N = sh[0], sh[1:npos + 1], sh[npos + 1:]
+    X = P[:1] if nested else []
+    if defeasible:
+        Ng, exc_on = [s] + N[:nneg - 1], [s, N[nneg - 1]]
+    else:
+        Ng, exc_on = N[:nneg], [N[0], s]
+
+    key_f = _fact_block(rng, key, [s] + P)
+    exc_f = _fact_block(rng, exc, exc_on + X)
+    facts = ((exc_f + key_f) if exc_first else (key_f + exc_f)) \
+        + _fact_block(rng, exempt, X) + _noise_facts(rng, noise, consts)
+
+    asm_t, ab_t = f"normal_{t}(X)", f"ab_{t}(X)"
+    asms, contr = [asm_t], {asm_t: ab_t}
+    if nested:
+        asm_e, ab_e = f"normal_{exc}(X)", f"ab_{exc}(X)"
+        exc_rules = [Rule(ab_t, [f"{exc}(X)", asm_e]),
+                     Rule(ab_e, [f"{exempt}(X)"])]
+        asms.append(asm_e)
+        contr[asm_e] = ab_e
+    else:
+        exc_rules = [Rule(ab_t, [f"{exc}(X)"])]
+    target = Rule(f"{t}(X)", [f"{key}(X)", asm_t])
+
+    problem = _finish(rng, facts, exc_rules, [target], asms, contr, t, P, Ng,
+                      consts, [t, f"ab_{t}"], f"corpus_{t}")
+    return (problem, {"observed": ["t"] if defeasible else []}) if problem else None
+
+
+def generate_corpus_twopath(
+    seed: object,
+    defeasible: bool,
+    n_constants: int = 10,
+    n_noise: int = 2,
+    n_neg: Tuple[int, int] = (2, 3),
+) -> Optional[Tuple[LearningProblem, Dict]]:
+    """One two-path problem, drawn from Random(seed); t5 spec v2.
+
+    Hidden target: t(X) :- a(X), normal_a(X) and t(X) :- b(X), normal_b(X), each
+    with its own exception. Each path has a special constant and two exception
+    facts, as in `generate_corpus_single`; defeasible problems observe the
+    exception on one path or both. Group sizes vary, so problems are no longer
+    isomorphic.
+    """
+    rng = random.Random(seed)
+    names = rng.sample(_PRED_POOL, 3 + n_noise)
+    t, pa, pb, noise = names[0], names[1], names[2], names[3:]
+    observed = rng.choice([("a",), ("b",), ("a", "b")]) if defeasible else ()
+
+    consts = [f"c{i}" for i in range(n_constants)]
+    sh = list(consts)
+    rng.shuffle(sh)
+    na, nb, nab = rng.randint(2, 3), rng.randint(2, 3), rng.randint(0, 2)
+    A, B = sh[:na], sh[na:na + nb]
+    AB, N = sh[na + nb:na + nb + nab], sh[na + nb + nab:]
+    nneg = rng.choice([n for n in range(n_neg[0], n_neg[1] + 1) if n <= len(N)])
+    special = {"a": A[0], "b": B[0]}
+    P = A[1:] + B[1:] + AB
+    k = nneg - len(observed)
+    Ng = [special[p] for p in observed] + N[:k]
+    negs, unlisted = iter(N[:k]), iter(N[k:])
+    exc_on = {p: [special[p], next(unlisted)] if p in observed
+              else [next(negs), special[p]] for p in ("a", "b")}
+
+    exc_a, exc_b = f"exc_a_{t}", f"exc_b_{t}"
+    facts = (_fact_block(rng, pa, A + AB) + _fact_block(rng, pb, B + AB)
+             + _fact_block(rng, exc_a, exc_on["a"])
+             + _fact_block(rng, exc_b, exc_on["b"])
+             + _noise_facts(rng, noise, consts))
+    asm_a, asm_b = f"normal_a_{t}(X)", f"normal_b_{t}(X)"
+    ab_a, ab_b = f"ab_a_{t}(X)", f"ab_b_{t}(X)"
+    exc_rules = [Rule(ab_a, [f"{exc_a}(X)"]), Rule(ab_b, [f"{exc_b}(X)"])]
+    targets = [Rule(f"{t}(X)", [f"{pa}(X)", asm_a]),
+               Rule(f"{t}(X)", [f"{pb}(X)", asm_b])]
+
+    # ab_* already have rules; learnable ones let RoLe add spurious facts.
+    problem = _finish(rng, facts, exc_rules, targets, [asm_a, asm_b],
+                      {asm_a: ab_a, asm_b: ab_b}, t, P, Ng, consts, [t],
+                      f"corpus_{t}")
+    return (problem, {"observed": list(observed)}) if problem else None
+
+
+def generate_corpus_problem(
+    tier: Dict, defeasible: bool, seed: object,
+) -> Optional[Tuple[LearningProblem, Dict]]:
+    fn = (generate_corpus_twopath if tier["kind"] == "twopath"
+          else generate_corpus_single)
+    return fn(seed, defeasible, **tier["kwargs"])
 
 
 # ---------------------------------------------------------------------------

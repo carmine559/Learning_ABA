@@ -303,27 +303,9 @@ def asm_intro_options(
         43-45  rho := H <- B, alpha(X);  S := getAS(...)
         46 end if
 
-    and the paper, on line 40: "If it uses an assumption alpha(X) already
-    belonging to A (see line 37 and Definition 4) and it does not obtain a
-    solution, then it gets a failure (see line 40) and backtracks to the most
-    recent choice point."
-
-    So there are exactly two cases, and they do not fall through into each
-    other:
-      * Some assumption is relative to the body (Definition 4). The choice of
-        WHICH one is a choice point, so each relative assumption that yields a
-        solution is one option, in order. If none does, there are NO options —
-        that is the line-40 failure, and the caller backtracks to its own
-        previous choice (another fold, or an earlier fact).
-      * None is relative to the body. Then, and only then, a fresh assumption
-        is minted, with its contrary's facts computed by RoLe.
-
-    An earlier version minted a fresh assumption after a failed reuse, calling
-    that "the line 39 -> 41 backtrack". The pseudo-code has no such transition.
-    On the paper's own Nixon problem (Examples 1 and 10) that version learnt
-    `abnormal_quaker(X) :- quaker(X), alpha(X)`, a step Algorithm 1 cannot take
-    because `normal_quaker` is relative to `quaker(X)`; the paper learns
-    `abnormal_quaker(X) :- republican(X), alpha(X)`.
+    Each relative assumption that gives a solution is one option; if one
+    exists but none works, there are no options (line 40) and the caller
+    backtracks. A fresh assumption is minted only when none is relative.
 
     `background` is the ORIGINAL background knowledge and `current` the
     framework as it stands (background + everything learnt so far). Keeping
@@ -332,11 +314,7 @@ def asm_intro_options(
     time — leaving the un-folded ground fact in place and making every
     satisfiability check below pass for the wrong reason.
 
-    `observer`, when given, is a pure spectator with the same contract as
-    `gen_phase`'s: it receives copies and its return value is ignored. It is
-    how the branch taken — reuse, mint, or the line-40 failure — becomes
-    visible: the resulting TransformStep has the same shape whether the
-    assumption was reused or minted.
+    `observer` is a pure spectator, as in `gen_phase`.
 
     Yields (defeasible_rule, asm_atom, contrary_atom, contrary_facts).
     """
@@ -414,12 +392,7 @@ def assumption_introduction(
     new_asms: Dict[str, str],
     observer: Optional[Callable[..., None]] = None,
 ) -> Optional[Tuple[Rule, str, str, List[Rule]]]:
-    """The first option `asm_intro_options` offers, or None if it offers none.
-
-    None now also covers the line-40 failure: an assumption relative to the
-    body exists but none yields a solution, so there is no assumption
-    introduction on this body at all.
-    """
+    """The first option `asm_intro_options` offers, or None (incl. line 40)."""
     return next(asm_intro_options(folded_rule, background, current, problem,
                                   learnt, new_asms, observer), None)
 
@@ -432,10 +405,7 @@ class _SearchBudgetExceeded(Exception):
     """Gen's backtracking search applied more options than it is allowed."""
 
 
-# Option applications allowed before Gen gives up. The paper's search is
-# exponential in the worst case; this only exists so corpus generation cannot
-# hang. A problem that hits it FAILS (it is not silently kept), and the
-# observer receives "search_budget_exceeded" so a corpus can log the reason.
+# Guard against exponential search: exceeding it makes Gen fail.
 GEN_SEARCH_BUDGET = 5000
 
 
@@ -452,44 +422,19 @@ def gen_phase(
 
     Returns (final_framework, trace).
 
-    SEARCH. Algorithm 1 is nondeterministic: which fold to apply (lines 31-32)
-    and which relative assumption to reuse (line 37) are choice points, and a
-    failure (line 40) "backtracks to the most recent choice point". This is a
-    depth-first search over those choices, fact by fact in queue order. For
-    each learnt ground fact the options are tried lazily, in a fixed order:
-
-      pass 1  every fold candidate that is a solution on its own, in order;
-      pass 2  assumption introduction on each fold that is not, in order,
-              each yielding whatever `asm_intro_options` offers.
-
-    The first option whose continuation succeeds is kept. If none does, the
-    fact FAILS and the search backtracks into the previous fact's remaining
-    options. That order is one resolution of the paper's nondeterminism: every
-    run it completes is a legal execution of Algorithm 1.
-
-    Two behaviours changed when this became a search, both toward the paper:
-      * after a failed reuse the old loop minted a fresh assumption on the SAME
-        fold; now that fold has no R3 option (line 40), see
-        `asm_intro_options`;
-      * a fact with no working option used to be "kept as ground fact" and the
-        loop moved on; now the fact fails and the search backtracks.
-    Neither occurs on 101 of the 103 problems set 05 was scored on, and on
-    those the search visits exactly the states the loop did, in the same
-    order, with the same Clingo calls. `tests/test_golden_traces.py` pins this.
-
-    TRACE. `trace.steps` is the SUCCESSFUL path only, as in the paper's own
-    worked derivations. Abandoned branches reach the observer, never the trace.
-    On total failure `trace.success` is False and `trace.steps` is empty.
+    Depth-first search over Algorithm 1's choice points (the fold, lines
+    31-32; the relative assumption, line 37), fact by fact in queue order,
+    backtracking chronologically on failure (line 40). Per fact, options are
+    tried lazily: pass 1, each fold that is a solution on its own; pass 2,
+    assumption introduction on each fold that is not. `trace.steps` holds the
+    successful path only; on total failure `trace.success` is False.
 
     `observer`, when given, is called at every decision point with
-    ``(kind, learnt, new_asms, idx, rule, extra)``, where `learnt`/`new_asms`
-    are the state BEFORE the fact's option is applied (except `fact_done`,
-    which gets the state after). Kinds: "subsume", "fold", "check",
+    ``(kind, learnt, new_asms, idx, rule, extra)`` (state before the option
+    is applied; after, for "fact_done"). Kinds: "subsume", "fold", "check",
     "asm_reuse_scan", "asm_reuse_try", "asm_decision", "asm_intro",
-    "fact_done", and, for the search, "backtrack" (an option's continuation
-    failed; the fact's remaining options are tried next), "fact_failed" (the
-    fact has none left) and "search_budget_exceeded". It is a pure spectator:
-    it receives copies and its return value is ignored.
+    "fact_done", "backtrack", "fact_failed", "search_budget_exceeded". It is a
+    pure spectator: it receives copies and its return value is ignored.
 
     It exists so that the step probes in `aba_probes.py` can be built from the
     states this search actually visits. Re-implementing the search in a
@@ -507,8 +452,6 @@ def gen_phase(
     def _options(learnt: List[Rule], new_asms: Dict[str, str], idx: int,
                  rule: Rule):
         """The fact's choices, lazily, in the order documented above."""
-        # Traced variant: same candidates in the same order, plus the
-        # background rule(s) folded in to reach each one.
         folds_traced = apply_folding_traced(rule, background)
         fold_candidates = [r for r, _ in folds_traced]
         _notify("fold", learnt, new_asms, idx, rule,
