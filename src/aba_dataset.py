@@ -312,6 +312,7 @@ class SyntheticGenerator:
         n_positive: int = 3,
         n_negative: int = 3,
         with_exceptions: bool = True,
+        seed: Optional[object] = None,
     ) -> Optional[LearningProblem]:
         """
         Generate a random learning problem.
@@ -328,9 +329,17 @@ class SyntheticGenerator:
         learn a genuinely DEFEASIBLE rule (using the assumption), rather than a
         trivial monotonic rule. Without exceptions the assumption is never used
         and the graded layer collapses to crisp 0/1.
+
+        `seed`, when given, draws this ONE problem from its own
+        `random.Random(seed)` instead of the generator's shared stream. That is
+        what makes corpora nest: with a shared stream every rejected attempt
+        shifts all later problems, so a corpus of 50 is not a prefix of one of
+        200. None (the default) is the original shared-stream behaviour, which
+        `tests/test_golden_traces.py` pins against set 05.
         """
+        rng = random.Random(seed) if seed is not None else self.rng
         n_constants = max(n_constants, 6)          # need room for >=2 each side
-        preds = self.rng.sample(self.pred_names, min(n_predicates, len(self.pred_names)))
+        preds = rng.sample(self.pred_names, min(n_predicates, len(self.pred_names)))
         consts = self._make_constants(n_constants)
         target_pred = preds[0]
         support_preds = preds[1:]
@@ -342,7 +351,7 @@ class SyntheticGenerator:
         # support predicate. Among those, designate one or two as EXCEPTIONS
         # (they satisfy the support but are defeated -> negative).
         shuffled = list(consts)
-        self.rng.shuffle(shuffled)
+        rng.shuffle(shuffled)
         half = len(shuffled) // 2
         support_consts = shuffled[:half + 1]        # satisfy key_support
         no_support_consts = shuffled[half + 1:]     # clearly negative
@@ -359,7 +368,7 @@ class SyntheticGenerator:
         # Add some noise facts for the other support predicates.
         for p in support_preds[1:]:
             for c in consts:
-                if self.rng.random() > 0.5:
+                if rng.random() > 0.5:
                     base_facts.append(Rule(f"{p}({c})", []))
 
         asm_name = f"normal_{target_pred}"
@@ -394,11 +403,11 @@ class SyntheticGenerator:
         forced_negatives = [f"{target_pred}({c})" for c in exception_consts
                             if f"{target_pred}({c})" in negative_candidates]
 
-        positives = self.rng.sample(
+        positives = rng.sample(
             positive_candidates, min(n_positive, len(positive_candidates))
         )
         remaining_neg = [n for n in negative_candidates if n not in forced_negatives]
-        self.rng.shuffle(remaining_neg)
+        rng.shuffle(remaining_neg)
         negatives = (forced_negatives +
                      remaining_neg)[:max(n_negative, len(forced_negatives))]
 

@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 import copy
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple, Dict, Callable
+from typing import List, Optional, Tuple, Dict, Callable, Iterator
 
 from src.aba_types import Rule, ABAFramework, LearningProblem, TransformStep, LearningTrace
 from src.aba_validator import (
@@ -169,6 +169,15 @@ def _candidate_folds_traced(
                 seen_bodies.add(key)
                 candidates.append((Rule(head=rule.head, body=new_body), bg))
 
+    # dom(X) <- X = c is in R for every constant (paper, Definition 3).
+    new_body = ([a for a in rule.body if a.strip() != rule.body[eq_idx].strip()]
+                + [f"dom({var})"])
+    key = tuple(sorted(new_body))
+    if key not in seen_bodies:
+        seen_bodies.add(key)
+        candidates.append((Rule(head=rule.head, body=new_body),
+                           Rule(head=f"dom({const})", body=[])))
+
     return candidates
 
 
@@ -271,7 +280,7 @@ def _new_assumption_name(existing: List[str]) -> Tuple[str, str]:
     return asm, contrary
 
 
-def assumption_introduction(
+def asm_intro_options(
     folded_rule: Rule,
     background: ABAFramework,
     current: ABAFramework,
@@ -279,13 +288,42 @@ def assumption_introduction(
     learnt: List[Rule],
     new_asms: Dict[str, str],
     observer: Optional[Callable[..., None]] = None,
-) -> Optional[Tuple[Rule, str, str, List[Rule]]]:
+) -> Iterator[Tuple[Rule, str, str, List[Rule]]]:
     """
-    Attempt to recover a valid solution after folding broke brave entailment.
+    Every way `applyAsmIntro` can guard `folded_rule`, yielded lazily in order.
 
-    Strategy (mirrors the paper's applyAsmIntro):
-      1. Try using an existing assumption relative to the rule body.
-      2. If none works, introduce a fresh assumption.
+    Algorithm 1 (De Angelis, Proietti & Toni, arXiv:2408.10126v2):
+
+        37 if there exists alpha(X) in A relative to B then
+        38   rho := H <- B, alpha(X);  S := {}
+        39   if not sat(ASP(<R u {rho}, A, ->, <E+, E->, {})) then
+        40     fail
+        41   end if
+        42 else  /* introduce an assumption alpha(X) */
+        43-45  rho := H <- B, alpha(X);  S := getAS(...)
+        46 end if
+
+    and the paper, on line 40: "If it uses an assumption alpha(X) already
+    belonging to A (see line 37 and Definition 4) and it does not obtain a
+    solution, then it gets a failure (see line 40) and backtracks to the most
+    recent choice point."
+
+    So there are exactly two cases, and they do not fall through into each
+    other:
+      * Some assumption is relative to the body (Definition 4). The choice of
+        WHICH one is a choice point, so each relative assumption that yields a
+        solution is one option, in order. If none does, there are NO options —
+        that is the line-40 failure, and the caller backtracks to its own
+        previous choice (another fold, or an earlier fact).
+      * None is relative to the body. Then, and only then, a fresh assumption
+        is minted, with its contrary's facts computed by RoLe.
+
+    An earlier version minted a fresh assumption after a failed reuse, calling
+    that "the line 39 -> 41 backtrack". The pseudo-code has no such transition.
+    On the paper's own Nixon problem (Examples 1 and 10) that version learnt
+    `abnormal_quaker(X) :- quaker(X), alpha(X)`, a step Algorithm 1 cannot take
+    because `normal_quaker` is relative to `quaker(X)`; the paper learns
+    `abnormal_quaker(X) :- republican(X), alpha(X)`.
 
     `background` is the ORIGINAL background knowledge and `current` the
     framework as it stands (background + everything learnt so far). Keeping
@@ -295,18 +333,12 @@ def assumption_introduction(
     satisfiability check below pass for the wrong reason.
 
     `observer`, when given, is a pure spectator with the same contract as
-    `gen_phase`'s: it receives copies and its return value is ignored, so
-    passing None (the default) leaves behaviour bit-for-bit unchanged.
+    `gen_phase`'s: it receives copies and its return value is ignored. It is
+    how the branch taken — reuse, mint, or the line-40 failure — becomes
+    visible: the resulting TransformStep has the same shape whether the
+    assumption was reused or minted.
 
-    It exists because the fall-through from the reuse loop to the fresh branch
-    below IS Algorithm 1's line 39 -> 41 backtrack, and it is otherwise
-    invisible: the resulting TransformStep is identical in shape whether the
-    assumption was reused or freshly minted, so no trace, scorer or stored
-    result can tell the two branches apart. Distinguishing them matters because
-    reuse-first (Definition 4) is the step the models were found NOT to take.
-
-    Returns (defeasible_rule, asm_atom, contrary_atom, contrary_facts)
-    or None on failure.
+    Yields (defeasible_rule, asm_atom, contrary_atom, contrary_facts).
     """
     def _notify(kind: str, **extra) -> None:
         if observer is not None:
@@ -314,30 +346,32 @@ def assumption_introduction(
 
     dom = problem.get_domain()
 
-    # ── 1. Try existing assumptions relative to body ──────────────────────────
+    # ── Lines 37-41: an assumption relative to the body exists ────────────────
     reusable = _assumptions_relative_to(folded_rule.body, current)
     _notify("asm_reuse_scan", candidates=list(reusable))
-    for asm in reusable:
-        defeasible = Rule(
-            head=folded_rule.head,
-            body=folded_rule.body + [asm],
-        )
-        candidate_asms = dict(new_asms)
-        test_learnt = [r for r in learnt
-                       if r.to_prolog() != folded_rule.to_prolog()] + [defeasible]
-        fw = _current_framework(background, test_learnt, candidate_asms)
-        sat, _, _ = check_brave_entailment(
-            fw, problem.positive, problem.negative, dom
-        )
-        _notify("asm_reuse_try", asm=asm, answer=sat)
-        if sat:
-            contrary = current.contraries.get(asm, f"c_{asm}")
-            _notify("asm_decision", mode="reuse", asm=asm, contrary=contrary)
-            return defeasible, asm, contrary, []
+    if reusable:
+        for asm in reusable:
+            defeasible = Rule(
+                head=folded_rule.head,
+                body=folded_rule.body + [asm],
+            )
+            candidate_asms = dict(new_asms)
+            test_learnt = [r for r in learnt
+                           if r.to_prolog() != folded_rule.to_prolog()] + [defeasible]
+            fw = _current_framework(background, test_learnt, candidate_asms)
+            sat, _, _ = check_brave_entailment(
+                fw, problem.positive, problem.negative, dom
+            )
+            _notify("asm_reuse_try", asm=asm, answer=sat)
+            if sat:
+                contrary = current.contraries.get(asm, f"c_{asm}")
+                _notify("asm_decision", mode="reuse", asm=asm, contrary=contrary)
+                yield defeasible, asm, contrary, []
+        # Line 40. Every relative assumption is exhausted: no R3 on this body.
+        _notify("asm_decision", mode="fail", asm=None)
+        return
 
-    # ── 2. Introduce a fresh assumption α_i(X) ────────────────────────────────
-    # Reaching here is the line 39 -> 41 backtrack: every reusable assumption
-    # above was tried and rejected (or there were none).
+    # ── Lines 42-45: none is relative, so introduce a fresh one ───────────────
     all_asms = list(dict.fromkeys(background.assumptions + list(new_asms.keys())))
     asm, contrary = _new_assumption_name(all_asms)
     defeasible = Rule(
@@ -364,22 +398,53 @@ def assumption_introduction(
     if not ok:
         _notify("asm_decision", mode="mint", asm=asm, contrary=contrary,
                 rote_ok=False)
-        return None
+        return
 
     _notify("asm_decision", mode="mint", asm=asm, contrary=contrary,
             rote_ok=True, contrary_facts=list(contrary_facts))
-    return defeasible, asm, contrary, contrary_facts
+    yield defeasible, asm, contrary, contrary_facts
+
+
+def assumption_introduction(
+    folded_rule: Rule,
+    background: ABAFramework,
+    current: ABAFramework,
+    problem: LearningProblem,
+    learnt: List[Rule],
+    new_asms: Dict[str, str],
+    observer: Optional[Callable[..., None]] = None,
+) -> Optional[Tuple[Rule, str, str, List[Rule]]]:
+    """The first option `asm_intro_options` offers, or None if it offers none.
+
+    None now also covers the line-40 failure: an assumption relative to the
+    body exists but none yields a solution, so there is no assumption
+    introduction on this body at all.
+    """
+    return next(asm_intro_options(folded_rule, background, current, problem,
+                                  learnt, new_asms, observer), None)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Gen phase — orchestration
 # ──────────────────────────────────────────────────────────────────────────────
 
+class _SearchBudgetExceeded(Exception):
+    """Gen's backtracking search applied more options than it is allowed."""
+
+
+# Option applications allowed before Gen gives up. The paper's search is
+# exponential in the worst case; this only exists so corpus generation cannot
+# hang. A problem that hits it FAILS (it is not silently kept), and the
+# observer receives "search_budget_exceeded" so a corpus can log the reason.
+GEN_SEARCH_BUDGET = 5000
+
+
 def gen_phase(
     ground_facts: List[Rule],
     problem: LearningProblem,
     verbose: bool = False,
     observer: Optional[Callable[..., None]] = None,
+    search_budget: int = GEN_SEARCH_BUDGET,
 ) -> Tuple[ABAFramework, LearningTrace]:
     """
     Apply Fact Subsumption, Folding and Assumption Introduction to
@@ -387,15 +452,48 @@ def gen_phase(
 
     Returns (final_framework, trace).
 
+    SEARCH. Algorithm 1 is nondeterministic: which fold to apply (lines 31-32)
+    and which relative assumption to reuse (line 37) are choice points, and a
+    failure (line 40) "backtracks to the most recent choice point". This is a
+    depth-first search over those choices, fact by fact in queue order. For
+    each learnt ground fact the options are tried lazily, in a fixed order:
+
+      pass 1  every fold candidate that is a solution on its own, in order;
+      pass 2  assumption introduction on each fold that is not, in order,
+              each yielding whatever `asm_intro_options` offers.
+
+    The first option whose continuation succeeds is kept. If none does, the
+    fact FAILS and the search backtracks into the previous fact's remaining
+    options. That order is one resolution of the paper's nondeterminism: every
+    run it completes is a legal execution of Algorithm 1.
+
+    Two behaviours changed when this became a search, both toward the paper:
+      * after a failed reuse the old loop minted a fresh assumption on the SAME
+        fold; now that fold has no R3 option (line 40), see
+        `asm_intro_options`;
+      * a fact with no working option used to be "kept as ground fact" and the
+        loop moved on; now the fact fails and the search backtracks.
+    Neither occurs on 101 of the 103 problems set 05 was scored on, and on
+    those the search visits exactly the states the loop did, in the same
+    order, with the same Clingo calls. `tests/test_golden_traces.py` pins this.
+
+    TRACE. `trace.steps` is the SUCCESSFUL path only, as in the paper's own
+    worked derivations. Abandoned branches reach the observer, never the trace.
+    On total failure `trace.success` is False and `trace.steps` is empty.
+
     `observer`, when given, is called at every decision point with
-    ``(kind, learnt, new_asms, idx, rule, extra)`` where `kind` is one of
-    "subsume" / "fold" / "check" / "asm_intro". It is a pure spectator: it
-    receives copies and its return value is ignored, so passing None (the
-    default) leaves behaviour bit-for-bit unchanged.
+    ``(kind, learnt, new_asms, idx, rule, extra)``, where `learnt`/`new_asms`
+    are the state BEFORE the fact's option is applied (except `fact_done`,
+    which gets the state after). Kinds: "subsume", "fold", "check",
+    "asm_reuse_scan", "asm_reuse_try", "asm_decision", "asm_intro",
+    "fact_done", and, for the search, "backtrack" (an option's continuation
+    failed; the fact's remaining options are tried next), "fact_failed" (the
+    fact has none left) and "search_budget_exceeded". It is a pure spectator:
+    it receives copies and its return value is ignored.
 
     It exists so that the step probes in `aba_probes.py` can be built from the
-    states this loop actually visits. Re-implementing the loop in a separate
-    harvester would let the probe states drift away from the reference
+    states this search actually visits. Re-implementing the search in a
+    separate harvester would let the probe states drift away from the reference
     algorithm, which is the one thing that must not happen.
     """
     def _notify(kind: str, learnt, new_asms, idx, rule, **extra) -> None:
@@ -404,58 +502,21 @@ def gen_phase(
 
     background = problem.background
     dom = problem.get_domain()
-    trace = LearningTrace(problem_id=problem.problem_id)
+    applied = [0]
 
-    # Working state
-    learnt: List[Rule] = list(ground_facts)
-    new_asms: Dict[str, str] = {}   # asm → contrary
-
-    queue = list(range(len(learnt)))   # indices of facts to process
-
-    while queue:
-        idx = queue.pop(0)
-        if idx >= len(learnt):
-            continue
-        rule = learnt[idx]
-
-        if verbose:
-            print(f"  Processing: {rule.to_prolog()}")
-
-        # ── R4: Fact Subsumption ─────────────────────────────────────────────
-        others = learnt[:idx] + learnt[idx + 1:]
-        _subsumable = fact_subsumption(rule, background, others, new_asms, problem)
-        _notify("subsume", learnt, new_asms, idx, rule, answer=_subsumable)
-        if _subsumable:
-            learnt.pop(idx)
-            queue = [i - 1 if i > idx else i for i in queue]
-            trace.steps.append(TransformStep(
-                step_type="fact_subsumption",
-                input_rule=rule,
-                note="redundant, removed",
-            ))
-            if verbose:
-                print(f"    -> Subsumption: removed.")
-            _notify("fact_done", learnt, new_asms, idx, rule, outcome="subsumed")
-            continue
-
-        # ── R2: Folding ──────────────────────────────────────────────────────
-        if not _is_ground_fact(rule):
-            # Already intensional — nothing to fold
-            _notify("fact_done", learnt, new_asms, idx, rule,
-                    outcome="already_intensional")
-            continue
-
+    def _options(learnt: List[Rule], new_asms: Dict[str, str], idx: int,
+                 rule: Rule):
+        """The fact's choices, lazily, in the order documented above."""
         # Traced variant: same candidates in the same order, plus the
-        # background rule(s) folded in to reach each one. The algorithm still
-        # runs on the plain list, so this is inert.
+        # background rule(s) folded in to reach each one.
         folds_traced = apply_folding_traced(rule, background)
         fold_candidates = [r for r, _ in folds_traced]
-        accepted = False
         _notify("fold", learnt, new_asms, idx, rule,
                 candidates=list(fold_candidates),
                 via=[list(chain) for _, chain in folds_traced])
 
-        # Pass 1: try direct folding (no assumption needed)
+        # Pass 1: folds that are a solution without an assumption (line 18).
+        not_solutions: List[Rule] = []
         for folded in fold_candidates:
             test_learnt = learnt[:idx] + [folded] + learnt[idx + 1:]
             fw = _current_framework(background, test_learnt, new_asms)
@@ -464,65 +525,133 @@ def gen_phase(
             )
             _notify("check", learnt, new_asms, idx, rule, folded=folded, answer=sat)
             if sat:
-                trace.steps.append(TransformStep(
-                    step_type="folding",
-                    input_rule=rule,
-                    output_rule=folded,
-                    note="valid after folding",
-                ))
-                learnt[idx] = folded
-                if verbose:
-                    print(f"    -> Folded: {folded.to_prolog()}")
-                accepted = True
-                break
+                yield "folding", folded, None
+            else:
+                not_solutions.append(folded)
 
-        # Pass 2: if no direct fold worked, try assumption introduction
-        #         on EACH fold candidate, keeping the best result
-        if not accepted:
-            fw_now = _current_framework(background, learnt, new_asms)
-            for folded in fold_candidates:
-                test_learnt = learnt[:idx] + [folded] + learnt[idx + 1:]
-                result = assumption_introduction(
-                    folded, background, fw_now, problem, test_learnt, new_asms,
-                    observer=observer,
-                )
+        # Pass 2: assumption introduction on each fold that is not (line 19).
+        fw_now = _current_framework(background, learnt, new_asms)
+        for folded in not_solutions:
+            test_learnt = learnt[:idx] + [folded] + learnt[idx + 1:]
+            offered = False
+            for result in asm_intro_options(folded, background, fw_now, problem,
+                                            test_learnt, new_asms,
+                                            observer=observer):
+                offered = True
                 _notify("asm_intro", learnt, new_asms, idx, rule,
                         folded=folded, answer=result)
-                if result is not None:
+                yield "assumption_introduction", folded, result
+            if not offered:
+                _notify("asm_intro", learnt, new_asms, idx, rule,
+                        folded=folded, answer=None)
+
+    def _search(learnt: List[Rule], new_asms: Dict[str, str],
+                queue: List[int], steps: List[TransformStep]):
+        """Process the queue from this state; the successful end state, or None."""
+        while queue:
+            idx, queue = queue[0], queue[1:]
+            if idx >= len(learnt):
+                continue
+            rule = learnt[idx]
+
+            if verbose:
+                print(f"  Processing: {rule.to_prolog()}")
+
+            # ── R4: Fact Subsumption (line 16) — deterministic, no choice ───
+            others = learnt[:idx] + learnt[idx + 1:]
+            _subsumable = fact_subsumption(rule, background, others, new_asms, problem)
+            _notify("subsume", learnt, new_asms, idx, rule, answer=_subsumable)
+            if _subsumable:
+                learnt = others
+                queue = [i - 1 if i > idx else i for i in queue]
+                steps = steps + [TransformStep(
+                    step_type="fact_subsumption",
+                    input_rule=rule,
+                    note="redundant, removed",
+                )]
+                if verbose:
+                    print(f"    -> Subsumption: removed.")
+                _notify("fact_done", learnt, new_asms, idx, rule, outcome="subsumed")
+                continue
+
+            if not _is_ground_fact(rule):
+                # Already intensional — nothing to fold
+                _notify("fact_done", learnt, new_asms, idx, rule,
+                        outcome="already_intensional")
+                continue
+
+            # ── R2 / R3: a choice point ─────────────────────────────────────
+            for kind, folded, result in _options(learnt, new_asms, idx, rule):
+                applied[0] += 1
+                if applied[0] > search_budget:
+                    _notify("search_budget_exceeded", learnt, new_asms, idx,
+                            rule, budget=search_budget)
+                    raise _SearchBudgetExceeded()
+
+                if kind == "folding":
+                    next_learnt = learnt[:idx] + [folded] + learnt[idx + 1:]
+                    next_asms, next_queue = new_asms, queue
+                    step = TransformStep(
+                        step_type="folding",
+                        input_rule=rule,
+                        output_rule=folded,
+                        note="valid after folding",
+                    )
+                    outcome = "folded"
+                    if verbose:
+                        print(f"    -> Folded: {folded.to_prolog()}")
+                else:
                     defeasible, asm, contrary, contra_facts = result
-                    learnt[idx] = defeasible
-                    new_asms[asm] = contrary
-                    for cf in contra_facts:
-                        learnt.append(cf)
-                        queue.append(len(learnt) - 1)
-                    trace.steps.append(TransformStep(
+                    next_learnt = (learnt[:idx] + [defeasible] + learnt[idx + 1:]
+                                   + list(contra_facts))
+                    next_asms = {**new_asms, asm: contrary}
+                    next_queue = queue + list(range(
+                        len(learnt), len(learnt) + len(contra_facts)))
+                    step = TransformStep(
                         step_type="assumption_introduction",
                         input_rule=rule,
                         output_rule=defeasible,
                         new_assumption=asm,
                         new_contrary_facts=contra_facts,
                         note=f"new assumption {asm} -> {contrary}",
-                    ))
+                    )
+                    outcome = "folded_with_assumption"
                     if verbose:
                         print(f"    -> AsmIntro: {defeasible.to_prolog()}")
                         print(f"       new asm: {asm} -> {contrary}")
-                    accepted = True
-                    break
 
-        if not accepted and verbose:
-            print(f"    -> No successful folding found; kept as ground fact.")
+                _notify("fact_done", next_learnt, next_asms, idx, rule,
+                        outcome=outcome)
+                found = _search(next_learnt, next_asms, next_queue,
+                                steps + [step])
+                if found is not None:
+                    return found
+                _notify("backtrack", learnt, new_asms, idx, rule)
+                if verbose:
+                    print(f"    <- Backtrack to: {rule.to_prolog()}")
 
-        # The "kept as ground fact" outcome was previously a verbose-only print,
-        # so a fact the algorithm failed to generalise left NO record at all —
-        # the trace simply lacked an entry for it. Distinguishing that from a
-        # successful fold matters for scoring R1 residue end-to-end.
-        _notify("fact_done", learnt, new_asms, idx, rule,
-                outcome=("folded_with_assumption"
-                         if accepted and trace.steps
-                         and trace.steps[-1].step_type == "assumption_introduction"
-                         else "folded" if accepted else "kept_ground"))
+            if verbose:
+                print(f"    -> No option works for {rule.to_prolog()}; backtracking.")
+            _notify("fact_failed", learnt, new_asms, idx, rule)
+            return None
 
-    # Build final framework
+        return learnt, new_asms, steps
+
+    trace = LearningTrace(problem_id=problem.problem_id)
+    try:
+        found = _search(list(ground_facts), {}, list(range(len(ground_facts))), [])
+    except _SearchBudgetExceeded:
+        found = None
+
+    if found is None:
+        # Algorithm 1 terminates with failure (Theorem 4).
+        final = _current_framework(background, list(ground_facts), {})
+        trace.final_framework = final
+        trace.success = False
+        return final, trace
+
+    learnt, new_asms, steps = found
+    trace.steps = steps
     final = _current_framework(background, learnt, new_asms)
     trace.final_framework = final
     trace.success = check_brave_entailment(

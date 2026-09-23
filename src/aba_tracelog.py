@@ -9,11 +9,13 @@ arriving at its answer:
     decision to KEEP a fact rather than subsume it, which left no record at all;
   * the fold candidates that were tried and REJECTED before the accepted one,
     and the background rule each was folded from (the paper's rho2);
-  * Algorithm 1's line 39 -> 41 backtrack: whether an assumption was REUSED
-    (Definition 4, reuse-first) or freshly MINTED. The accepted step looks
-    identical either way, so no stored result could tell the branches apart;
-  * the "no transformation succeeded, fact kept ground" outcome, which was a
-    verbose-only print.
+  * whether an assumption was REUSED (Definition 4, line 37) or freshly
+    MINTED (line 42), and the line-40 FAILURE when every reusable one is
+    rejected. The accepted step looks identical whether reused or minted, so no
+    stored result could tell the branches apart;
+  * Gen's BACKTRACKING: a choice whose continuation failed is retracted and the
+    fact's next option tried, possibly after later facts were already
+    processed. Those later events are kept, marked `abandoned`.
 
 Those are exactly the semantic decisions the prompted models were found NOT to
 replicate, so they have to be in the supervision if trace training is to be
@@ -112,21 +114,28 @@ class FactEvent:
     contrary_facts: List[str] = field(default_factory=list)
     outcome: str = "unknown"
     # subsumed | already_intensional | folded | folded_with_assumption
-    # | kept_ground
+    # | failed (no option left; the search backtracked out of this fact)
+    # Choices made for this fact and later RETRACTED because their
+    # continuation failed, oldest first.
+    retracted: List[Dict[str, Any]] = field(default_factory=list)
+    # True when this event lies on a branch the search abandoned: it happened,
+    # but it is not part of the derivation that produced the answer.
+    abandoned: bool = False
 
     @property
     def backtracked(self) -> bool:
         """True when the algorithm tried something and had to retreat.
 
-        Three ways: a fold candidate was rejected before the accepted one, the
-        accepted fold was not the first candidate, or a reuse attempt failed
-        and the algorithm fell through to minting (line 39 -> 41).
+        Four ways: a fold candidate was rejected before the accepted one, the
+        accepted fold was not the first candidate, a reuse attempt failed, or a
+        choice was retracted after its continuation failed.
         """
         rejected_fold = any(c.sat is False for c in self.candidates)
         late_choice = self.chosen_rank is not None and self.chosen_rank > 0
         failed_reuse = any(a.mode == "reuse" and a.sat is False
                            for a in self.asm_attempts)
-        return bool(rejected_fold or late_choice or failed_reuse)
+        return bool(rejected_fold or late_choice or failed_reuse
+                    or self.retracted)
 
     def to_dict(self) -> Dict:
         d = asdict(self)
@@ -150,10 +159,21 @@ class RunRecord:
     n_clingo_calls: int = 0
     wall_s: float = 0.0
     code_rev: str = "unknown"
+    budget_exceeded: bool = False
 
     @property
     def n_backtracks(self) -> int:
         return sum(1 for e in self.events if e.backtracked)
+
+    @property
+    def n_retractions(self) -> int:
+        """Choices undone because a LATER fact failed (cross-fact backtracks)."""
+        return sum(len(e.retracted) for e in self.events)
+
+    @property
+    def path(self) -> List[FactEvent]:
+        """The events of the derivation that produced the answer."""
+        return [e for e in self.events if not e.abandoned]
 
     def to_dict(self) -> Dict:
         return {
@@ -161,6 +181,8 @@ class RunRecord:
             "role_facts": list(self.role_facts),
             "events": [e.to_dict() for e in self.events],
             "n_backtracks": self.n_backtracks,
+            "n_retractions": self.n_retractions,
+            "budget_exceeded": self.budget_exceeded,
             "symbolic_trace": self.symbolic_trace,
             "final_new_rules": list(self.final_new_rules),
             "final_assumptions": list(self.final_assumptions),
@@ -180,12 +202,19 @@ class TraceRecorder:
     is well defined. Per fact the algorithm emits:
 
         subsume -> [fold -> check* -> (asm_reuse_scan -> asm_reuse_try*
-                                       -> asm_decision -> asm_intro)*] -> fact_done
+                                       -> asm_decision -> asm_intro)*]
+                -> fact_done | fact_failed
 
-    `asm_*` notifications arrive from inside `assumption_introduction` with
-    idx=-1, so they are attached to the open event rather than matched by index.
-    Their `rule` argument is the fold CANDIDATE being guarded, which is how an
+    `asm_*` notifications arrive from inside `asm_intro_options` with idx=-1,
+    so they are attached to the open event rather than matched by index. Their
+    `rule` argument is the fold CANDIDATE being guarded, which is how an
     attempt is attributed when pass 2 works through more than one candidate.
+
+    BACKTRACKING. After a fact's `fact_done`, later facts may fail; the search
+    then sends `backtrack` for the fact whose choice it is undoing. That fact's
+    most recent live event is REOPENED — its choice is moved to `retracted` —
+    and every event after it is marked `abandoned`. The fact's remaining
+    options then stream in as usual, onto the reopened event.
     """
 
     @staticmethod
@@ -196,6 +225,7 @@ class TraceRecorder:
         self.role_facts: List[str] = []
         self.events: List[FactEvent] = []
         self.n_clingo_calls = 0
+        self.budget_exceeded = False
         self._cur: Optional[FactEvent] = None
 
     def _open(self, idx: int, rule: Rule) -> FactEvent:
@@ -203,6 +233,37 @@ class TraceRecorder:
         self.events.append(ev)
         self._cur = ev
         return ev
+
+    def _reopen(self, idx: int, rule_text: Optional[str]) -> None:
+        """Undo the fact's current choice: its continuation failed."""
+        k = next((i for i in range(len(self.events) - 1, -1, -1)
+                  if not self.events[i].abandoned
+                  and self.events[i].idx == idx
+                  and self.events[i].input_rule == rule_text), None)
+        if k is None:                       # defensive: stream out of order
+            return
+        ev = self.events[k]
+        for later in self.events[k + 1:]:
+            later.abandoned = True
+        ev.retracted.append({
+            "outcome": ev.outcome,
+            "fold": ev.chosen_fold,
+            "guarded_rule": ev.guarded_rule,
+            "assumption": ev.new_assumption,
+            "contrary_facts": list(ev.contrary_facts),
+        })
+        retracted_fold = ev.chosen_fold
+        ev.outcome = "unknown"
+        ev.chosen_fold = ev.chosen_rank = None
+        ev.guarded_rule = ev.new_assumption = ev.contrary = None
+        ev.contrary_facts = []
+        for c in ev.candidates:
+            c.accepted = False
+            if c.rule == retracted_fold and c.asm_ok:
+                c.asm_ok = False            # it offered an option; that failed
+        for a in ev.asm_attempts:
+            a.accepted = False
+        self._cur = ev
 
     def __call__(self, kind, learnt, new_asms, idx, rule, extra) -> None:
         if kind == "role":
@@ -214,6 +275,19 @@ class TraceRecorder:
             ev = self._open(idx, rule)
             ev.subsume_sat = bool(extra["answer"])
             self.n_clingo_calls += 1
+            return
+
+        # The search notifications can arrive with no event open.
+        if kind == "backtrack":
+            self._reopen(idx, _p(rule))
+            return
+        if kind == "fact_failed":
+            if self._cur is not None:
+                self._cur.outcome = "failed"
+            self._cur = None
+            return
+        if kind == "search_budget_exceeded":
+            self.budget_exceeded = True
             return
 
         ev = self._cur
@@ -263,7 +337,9 @@ class TraceRecorder:
                         a.accepted = True
                         a.contrary = extra.get("contrary")
                         break
-            else:
+            elif extra["mode"] == "mint":
+                # ("fail" — line 40 — adds no attempt: the rejected reuses are
+                # already recorded, and `asm_ok` goes False via `asm_intro`.)
                 self.n_clingo_calls += 1      # the RoLe call for the contrary
                 ev.asm_attempts.append(AsmAttempt(
                     asm=extra["asm"], mode="mint",
@@ -313,6 +389,7 @@ def solve_and_log(
         n_clingo_calls=rec.n_clingo_calls,
         wall_s=wall,
         code_rev=_git_rev(),
+        budget_exceeded=rec.budget_exceeded,
     )
     if solution is not None:
         record.final_new_rules = [r.to_prolog() for r in solution.new_rules]

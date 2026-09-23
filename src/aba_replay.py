@@ -70,7 +70,7 @@ def replay_record(record: RunRecord, problem: LearningProblem) -> ABAFramework:
     learnt: List[Rule] = [_rule(f) for f in record.role_facts]
     new_asms: Dict[str, str] = {}
 
-    for ev in record.events:
+    for ev in record.path:                     # abandoned branches excluded
         if not (0 <= ev.idx < len(learnt)):
             raise ReplayError(f"event idx {ev.idx} out of range ({len(learnt)})")
         # The recorded idx must point at the rule the event says it processed.
