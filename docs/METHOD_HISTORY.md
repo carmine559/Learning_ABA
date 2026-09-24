@@ -162,6 +162,11 @@ descriptively: 32B reuses on 99% of probes where the algorithm would reuse on
 3%, and still reaches a legal result. Identical outcomes, divergent process —
 which is the thesis's own question in miniature.
 
+> **Corrected in Phase 8.** The fallback read into lines 39 → 41 is not in the
+> paper: after line 39 Algorithm 1 backtracks to line 19 or line 17, and never
+> mints an assumption for a body that already has a relative one. The oracle
+> change above credited an illegal step.
+
 ## Current state
 
 | | chance | 3B | 7B | 14B | 32B |
@@ -184,7 +189,70 @@ both conflicts of Phase 5. The prompts are now fixed (v2: definitions-only
 preamble, RoLe asked for ground facts explicitly, R3 asking for two lines), so
 `role` in particular should be re-run before the figures are final — 3B answered
 a literal `NONE` on every `role` probe under a system prompt that forbade ground
-facts.
+facts. The `introduce` row also credits the line-41 fallback that Phase 8 found
+is not in the paper, so it is an upper bound until re-scored.
+
+## Phase 8 — Second audit against the paper (Sept 2026, training-corpus work)
+
+Building training traces meant the reference had to be right step by step, not
+only in its answers. Reading Algorithm 1 in the PDF line by line against
+`gen_phase` found three errors, all in our instrument. The golden master
+(`tests/test_golden_traces.py`) could not have caught any of them: it pins what
+the reference does, not whether that is what the paper does.
+
+1. **Line numbers taken from a summary.** During this work the pseudo-code was
+   first read through a web summary of the arXiv HTML page, whose numbering is
+   off by one after line 28 ("line 40" for `fail`). Code comments and commit
+   929cf9b's message carried the wrong numbers. Checked against the PDF (ECAI
+   p. 3449, identical to arXiv v2): `fail` is line 39, the relative-assumption
+   test line 36, the fold choice line 17. Comments corrected; the commit
+   message cannot be. **Rule since:** cite Algorithm 1 from the PDF only.
+
+2. **Minting after a failed reuse.** The paper (p. 3450): if the assumption
+   taken at line 36 gives no solution, *"it gets a failure (see line 39) and
+   backtracks to the most recent choice point. This point can be line 19 … or
+   line 17"*. The reference instead fell through to line 41 and minted a fresh
+   α for the same body, which is exactly the reading Phase 7 adopted. Found by
+   running the paper's own example: on Nixon (Examples 3 and 10) the reference
+   learnt `abnormal_quaker(X) :- quaker(X), alpha_0(X)`, a step unreachable in
+   the paper because `normal_quaker` is relative to `quaker(X)`. Fixed in
+   929cf9b; Nixon now reproduces R′₂ up to the name of α, and a test pins it.
+   `tax_law`
+   also needed the `dom(X)` fold candidate that Definition 3 assumes is in R
+   for every constant, appended last. 2/103 set-05 traces changed. **Open
+   consequence:** the `introduce` oracle still credits the fallback (Phase 7's
+   24/24 rescued 32B reuses among them) and has to be re-scored without it.
+
+3. **A fold lookahead at lines 17–19.** The paper:
+
+       17  ρf := applyFolding(ρ, R);
+       18  if ¬sat(ASP(⟨Rt ∪ {ρf}, A, ¯⟩, ⟨E+, E−⟩, ∅)) then
+       19     ⟨ρd, α(X), S⟩ := applyAsmIntro(ρf, Rt);
+
+   One fold is taken; if it is not a solution, assumption introduction guards
+   *that* fold, and another fold is tried only on backtracking. The reference
+   checked every fold at line 18 before any assumption introduction, so a later
+   fold that happened to be a solution won over line 19 on the first. Every
+   output was still a valid run of the nondeterministic algorithm, but the
+   procedure differed, and fidelity is scored against the procedure. Fixed:
+   10/103 set-05 traces change (t2 2, t3 6, t4 2), all still succeed, all
+   re-pinned. Side effect, checked against the paper: every defeasible problem
+   now reaches line 39 on its contrary fact, because the first fold reuses the
+   new α (relative to that body by Definition 4), fails, and line 17 takes the
+   next fold. On the tier-spec-v2 corpus the intended class now agrees with the
+   algorithm on 400/400 problems; before, 4–10% of defeasible ones avoided R3
+   through a distractor fold, an artefact of the lookahead.
+
+**What the paper leaves open, and we fix by convention.** The order in which
+fold alternatives are tried: `fold` applies R2 *"possibly, in a
+nondeterministic way"* (Definition 3), and §8 calls Folding's nondeterminism
+*"the most critical issue"*. The reference takes them in background-rule order,
+with `dom(X)` last. Where a fidelity figure depends on that order it has to say
+so; the paper's Prolog implementation (Zenodo) would settle it.
+
+**Effect on reported results.** Sets 04/05 scored fidelity against the
+previous reference on these 12 problems, and their probe harvest would now visit
+different states there.
 
 ## Pending
 
@@ -196,3 +264,5 @@ facts.
   extra legal folds appear when folding against `R ∪ learnt`.
 - Confound check on the new run: no smaller model may outrank a larger one on a
   fidelity measure without an explanation of the mechanism.
+- Re-score `introduce` without the line-41 fallback (Phase 8, item 2).
+- Check the fold-order convention against the Zenodo implementation.
