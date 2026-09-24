@@ -9,8 +9,8 @@ arriving at its answer:
     decision to KEEP a fact rather than subsume it, which left no record at all;
   * the fold candidates that were tried and REJECTED before the accepted one,
     and the background rule each was folded from (the paper's rho2);
-  * whether an assumption was REUSED (Definition 4, line 37) or freshly
-    MINTED (line 42), and the line-40 FAILURE when every reusable one is
+  * whether an assumption was REUSED (Definition 4, line 36) or freshly
+    MINTED (line 41), and the line-39 FAILURE when every reusable one is
     rejected. The accepted step looks identical whether reused or minted, so no
     stored result could tell the branches apart;
   * Gen's BACKTRACKING: a choice whose continuation failed is retracted and the
@@ -70,9 +70,9 @@ class FoldCandidate:
     rank: int                       # position in the candidate list
     sat: Optional[bool] = None      # the line-18 verdict, None if never checked
     accepted: bool = False
-    # Pass 2 (assumption introduction) on this candidate. `reuse_scan` is None
-    # when pass 2 never reached it — distinct from [] ("reached, but no
-    # background assumption fits the body").
+    # applyAsmIntro (line 19) on this candidate. `reuse_scan` is None when it
+    # was never reached — distinct from [] ("reached, but no assumption is
+    # relative to the body").
     reuse_scan: Optional[List[str]] = None
     asm_ok: Optional[bool] = None   # did applyAsmIntro succeed on it
 
@@ -89,9 +89,9 @@ class AsmAttempt:
     rote_ok: Optional[bool] = None  # mint: did RoLe find the contrary facts
     contrary: Optional[str] = None
     accepted: bool = False
-    # The fold candidate this attempt guards. Pass 2 walks the candidates in
-    # order and runs a full reuse-then-mint on each until one succeeds, so
-    # without this an attempt cannot be attributed once two candidates reach it.
+    # The fold candidate this attempt guards. After a failure the next fold
+    # gets its own attempts, so without this an attempt cannot be attributed
+    # once two candidates reach applyAsmIntro.
     for_fold: Optional[str] = None
 
     def to_dict(self) -> Dict:
@@ -126,16 +126,15 @@ class FactEvent:
     def backtracked(self) -> bool:
         """True when the algorithm tried something and had to retreat.
 
-        Four ways: a fold candidate was rejected before the accepted one, the
-        accepted fold was not the first candidate, a reuse attempt failed, or a
-        choice was retracted after its continuation failed.
+        Three ways: the chosen fold is not the first candidate (the earlier
+        ones were abandoned), a reuse attempt failed (line 38), or a choice was
+        retracted after its continuation failed. A fold that fails line 18 is
+        not a retreat: line 19 guards that same fold.
         """
-        rejected_fold = any(c.sat is False for c in self.candidates)
         late_choice = self.chosen_rank is not None and self.chosen_rank > 0
         failed_reuse = any(a.mode == "reuse" and a.sat is False
                            for a in self.asm_attempts)
-        return bool(rejected_fold or late_choice or failed_reuse
-                    or self.retracted)
+        return bool(late_choice or failed_reuse or self.retracted)
 
     def to_dict(self) -> Dict:
         d = asdict(self)
@@ -201,14 +200,14 @@ class TraceRecorder:
     The stream is sequential and single-threaded, so "the currently open event"
     is well defined. Per fact the algorithm emits:
 
-        subsume -> [fold -> check* -> (asm_reuse_scan -> asm_reuse_try*
-                                       -> asm_decision -> asm_intro)*]
+        subsume -> [fold -> (check -> [asm_reuse_scan -> asm_reuse_try*
+                                       -> asm_decision -> asm_intro])*]
                 -> fact_done | fact_failed
 
     `asm_*` notifications arrive from inside `asm_intro_options` with idx=-1,
     so they are attached to the open event rather than matched by index. Their
     `rule` argument is the fold CANDIDATE being guarded, which is how an
-    attempt is attributed when pass 2 works through more than one candidate.
+    attempt is attributed when more than one candidate reaches applyAsmIntro.
 
     BACKTRACKING. After a fact's `fact_done`, later facts may fail; the search
     then sends `backtrack` for the fact whose choice it is undoing. That fact's
@@ -338,7 +337,7 @@ class TraceRecorder:
                         a.contrary = extra.get("contrary")
                         break
             elif extra["mode"] == "mint":
-                # ("fail" — line 40 — adds no attempt: the rejected reuses are
+                # ("fail" — line 39 — adds no attempt: the rejected reuses are
                 # already recorded, and `asm_ok` goes False via `asm_intro`.)
                 self.n_clingo_calls += 1      # the RoLe call for the contrary
                 ev.asm_attempts.append(AsmAttempt(
@@ -358,8 +357,8 @@ class TraceRecorder:
                 ev.chosen_fold = _p(extra["folded"])
                 ev.chosen_rank = cand.rank if cand is not None else None
                 # NOT cand.accepted: that records the fold passing line 18 on
-                # its own, which every pass-2 candidate already failed. Pass-2
-                # success is `asm_ok`.
+                # its own, which a guarded fold failed. Success at line 19 is
+                # `asm_ok`.
                 ev.guarded_rule = _p(defeasible)
                 ev.new_assumption = asm
                 ev.contrary = contrary

@@ -22,20 +22,20 @@ algorithm made them:
     R4? yes, removed.                   subsumption check: removable -> removed
     R4? no.                             subsumption check: kept
     already intensional.                nothing to fold
-    R2 candidates: [<r>] [<r>] ...      the fold candidates, in order
+    R2 candidates: [<r>] [<r>] ...      the folds line 17 can take, in order
     R2 candidates: none.
-    R2? [<r>] no.                       line 18 on one candidate: not a solution
-    R2? [<r>] yes.                      ... and on the one that is
+    R2? [<r>] yes.                      line 18 on the fold taken: a solution
     R2 <rule>.                          fold APPLIED
-    R3 needed.                          no fold is a solution on its own
-    R3 on [<r>]                         try assumption introduction on <r>
-    R3 reuse: [<a>] [<a>].              background assumptions fitting the body
+    R2? [<r>] no.                       ... not a solution, so line 19 on it:
+    R3 on [<r>]                         applyAsmIntro on that same fold
+    R3 reuse: [<a>] [<a>].              assumptions relative to the body (l.36)
     R3 reuse: none.
-    R3 reuse? [<a>] no. / yes.          line 18 with that assumption reused
+    R3 reuse? [<a>] no. / yes.          line 38 with that assumption
+    R3 failed: no reusable assumption works.   line 39; the next fold is taken
     R3 mint [<a>]: no contrary facts.   fresh assumption, RoLe found no facts
     R3 <rule>.                          assumption introduction APPLIED
     <a>(X) defeated_by <c>(X)           the freshly minted assumption
-    kept ground.                        nothing succeeded; the fact stays
+    no option works.                    every fold failed (never on a solution)
     Done.
 
 Two conventions carry all the weight, and both exist to fit the FROZEN scorer
@@ -111,25 +111,20 @@ def _render_event(ev: FactEvent) -> List[str]:
         out.append("already intensional.")
         return out
 
-    # ── pass 1: every fold candidate, in order, until one is a solution ──
     if ev.candidates:
         out.append("R2 candidates: "
                    + " ".join(_b(c.rule) for c in ev.candidates))
     else:
         out.append("R2 candidates: none.")
+    # Line 17 takes the folds in order; the next one only after a failure.
     for c in ev.candidates:
         if c.sat is None:
-            break                          # never checked: the loop had stopped
+            break                          # never reached
         out.append(f"R2? {_b(c.rule)} {'yes' if c.sat else 'no'}.")
         if c.sat:
             out.append(f"R2 {c.rule}")
             return out
-
-    # ── pass 2: assumption introduction, candidate by candidate ──
-    tried = [c for c in ev.candidates if c.reuse_scan is not None]
-    if tried:
-        out.append("R3 needed.")
-    for c in tried:
+        assert c.reuse_scan is not None, "line 19 not recorded"
         out.append(f"R3 on {_b(c.rule)}")
         out.append("R3 reuse: " + (" ".join(_b(a) for a in c.reuse_scan) + "."
                                    if c.reuse_scan else "none."))
@@ -148,7 +143,7 @@ def _render_event(ev: FactEvent) -> List[str]:
             out.extend(f"R1 {cf}" for cf in ev.contrary_facts)
             return out
         if c.reuse_scan:
-            out.append("R3 failed: no reusable assumption works.")   # line 40
+            out.append("R3 failed: no reusable assumption works.")   # line 39
 
     out.append("no option works.")    # never on a successful derivation
     return out

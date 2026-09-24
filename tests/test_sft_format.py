@@ -52,7 +52,7 @@ def test_the_reuse_branch_is_serialised(examples):
 
 
 @pytest.mark.parametrize("corrupt", [
-    # minting on the fold whose reuse failed: the step line 40 forbids
+    # minting on the fold whose reuse failed: the step line 39 forbids
     lambda t: t.replace("R2 p1(X) :- r(X).\nR3 p1(X) :- r(X), alpha_0(X).",
                         "R2 p1(X) :- p(X).\nR3 p1(X) :- p(X), alpha_0(X)."),
     # losing the declaration of a minted assumption

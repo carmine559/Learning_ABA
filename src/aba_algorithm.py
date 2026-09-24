@@ -292,19 +292,19 @@ def asm_intro_options(
     """
     Every way `applyAsmIntro` can guard `folded_rule`, yielded lazily in order.
 
-    Algorithm 1 (De Angelis, Proietti & Toni, arXiv:2408.10126v2):
+    Algorithm 1 (De Angelis, Proietti & Toni, arXiv:2408.10126v2, PDF):
 
-        37 if there exists alpha(X) in A relative to B then
-        38   rho := H <- B, alpha(X);  S := {}
-        39   if not sat(ASP(<R u {rho}, A, ->, <E+, E->, {})) then
-        40     fail
-        41   end if
-        42 else  /* introduce an assumption alpha(X) */
-        43-45  rho := H <- B, alpha(X);  S := getAS(...)
-        46 end if
+        36 if there exists alpha(X) in A relative to B then
+        37   rho := H <- B, alpha(X);  S := {}
+        38   if not sat(ASP(<R u {rho}, A, ->, <E+, E->, {})) then
+        39     fail
+        40   end
+        41 else  /* introduce an assumption alpha(X), with a new predicate alpha */
+        42-44  rho := H <- B, alpha(X);  S := getAS(...)
+        45 end
 
     Each relative assumption that gives a solution is one option; if one
-    exists but none works, there are no options (line 40) and the caller
+    exists but none works, there are no options (line 39) and the caller
     backtracks. A fresh assumption is minted only when none is relative.
 
     `background` is the ORIGINAL background knowledge and `current` the
@@ -392,7 +392,7 @@ def assumption_introduction(
     new_asms: Dict[str, str],
     observer: Optional[Callable[..., None]] = None,
 ) -> Optional[Tuple[Rule, str, str, List[Rule]]]:
-    """The first option `asm_intro_options` offers, or None (incl. line 40)."""
+    """The first option `asm_intro_options` offers, or None (incl. line 39)."""
     return next(asm_intro_options(folded_rule, background, current, problem,
                                   learnt, new_asms, observer), None)
 
@@ -422,12 +422,13 @@ def gen_phase(
 
     Returns (final_framework, trace).
 
-    Depth-first search over Algorithm 1's choice points (the fold, lines
-    31-32; the relative assumption, line 37), fact by fact in queue order,
-    backtracking chronologically on failure (line 40). Per fact, options are
-    tried lazily: pass 1, each fold that is a solution on its own; pass 2,
-    assumption introduction on each fold that is not. `trace.steps` holds the
-    successful path only; on total failure `trace.success` is False.
+    Depth-first search over Algorithm 1's choice points (the fold, line 17;
+    the relative assumption, line 36), fact by fact in queue order,
+    backtracking chronologically on failure (line 39). Per fact, folds are
+    taken in candidate order: a fold that is a solution is kept (line 18),
+    otherwise applyAsmIntro guards that same fold (line 19); the next fold is
+    tried only on backtracking. `trace.steps` holds the successful path only;
+    on total failure `trace.success` is False.
 
     `observer`, when given, is called at every decision point with
     ``(kind, learnt, new_asms, idx, rule, extra)`` (state before the option
@@ -458,25 +459,18 @@ def gen_phase(
                 candidates=list(fold_candidates),
                 via=[list(chain) for _, chain in folds_traced])
 
-        # Pass 1: folds that are a solution without an assumption (line 18).
-        not_solutions: List[Rule] = []
-        for folded in fold_candidates:
+        fw_now = _current_framework(background, learnt, new_asms)
+        for folded in fold_candidates:                              # line 17
             test_learnt = learnt[:idx] + [folded] + learnt[idx + 1:]
             fw = _current_framework(background, test_learnt, new_asms)
             sat, _, _ = check_brave_entailment(
                 fw, problem.positive, problem.negative, dom
             )
             _notify("check", learnt, new_asms, idx, rule, folded=folded, answer=sat)
-            if sat:
+            if sat:                                                 # line 18
                 yield "folding", folded, None
-            else:
-                not_solutions.append(folded)
-
-        # Pass 2: assumption introduction on each fold that is not (line 19).
-        fw_now = _current_framework(background, learnt, new_asms)
-        for folded in not_solutions:
-            test_learnt = learnt[:idx] + [folded] + learnt[idx + 1:]
-            offered = False
+                continue
+            offered = False                                         # line 19
             for result in asm_intro_options(folded, background, fw_now, problem,
                                             test_learnt, new_asms,
                                             observer=observer):

@@ -132,12 +132,13 @@ def test_outcomes_agree_with_the_symbol_sequence(records):
 def test_rejected_candidates_are_distinguished_from_unchecked(records):
     """`sat is False` means checked and rejected; `None` means never reached.
 
-    Conflating them would overstate how much search the algorithm did — the
-    loop breaks on the first candidate that passes.
+    Conflating them would overstate how much search the algorithm did. Also
+    pins Algorithm 1's order (lines 17-19): every fold before the chosen one
+    was tried and abandoned, and none after it was tried.
     """
     seen_rejected = seen_unchecked = False
     for problem, trace, record in records:
-        for ev in record.events:
+        for ev in record.path:
             accepted = [c for c in ev.candidates if c.accepted]
             assert len(accepted) <= 1, problem.problem_id
             for c in ev.candidates:
@@ -146,11 +147,12 @@ def test_rejected_candidates_are_distinguished_from_unchecked(records):
                     seen_rejected = True
                 if c.sat is None:
                     seen_unchecked = True
-            # Nothing may be checked after the accepted candidate.
-            if accepted:
-                rank = accepted[0].rank
-                assert all(c.sat is None for c in ev.candidates
-                           if c.rank > rank), problem.problem_id
+            if ev.chosen_rank is not None:
+                k = ev.chosen_rank
+                assert all(c.sat is False and not c.asm_ok
+                           for c in ev.candidates[:k]), problem.problem_id
+                assert all(c.sat is None
+                           for c in ev.candidates[k + 1:]), problem.problem_id
     assert seen_rejected and seen_unchecked, "corpus too small to exercise both"
 
 

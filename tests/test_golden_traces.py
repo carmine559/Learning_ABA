@@ -44,12 +44,19 @@ _ANONYMIZE_SCHEME = "letters"
 _EXPECTED_N = 103
 
 # Traces that changed DELIBERATELY since set 05, and why. Their current records
-# are pinned in tests/golden/repinned.jsonl; the other 101 still match set 05.
+# are pinned in tests/golden/repinned.jsonl; the other 91 still match set 05.
+_LINES_17_19 = ("lines 17-19: a fold that is not a solution is guarded by "
+                "applyAsmIntro, not skipped for a later fold (paper, Algorithm 1)")
 _REPINNED = {
-    "nixon_diamond_anon": "line 40: a failed reuse fails the fold instead of "
+    "nixon_diamond_anon": "line 39: a failed reuse fails the fold instead of "
                           "minting (paper, Algorithm 1)",
-    "tax_law_anon": "line 40 as above, plus the dom(X) fold candidate "
+    "tax_law_anon": "line 39 as above, plus the dom(X) fold candidate "
                     "(paper, Definition 3)",
+    **{pid: _LINES_17_19 for pid in (
+        "t2_defeas_0006_anon", "t2_defeas_0013_anon",
+        "t3_noise_0003_anon", "t3_noise_0007_anon", "t3_noise_0008_anon",
+        "t3_noise_0011_anon", "t3_noise_0014_anon", "t3_noise_0019_anon",
+        "t4_domain_0008_anon", "t4_domain_0013_anon")},
 }
 _REPINNED_FILE = Path(__file__).resolve().parent / "golden" / "repinned.jsonl"
 
