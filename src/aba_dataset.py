@@ -783,6 +783,158 @@ def generate_corpus_problem(
 
 
 # ---------------------------------------------------------------------------
+# Held-out generator: two solutions the checker cannot tell apart
+# ---------------------------------------------------------------------------
+
+# Never trained on. Every problem has two intensional solutions that pass the
+# checker, and only following Algorithm 1 gives the reference's. The two halves
+# of a tier swap which one that is, so a fixed preference scores 0.5.
+HELDOUT_TIERS: List[Dict] = [
+    {"name": "t8_decoy", "kind": "decoy",
+     "kwargs": dict(n_constants=8, n_noise=1)},
+    {"name": "t9_reuse", "kind": "reuse",
+     "kwargs": dict(n_constants=8, n_noise=1)},
+]
+
+
+def _heldout_layout(rng, n_constants, n_pos, n_neg):
+    sizes = [(p, n) for p in range(n_pos[0], n_pos[1] + 1)
+             for n in range(n_neg[0], n_neg[1] + 1) if p + n + 1 <= n_constants]
+    npos, nneg = rng.choice(sizes)
+    consts = [f"c{i}" for i in range(n_constants)]
+    sh = list(consts)
+    rng.shuffle(sh)
+    s, P, N = sh[0], sh[1:npos + 1], sh[npos + 1:]
+    return consts, s, P, [s] + N[:nneg - 1], N[nneg - 1]
+
+
+def generate_heldout_decoy(
+    seed: object,
+    decoy_first: bool,
+    n_constants: int = 8,
+    n_noise: int = 1,
+    n_pos: Tuple[int, int] = (2, 3),
+    n_neg: Tuple[int, int] = (2, 3),
+) -> Optional[Tuple[LearningProblem, Dict]]:
+    """t8_decoy, Algorithm 1 lines 17-19.
+
+    key holds for the positives and a negative s (an exception); decoy holds
+    for the positives only. Line 17 takes the fold whose facts come first:
+    decoy is a solution as it stands (line 18); key is not, so line 19 guards
+    it with a fresh alpha. Both answers pass the checker in both halves.
+    """
+    rng = random.Random(seed)
+    names = rng.sample(_PRED_POOL, 3 + n_noise)
+    t, key, decoy, noise = names[0], names[1], names[2], names[3:]
+    exc = f"exc_{t}"
+    consts, s, P, Ng, u = _heldout_layout(rng, n_constants, n_pos, n_neg)
+
+    key_f, decoy_f = _fact_block(rng, key, [s] + P), _fact_block(rng, decoy, P)
+    facts = ((decoy_f + key_f) if decoy_first else (key_f + decoy_f)) \
+        + _fact_block(rng, exc, [s, u]) + _noise_facts(rng, noise, consts)
+    asm_t, ab_t = f"normal_{t}(X)", f"ab_{t}(X)"
+    problem = _finish(rng, facts, [Rule(ab_t, [f"{exc}(X)"])],
+                      [Rule(f"{t}(X)", [f"{key}(X)", asm_t])], [asm_t],
+                      {asm_t: ab_t}, t, P, Ng, consts, [t, f"ab_{t}"],
+                      f"heldout_{t}")
+    if problem is None:
+        return None
+    answers = {
+        "key": ([Rule(f"{t}(X)", [f"{key}(X)", "alpha_0(X)"]),
+                 Rule("c_alpha_0(X)", [f"{exc}(X)"])],
+                {"alpha_0(X)": "c_alpha_0(X)"}),
+        "decoy": ([Rule(f"{t}(X)", [f"{decoy}(X)"])], {}),
+    }
+    # Either answer is a run of Algorithm 1 under some fold order (Definition
+    # 3 leaves it open), so nothing here is forbidden outright.
+    return problem, {"half": "decoy_first" if decoy_first else "key_first",
+                     "expected": "decoy" if decoy_first else "key",
+                     "forbidden": [], "answers": answers}
+
+
+def generate_heldout_reuse(
+    seed: object,
+    reuse_ok: bool,
+    n_constants: int = 8,
+    n_noise: int = 1,
+    n_pos: Tuple[int, int] = (2, 3),
+    n_neg: Tuple[int, int] = (2, 3),
+) -> Optional[Tuple[LearningProblem, Dict]]:
+    """t9_reuse, Algorithm 1 lines 36-39.
+
+    The background rule h(X) :- key(X), beta(X) makes beta relative to key(X)
+    (Definition 4), so line 36 must reuse beta on the fold t(X) :- key(X). If
+    beta's contrary holds for the negative s, that reuse is the answer. If not,
+    line 39 fails and line 17 moves to key2, which has the same facts and no
+    relative assumption, so a fresh alpha guards it. Minting on key passes the
+    checker in both halves, but Algorithm 1 never does it.
+    """
+    rng = random.Random(seed)
+    names = rng.sample(_PRED_POOL, 5 + n_noise)
+    t, key, key2, h, m, noise = (names[0], names[1], names[2], names[3],
+                                 names[4], names[5:])
+    exc = f"exc_{t}"
+    consts, s, P, Ng, u = _heldout_layout(rng, n_constants, n_pos, n_neg)
+
+    facts = (_fact_block(rng, key, [s] + P) + _fact_block(rng, key2, [s] + P)
+             + _fact_block(rng, m, [s] if reuse_ok else [u])
+             + _fact_block(rng, exc, [s, u]) + _noise_facts(rng, noise, consts))
+    beta, ab_h = f"normal_{h}(X)", f"ab_{h}(X)"
+    asm_t, ab_t = f"normal_{t}(X)", f"ab_{t}(X)"
+    bg_rules = [Rule(f"{h}(X)", [f"{key}(X)", beta]), Rule(ab_h, [f"{m}(X)"]),
+                Rule(ab_t, [f"{exc}(X)"])]
+    target = (Rule(f"{t}(X)", [f"{key}(X)", beta]) if reuse_ok
+              else Rule(f"{t}(X)", [f"{key2}(X)", asm_t]))
+    problem = _finish(rng, facts, bg_rules, [target], [beta, asm_t],
+                      {beta: ab_h, asm_t: ab_t}, t, P, Ng, consts,
+                      [t, f"ab_{t}"], f"heldout_{t}")
+    if problem is None:
+        return None
+
+    def minted(k):
+        return ([Rule(f"{t}(X)", [f"{k}(X)", "alpha_0(X)"]),
+                 Rule("c_alpha_0(X)", [f"{exc}(X)"])],
+                {"alpha_0(X)": "c_alpha_0(X)"})
+    answers = {"mint_on_key": minted(key)}
+    if reuse_ok:
+        answers["reuse"] = ([Rule(f"{t}(X)", [f"{key}(X)", beta])], {})
+    else:
+        answers["mint_on_key2"] = minted(key2)
+    # Line 36 forbids minting on key under every fold order.
+    return problem, {"half": "reuse_ok" if reuse_ok else "reuse_fails",
+                     "expected": "reuse" if reuse_ok else "mint_on_key2",
+                     "forbidden": ["mint_on_key"], "answers": answers}
+
+
+def generate_heldout_problem(
+    tier: Dict, variant: bool, seed: object,
+) -> Optional[Tuple[LearningProblem, Dict]]:
+    fn = (generate_heldout_decoy if tier["kind"] == "decoy"
+          else generate_heldout_reuse)
+    return fn(seed, variant, **tier["kwargs"])
+
+
+def check_heldout(problem: LearningProblem, meta: Dict) -> Optional[str]:
+    """None if every listed answer passes the checker and the reference returns
+    the expected one; otherwise the reason."""
+    from src.aba_algorithm import solve_aba_learning
+    for name, (rules, contr) in meta["answers"].items():
+        fw = problem.background.copy()
+        fw.rules.extend(rules)
+        fw.assumptions.extend(contr)
+        fw.contraries.update(contr)
+        if not check_brave_entailment(fw, problem.positive, problem.negative,
+                                      problem.get_domain())[0]:
+            return f"answer_{name}_not_a_solution"
+    solution, trace = solve_aba_learning(problem)
+    if solution is None or not trace.success:
+        return "gen_failed"
+    got = sorted(r.to_prolog() for r in solution.new_rules)
+    want = sorted(r.to_prolog() for r in meta["answers"][meta["expected"]][0])
+    return None if got == want else "reference_disagrees"
+
+
+# ---------------------------------------------------------------------------
 # Dataset class
 # ---------------------------------------------------------------------------
 
