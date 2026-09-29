@@ -17,7 +17,7 @@ This module proves that, two ways:
 
 `check_example` asserts both agree with the algorithm's own final framework AND
 with `parse_llm_output` reading the answer block, and that the result is still a
-brave-entailment solution. The Day-2 corpus builder drops any problem that fails
+brave-entailment solution. The corpus builder drops any problem that fails
 it, with the reason, rather than training on it.
 
 Only APPLIED transformations change state during a text replay:
