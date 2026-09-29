@@ -1,0 +1,210 @@
+{
+  "corpus_version": "v1",
+  "code_rev": "4d5d99d-dirty",
+  "config": {
+    "base_seed": "corpus-v1",
+    "n_test": 20,
+    "n_val": 20,
+    "n_train": 150,
+    "n_heldout": 25,
+    "max_attempts": 4
+  },
+  "tier_spec_version": 2,
+  "training_tiers": [
+    "t1_base",
+    "t2_noise",
+    "t3_domain",
+    "t4_nested",
+    "t5_twopath"
+  ],
+  "heldout_tiers": [
+    "t8_decoy",
+    "t9_reuse"
+  ],
+  "prompt_version": "v4-sft",
+  "counts": {
+    "t1_base": {
+      "test/defeasible": 20,
+      "test/monotonic": 20,
+      "val/defeasible": 20,
+      "val/monotonic": 20,
+      "train/defeasible": 150,
+      "train/monotonic": 150
+    },
+    "t2_noise": {
+      "test/defeasible": 20,
+      "test/monotonic": 20,
+      "val/defeasible": 20,
+      "val/monotonic": 20,
+      "train/defeasible": 150,
+      "train/monotonic": 150
+    },
+    "t3_domain": {
+      "test/defeasible": 20,
+      "test/monotonic": 20,
+      "val/defeasible": 20,
+      "val/monotonic": 20,
+      "train/defeasible": 150,
+      "train/monotonic": 150
+    },
+    "t4_nested": {
+      "test/defeasible": 20,
+      "test/monotonic": 20,
+      "val/defeasible": 20,
+      "val/monotonic": 20,
+      "train/defeasible": 150,
+      "train/monotonic": 150
+    },
+    "t5_twopath": {
+      "test/defeasible": 20,
+      "test/monotonic": 20,
+      "val/defeasible": 20,
+      "val/monotonic": 20,
+      "train/defeasible": 150,
+      "train/monotonic": 150
+    },
+    "t8_decoy": {
+      "heldout/decoy_first": 25,
+      "heldout/key_first": 25
+    },
+    "t9_reuse": {
+      "heldout/reuse_ok": 25,
+      "heldout/reuse_fails": 25
+    }
+  },
+  "rejects": {
+    "t1_base/duplicate_signature": 18,
+    "t8_decoy/duplicate_signature": 5
+  },
+  "duplicate_rate": {
+    "t1_base": 0.0452,
+    "t2_noise": 0.0,
+    "t3_domain": 0.0,
+    "t4_nested": 0.0,
+    "t5_twopath": 0.0,
+    "t8_decoy": 0.0909,
+    "t9_reuse": 0.0
+  },
+  "symbols": {
+    "t1_base": {
+      "R1": 867,
+      "R3": 190,
+      "R4": 487,
+      "R2": 380
+    },
+    "t2_noise": {
+      "R1": 938,
+      "R3": 190,
+      "R4": 558,
+      "R2": 380
+    },
+    "t3_domain": {
+      "R1": 1709,
+      "R3": 190,
+      "R4": 1329,
+      "R2": 380
+    },
+    "t4_nested": {
+      "R1": 958,
+      "R3": 380,
+      "R4": 578,
+      "R2": 190
+    },
+    "t5_twopath": {
+      "R1": 1536,
+      "R2": 760,
+      "R4": 776,
+      "R3": 260
+    },
+    "t8_decoy": {
+      "R1": 128,
+      "R2": 50,
+      "R4": 78,
+      "R3": 25
+    },
+    "t9_reuse": {
+      "R1": 121,
+      "R3": 50,
+      "R4": 71,
+      "R2": 25
+    }
+  },
+  "reuse_problems": {
+    "t8_decoy": 0,
+    "t9_reuse": 25,
+    "t1_base": 0,
+    "t2_noise": 0,
+    "t3_domain": 0,
+    "t4_nested": 190,
+    "t5_twopath": 0
+  },
+  "line39_problems": {
+    "t8_decoy": 25,
+    "t9_reuse": 25,
+    "t1_base": 190,
+    "t2_noise": 190,
+    "t3_domain": 190,
+    "t4_nested": 151,
+    "t5_twopath": 190
+  },
+  "cue_balanced_accuracy": {
+    "test": {
+      "exc facts exist": 0.5,
+      "exc on a negative": 0.5,
+      "exc on an unlisted constant": 0.5,
+      "exc on a key-like constant": 0.51,
+      "more than one exc fact": 0.5,
+      "more negatives than positives": 0.51,
+      "(semantic) a negative has a key-like fact": 0.75
+    },
+    "val": {
+      "exc facts exist": 0.5,
+      "exc on a negative": 0.5,
+      "exc on an unlisted constant": 0.5,
+      "exc on a key-like constant": 0.52,
+      "more than one exc fact": 0.5,
+      "more negatives than positives": 0.535,
+      "(semantic) a negative has a key-like fact": 0.76
+    },
+    "train": {
+      "exc facts exist": 0.5,
+      "exc on a negative": 0.5,
+      "exc on an unlisted constant": 0.5,
+      "exc on a key-like constant": 0.505,
+      "more than one exc fact": 0.5,
+      "more negatives than positives": 0.514,
+      "(semantic) a negative has a key-like fact": 0.787
+    }
+  },
+  "target_chars_train": {
+    "trace_mean": 680.5,
+    "endpoint_mean": 86.1,
+    "ratio": 7.9
+  },
+  "arm_matching": {
+    "primary": "same optimiser steps: both arms see the same train problems, in the same order, for the same number of epochs, with the same batch size and learning-rate schedule",
+    "secondary": "same supervised target tokens: the endpoint arm is trained for as many extra epochs as it takes to see the trace arm's total target tokens; the ratio is fixed once, on the train split, with the model's own tokenizer, before any run"
+  },
+  "gates": {
+    "every tier and split exactly 50/50 by class": true,
+    "R3 in every defeasible problem (coverage)": true,
+    "exception-fact cues <= 0.55 on train": true,
+    "t4_nested reuse in >= 20% of problems": true,
+    "generator duplicates <= 2% of attempts per tier": false,
+    "no signature shared across problems": true
+  },
+  "notes": [
+    "Problems are posed whole (Definition 1): prompt and gold trace see all examples. No example-level split; evaluation uses separate problems.",
+    "Fold alternatives are taken in background-rule order, dom(X) last. The paper leaves this order open (Definition 3); t8_decoy depends on it, t9_reuse's forbidden answer does not.",
+    "t5_twopath here is tier spec v2 and is not comparable with set 05's t5_twopath, which was degenerate (near-identical problems).",
+    "Held-out and test problems never appear in sft_*.jsonl."
+  ],
+  "sha256": {
+    "problems.jsonl": "a50b82612cf8b38a252a45fb491a70a41fcec951685a07dab86b601362f119e8",
+    "traces.jsonl": "585ac63f8b3ad18c3d939da67fe7a3566ef983e9db8ede36f172a9ddea073689",
+    "sft_trace.jsonl": "d5ae9edcb8f7bc1835bc9378aab2a6f8b34644d368e236e3886da1f98000718d",
+    "sft_endpoint.jsonl": "1bd841cbc912f0c6171f06abc21e3e066420ffcc47d18bcf8a98bc85f2f40258",
+    "eval.jsonl": "d8c1df85b631d0f6809583f3ded8936730783e81652dd82b032d0e041032ce25",
+    "rejects.jsonl": "32bd98a6e52e93bf4bf0c27e32a132bb34c0bf030dc5652970607eedc76a9084"
+  }
+}

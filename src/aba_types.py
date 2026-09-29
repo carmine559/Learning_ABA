@@ -248,16 +248,6 @@ class LearningTrace:
     final_framework: Optional[ABAFramework] = None
     success: bool = False
 
-    def to_cot_text(self) -> str:
-        """Serialise trace as chain-of-thought text for SFT."""
-        parts = []
-        for i, step in enumerate(self.steps, 1):
-            parts.append(f"Step {i} [{step.step_type}]: {step.to_text()}")
-        if self.final_framework:
-            parts.append("\nFinal framework:")
-            parts.append(self.final_framework.to_natural_language())
-        return "\n".join(parts)
-
     def symbol_sequence(self) -> List[str]:
         """The trace as an R1/R2/R3/R4 string — the alignment alphabet."""
         return [s.rule_symbol for s in self.steps]

@@ -213,10 +213,8 @@ def gold_self_score(example: Dict, problem: LearningProblem) -> Dict:
 def sft_example(problem: LearningProblem) -> Dict:
     """Solve, log, and render both arms for one problem.
 
-    The caller decides WHICH problem: for a training corpus it must be the
-    TRAIN SPLIT (`split_problem_examples(...).train`), so that neither the
-    prompt nor the gold trace ever sees a held-out example. The dead
-    `ABADataset.to_sft_records` got exactly this wrong.
+    The prompt and the gold trace see the same, whole problem, as Definition 1
+    poses it. Held-out evaluation uses separate problems (`src/aba_corpus.py`).
 
     Raises `Untrainable` when the symbolic run cannot supply a target: only a
     successful, intensional run is supervision.

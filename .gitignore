@@ -17,3 +17,7 @@ __pycache__/
 # Raw SLURM logs — the ones worth keeping are promoted into experiments/
 cluster/outputs/
 slurm-*.out
+
+# Corpus data: `python build_corpus.py` rebuilds it byte for byte; the
+# committed MANIFEST carries the sha256 of every file.
+corpus/*/*.jsonl

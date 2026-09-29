@@ -251,13 +251,6 @@ def make_tax_law_problem() -> LearningProblem:
     )
 
 
-BUILTIN_PROBLEMS = {
-    "nixon_diamond": make_nixon_diamond,
-    "flies": make_flies_problem,
-    "tax_law": make_tax_law_problem,
-}
-
-
 # ---------------------------------------------------------------------------
 # Synthetic problem generator
 # ---------------------------------------------------------------------------
@@ -1144,69 +1137,6 @@ class ABADataset:
         ds = ABADataset()
         ds.entries = [e for e in self.entries if e.source == source]
         return ds
-
-    # ---- Splitting ---------------------------------------------------------
-
-    def split(
-        self,
-        train: float = 0.70,
-        val: float = 0.15,
-        test: float = 0.15,
-        seed: int = 42,
-    ) -> Tuple['ABADataset', 'ABADataset', 'ABADataset']:
-        assert abs(train + val + test - 1.0) < 1e-6, "Splits must sum to 1."
-        indices = list(range(len(self.entries)))
-        rng = random.Random(seed)
-        rng.shuffle(indices)
-
-        n = len(indices)
-        n_train = int(n * train)
-        n_val = int(n * val)
-
-        def _subset(idxs: List[int]) -> 'ABADataset':
-            ds = ABADataset()
-            ds.entries = [self.entries[i] for i in idxs]
-            return ds
-
-        return (
-            _subset(indices[:n_train]),
-            _subset(indices[n_train:n_train + n_val]),
-            _subset(indices[n_train + n_val:]),
-        )
-
-    # ---- SFT serialisation -------------------------------------------------
-
-    def to_sft_records(
-        self,
-        mode: str = "full",   # "full" | "guided"
-    ) -> List[Dict]:
-        """
-        Serialise to instruction-following records for SFT.
-        Only entries with solutions are included.
-        """
-        from src.aba_prompts import problem_to_prompt, solution_to_output_format
-        records = []
-        for entry in self.entries:
-            if entry.solution is None:
-                continue
-            prompt = problem_to_prompt(entry.problem, mode=mode)
-            output = solution_to_output_format(
-                entry.solution, entry.problem.background
-            )
-            records.append({
-                "problem_id": entry.problem.problem_id,
-                "instruction": prompt,
-                "output": output,
-                "source": entry.source,
-            })
-        return records
-
-    def save_sft_jsonl(self, path: str, mode: str = "full") -> None:
-        records = self.to_sft_records(mode=mode)
-        with open(path, 'w', encoding='utf-8') as f:
-            for r in records:
-                f.write(json.dumps(r) + '\n')
-        print(f"Saved {len(records)} SFT records to {path}")
 
     # ---- Statistics --------------------------------------------------------
 
