@@ -179,6 +179,26 @@ conservative direction.
    passes `R`, which grows at line 20 with each learnt defeasible rule. Solver and
    oracle share the restriction, so the agreement test cannot detect it.
 4. **4-bit everywhere** — comparable within this set, not with set 03's bf16 rows.
+5. **`t5_twopath` is one problem, not 20** (found 2026-09-24). Its 20 problems
+   have a single structure under the structural signature of
+   `src/aba_corpus.py`, a Weisfeiler–Lehman hash invariant to renaming and
+   ordering. The 20 prompts differ only in names and order; each has 4
+   positives, 4 negatives and 12 background rules. The legacy
+   `generate_complex` fixes the group sizes and the exceptions and adds no
+   distractor facts, so after anonymisation every draw is the same problem.
+   Per-tier t5 figures in this set are therefore one problem shown in 20
+   surface forms, and they enter every overall mean as 20 correlated
+   observations of it. t1–t4 have 19, 20, 20 and 20 distinct structures. The
+   SFT corpus rewrote this generator (tier spec v2); its t5 is not comparable
+   with this one.
+6. **The reference has since changed on 12 of these 103 problems.** Two
+   corrections made it follow Algorithm 1 (see
+   [METHOD_HISTORY.md, Phase 8](../../docs/METHOD_HISTORY.md)):
+   `nixon_diamond` and `tax_law` (line 39), and ten problems of t2–t4 (lines
+   17–19). `symbolic_traces.jsonl` here is the as-run reference, and this
+   set's trace-fidelity and probe figures on those problems were scored
+   against it. The ids are listed in `_REPINNED` in
+   `tests/test_golden_traces.py`.
 
 ## Files
 

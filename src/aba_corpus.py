@@ -385,7 +385,7 @@ NOTES = [
     "paper leaves this order open (Definition 3); t8_decoy depends on it, "
     "t9_reuse's forbidden answer does not.",
     "t5_twopath here is tier spec v2 and is not comparable with set 05's "
-    "t5_twopath, which was degenerate (near-identical problems).",
+    "t5_twopath, whose 20 problems are one structure in 20 surface forms.",
     "Held-out and test problems never appear in sft_*.jsonl.",
 ]
 

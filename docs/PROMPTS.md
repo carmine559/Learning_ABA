@@ -188,6 +188,51 @@ matching `REUSE FIRST` line.
 `to_natural_language()` is retained, but only for reports
 (`explanations.md`, `frameworks.md`).
 
+### v4-sft — the prompt of the SFT ablation (`corpus/v1`)
+
+The core ablation trains two arms on the same problems: one on the **trace**
+target (the algorithm's decisions, then the answer), one on the **endpoint**
+target (the answer only). The arms must differ in their target and in nothing
+else, so both are trained under **one prompt**, `problem_to_prompt(p,
+mode="sft")`, stamped `SFT_PROMPT_VERSION = "v4-sft"`.
+
+The existing `SYSTEM_PROMPT` cannot be that prompt. Its task half forbids "any
+explanation or commentary outside the two sections", and a trace target is
+exactly such working. Training the trace arm against it would teach that model
+to break its own instructions, a conflict the endpoint arm never faces, which
+would confound the ablation.
+
+`SYSTEM_PROMPT_SFT = SYSTEM_PROMPT_DEFS + _SYSTEM_PROMPT_SFT_TASK`, where:
+
+1. **The definitions half is shared, unchanged, with the zero-shot
+   `SYSTEM_PROMPT`:** ABA frameworks, arguments and attacks, stable extensions,
+   brave consequence, Definition 1 and intensionality. It does not describe the
+   transformation rules.
+2. **The task half is the zero-shot `_SYSTEM_PROMPT_TASK` with only the
+   formatting rules changed.** Working
+   before the answer is *permitted*, not requested ("You MAY write your
+   working before the answer"), because the endpoint arm is trained to answer
+   directly under the same words. The answer is pinned to one block written
+   once and last, with `NEW RULES:` appearing nowhere else, which is how
+   `parse_llm_output` reads it anyway. The intensional requirement, the
+   defeasibility block, REUSE FIRST and the PLACEHOLDER RULE are the same.
+3. **The task block names no procedure.** `_TASK_SFT` is the single line
+   "Construct an intensional solution to the problem above." Naming the
+   transformation rules or asking for steps would tell the endpoint arm to
+   write a trace it is never trained to produce, and would let the trace arm
+   follow an instruction instead of what it learnt. Whatever procedure a model
+   trained under this prompt follows, it got from its training targets.
+4. **It is a frozen literal,** not derived from `_SYSTEM_PROMPT_TASK`, so a
+   later edit to the zero-shot prompts cannot move a prompt that training data
+   was generated against.
+
+The problem itself is serialised as in v4 (`_format_problem`). The trace
+target's grammar is documented in [`src/aba_sft.py`](../src/aba_sft.py) and
+[CORPUS.md](CORPUS.md).
+
+**Comparability.** Nothing produced under v4-sft is comparable with the
+zero-shot sets 01–05, which were run under v3.
+
 ## Prompt-version ↔ experiment-set matrix
 
 | Experiment set | Prompts | Metrics | Comparable with |
@@ -197,6 +242,7 @@ matching `REUSE FIRST` line.
 | `experiments/02_bench_prompts_v2` | v2 | rev 2 | — |
 | `experiments/03_bench_prompts_v3` | v3 | rev 4 | — |
 | *(next benchmark run)* | **v4** | rev 4 | future v4 runs |
+| [`corpus/v1`](../corpus/v1/MANIFEST.md) (SFT training and evaluation) | **v4-sft** | trace fidelity + rev 4 | runs trained or evaluated on it |
 
 A prompt change and a metric change are independent axes: a metric change can be
 applied retroactively with `rescore.py`, a prompt change cannot.

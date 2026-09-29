@@ -24,6 +24,27 @@ Probe sets carry their **own** prompt version, independent of the mode prompts:
 into every `probe_summary.json`. Re-scoring carries the generating version
 through rather than restamping it, so a v1 run re-scored today still reads v1.
 
+## Training corpora
+
+Data sets for the SFT ablation (trace target vs endpoint target). They are
+not result sets: no model output lives here. Each is built by
+`build_corpus.py`, and only its MANIFEST is committed; the data rebuilds byte
+for byte, and the MANIFEST carries the sha256 of every file. Full description
+in [CORPUS.md](CORPUS.md).
+
+| Corpus | Date | Tier spec | Prompt | Contents | Status |
+| --- | --- | --- | --- | --- | --- |
+| [`corpus/v1`](../corpus/v1/MANIFEST.md) | Sep 2026 | **v2** (`t1_base`–`t5_twopath`, held-out `t8_decoy`, `t9_reuse`) | **v4-sft** | 1500 train / 200 val / 200 test / 100 held-out, each training tier 50/50 defeasible | built, all gates pass |
+
+**Not comparable with the benchmark below.** Tier spec v2 replaces the
+set-05 tiers: every problem carries exception facts, every tier is balanced by
+class, and `t5_twopath` was rewritten because the legacy generator produced one
+problem in 20 surface forms (set 05, caveat 5). Problems are posed whole, with
+no held-out examples inside a problem, so the fit/gen chain below does not
+apply to them. Fidelity is scored against the reference's gold trace, which
+since Phase 8 of [METHOD_HISTORY.md](METHOD_HISTORY.md) follows Algorithm 1 at
+lines 17–19 and 36–39.
+
 ## The benchmark at a glance
 
 `--benchmark N` builds a stratified suite of `5·N` synthetic problems (plus the
@@ -182,7 +203,11 @@ Design points that matter when reading the numbers:
   existing assumption; if it fails, line 39 backtracks and line 41 mints a new
   one. A model gets one shot, so scoring the literal answer penalises it for
   obeying REUSE FIRST — measured, that inverted the scale trend, with all 24 of
-  32B's failed reuses rescued by the fallback.
+  32B's failed reuses rescued by the fallback. **Corrected later:** the
+  fallback is not in the paper. After line 39, Algorithm 1 backtracks to
+  line 19 or line 17 and never mints for a body that has a relative
+  assumption, so this credit is illegal and `introduce` must be re-scored
+  without it (METHOD_HISTORY.md, Phase 8).
 
 `reuse_rate` is reported alongside, **descriptively, not as an accuracy**. An
 assumption relative to the body (Definition 4) exists in only 2.9% of these
