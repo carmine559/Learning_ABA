@@ -1,6 +1,6 @@
 # Corpus v1
 
-- code rev: `4d5d99d-dirty`
+- code rev: `4ea1f31`; clingo 5.8.0; python 3.12.3
 - tier spec: v2; prompt: v4-sft
 - config: `{"base_seed": "corpus-v1", "n_test": 20, "n_val": 20, "n_train": 150, "n_heldout": 25, "max_attempts": 4}`
 
@@ -10,7 +10,6 @@
 - [x] R3 in every defeasible problem (coverage)
 - [x] exception-fact cues <= 0.55 on train
 - [x] t4_nested reuse in >= 20% of problems
-- [ ] generator duplicates <= 2% of attempts per tier
 - [x] no signature shared across problems
 
 ## Counts
@@ -88,17 +87,19 @@ Train-split target length: trace 680.5 chars, endpoint 86.1 chars (ratio 7.9).
 - t1_base/duplicate_signature: 18
 - t8_decoy/duplicate_signature: 5
 
+Generator duplicate rate (rejected duplicates / attempts): t1_base 4.5%, t2_noise 0.0%, t3_domain 0.0%, t4_nested 0.0%, t5_twopath 0.0%, t8_decoy 9.1%, t9_reuse 0.0%.
+
 ## Notes
 
 - Problems are posed whole (Definition 1): prompt and gold trace see all examples. No example-level split; evaluation uses separate problems.
 - Fold alternatives are taken in background-rule order, dom(X) last. The paper leaves this order open (Definition 3); t8_decoy depends on it, t9_reuse's forbidden answer does not.
-- t5_twopath here is tier spec v2 and is not comparable with set 05's t5_twopath, which was degenerate (near-identical problems).
+- t5_twopath here is tier spec v2 and is not comparable with set 05's t5_twopath, whose 20 problems are one structure in 20 surface forms.
 - Held-out and test problems never appear in sft_*.jsonl.
 
 ## Files (sha256)
 
 - `problems.jsonl` a50b82612cf8b38a252a45fb491a70a41fcec951685a07dab86b601362f119e8
-- `traces.jsonl` 585ac63f8b3ad18c3d939da67fe7a3566ef983e9db8ede36f172a9ddea073689
+- `traces.jsonl` a8c802094a45bc8e1e8e648c897bbc0ed62e08103a2e062cca0b715530981398
 - `sft_trace.jsonl` d5ae9edcb8f7bc1835bc9378aab2a6f8b34644d368e236e3886da1f98000718d
 - `sft_endpoint.jsonl` 1bd841cbc912f0c6171f06abc21e3e066420ffcc47d18bcf8a98bc85f2f40258
 - `eval.jsonl` d8c1df85b631d0f6809583f3ded8936730783e81652dd82b032d0e041032ce25
