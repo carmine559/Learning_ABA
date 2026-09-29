@@ -10,11 +10,14 @@ Layout of a built corpus (`build_corpus.py` writes it):
     eval.jsonl          test + held-out prompts with both gold targets and the
                         scorer's ceiling on them; never trained on
     rejects.jsonl       every attempt that was not accepted, and why
+    table1_*.jsonl      the paper's Table 1 problems (src/aba_zenodo.py), named
+                        and anonymised: problems, traces, eval; never trained on
     MANIFEST.json/.md   provenance, counts, gates, pre-registrations
 
 Problems are posed whole, as in Definition 1: prompt and gold trace see all of
 a problem's examples. Leakage is prevented between problems instead: no two
-accepted problems, in any split, share a structural signature.
+accepted problems, in any split, share a structural signature, and none shares
+one with a Table 1 problem.
 
 Splits are assigned in a fixed order (held-out, test, val, train), each stream
 taking the next accepted problems, so growing the train split never changes
@@ -39,6 +42,9 @@ from src.aba_dataset import (
 from src.aba_sft import sft_example, gold_self_score, Untrainable
 from src.aba_replay import check_example
 from src.aba_prompts import SFT_PROMPT_VERSION
+from src.aba_tracelog import solve_and_log
+from src.aba_zenodo import (TABLE1, ZENODO_DOI, ZENODO_MD5, RELEASE,
+                            load_table1, r2_gap)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -297,10 +303,59 @@ def _stream(tier: Dict, heldout: bool, variant: bool, cfg: CorpusConfig,
         yield got
 
 
-def build(cfg: CorpusConfig, out_dir: Path) -> Dict:
-    """Generate, verify and write the corpus; return the manifest."""
+# Solved, not posed: their prompts (98k and 207k chars) are far beyond the ~6k
+# of every training prompt.
+TABLE1_NOT_POSED = ("autism", "breast_w")
+
+
+def _table1(problems: List[Tuple[str, LearningProblem]]) -> List[Accepted]:
+    """Table 1, named and anonymised; the problems not posed, named only.
+
+    A Table 1 problem is never dropped: a failed run or replay stops the build.
+    """
+    out = []
+    for name, named in problems:
+        posed = name not in TABLE1_NOT_POSED
+        variants = [("named", named, None)]
+        if posed:
+            variants.append(("anon", *anonymize_problem(named, scheme="letters")))
+        base = named.problem_id
+        for cls, problem, nm in variants:
+            problem.problem_id = f"{base}_{cls}"
+            if posed:
+                ex = sft_example(problem)
+                reason = check_example(ex, problem)
+                assert not reason, (problem.problem_id, reason)
+                record = ex["record"]
+            else:
+                ex, (_, _, record) = None, solve_and_log(problem)
+                assert record.success and record.intensional, problem.problem_id
+            row = {"problem_id": problem.problem_id, "tier": "table1",
+                   "split": "table1", "class": cls, "name": name,
+                   "signature": structural_signature(problem),
+                   "problem": problem_to_dict(problem),
+                   "name_map": None if nm is None else {
+                       "pred": nm.pred_map, "const": nm.const_map},
+                   "meta": {"posed": posed, "r2_gap": r2_gap(problem)}}
+            rec = {k: v for k, v in record.to_dict().items()
+                   if k not in ("wall_s", "code_rev")}
+            rec["split"] = "table1"
+            out.append(Accepted(row, rec, ex, problem))
+    return out
+
+
+def build(cfg: CorpusConfig, out_dir: Path,
+          table1_zip: Optional[Path] = None) -> Dict:
+    """Generate, verify and write the corpus; return the manifest.
+
+    `table1_zip` is the Zenodo release (src/aba_zenodo.py); without it the
+    Table 1 set is left out.
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
-    seen: Dict[str, str] = {}
+    table1 = load_table1(table1_zip) if table1_zip else []
+    # A generated problem isomorphic to a Table 1 problem is a duplicate.
+    seen: Dict[str, str] = {structural_signature(p): p.problem_id
+                            for _, p in table1}
     rejects: List[Dict] = []
     accepted: List[Accepted] = []
 
@@ -324,8 +379,9 @@ def build(cfg: CorpusConfig, out_dir: Path) -> Dict:
             for variant in (True, False):
                 take(tier, False, variant, n, split)
 
-    _write(out_dir, accepted, rejects)
-    manifest = _manifest(cfg, out_dir, accepted, rejects)
+    external = _table1(table1)
+    _write(out_dir, accepted, rejects, external)
+    manifest = _manifest(cfg, out_dir, accepted, rejects, external)
     (out_dir / "MANIFEST.json").write_text(
         json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     (out_dir / "MANIFEST.md").write_text(_manifest_md(manifest),
@@ -338,20 +394,30 @@ def _jsonl(path: Path, rows: List[Dict]) -> None:
                     encoding="utf-8")
 
 
-def _write(out_dir: Path, accepted: List[Accepted], rejects: List[Dict]) -> None:
+def _prompt_row(a: Accepted) -> Dict:
+    r = a.row
+    return {"problem_id": r["problem_id"], "tier": r["tier"],
+            "split": r["split"], "class": r["class"],
+            "prompt_version": SFT_PROMPT_VERSION, "prompt": a.example["prompt"]}
+
+
+def _eval_row(a: Accepted) -> Dict:
+    ex = a.example
+    return {**_prompt_row(a), "trace_target": ex["trace_target"],
+            "endpoint_target": ex["endpoint_target"],
+            "ceiling": gold_self_score(ex, a.problem)}
+
+
+def _write(out_dir: Path, accepted: List[Accepted], rejects: List[Dict],
+           external: List[Accepted]) -> None:
     sft_trace, sft_endpoint, evals = [], [], []
     for a in accepted:
-        r, ex = a.row, a.example
-        base = {"problem_id": r["problem_id"], "tier": r["tier"],
-                "split": r["split"], "class": r["class"],
-                "prompt_version": SFT_PROMPT_VERSION, "prompt": ex["prompt"]}
-        if r["split"] in ("train", "val"):
-            sft_trace.append({**base, "target": ex["trace_target"]})
-            sft_endpoint.append({**base, "target": ex["endpoint_target"]})
+        if a.row["split"] in ("train", "val"):
+            sft_trace.append({**_prompt_row(a), "target": a.example["trace_target"]})
+            sft_endpoint.append({**_prompt_row(a),
+                                 "target": a.example["endpoint_target"]})
         else:
-            evals.append({**base, "trace_target": ex["trace_target"],
-                          "endpoint_target": ex["endpoint_target"],
-                          "ceiling": gold_self_score(ex, a.problem)})
+            evals.append(_eval_row(a))
     # Both arms share every prompt, and nothing evaluated is ever trained on.
     assert [x["prompt"] for x in sft_trace] == [x["prompt"] for x in sft_endpoint]
     assert not ({x["problem_id"] for x in sft_trace}
@@ -362,6 +428,12 @@ def _write(out_dir: Path, accepted: List[Accepted], rejects: List[Dict]) -> None
     _jsonl(out_dir / "sft_endpoint.jsonl", sft_endpoint)
     _jsonl(out_dir / "eval.jsonl", evals)
     _jsonl(out_dir / "rejects.jsonl", rejects)
+    if external:
+        _jsonl(out_dir / "table1_problems.jsonl", [a.row for a in external])
+        _jsonl(out_dir / "table1_traces.jsonl", [a.record for a in external])
+        _jsonl(out_dir / "table1_eval.jsonl",
+               [{**_eval_row(a), "name": a.row["name"]}
+                for a in external if a.example])
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -387,6 +459,14 @@ NOTES = [
     "t5_twopath here is tier spec v2 and is not comparable with set 05's "
     "t5_twopath, whose 20 problems are one structure in 20 surface forms.",
     "Held-out and test problems never appear in sft_*.jsonl.",
+    "Table 1 (Zenodo release, src/aba_zenodo.py) is read as the released tool "
+    "reads it; T and dom follow that tool and lines 211-212; integer constants "
+    "are renamed n<k>. It is posed named and anonymised; autism and breast_w "
+    "are solved but not posed (prompts of 98k and 207k chars).",
+    "The reference's R2 folds with unary background facts and dom only; the "
+    "paper's R2 folds with any rule of R, of any arity (lines 326-329). "
+    "`r2_gap` counts the background rules this leaves out. Gold traces are "
+    "the reference's.",
 ]
 
 
@@ -394,8 +474,34 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _table1_manifest(external: List[Accepted]) -> Dict:
+    sizes = {name: (bk, pos, neg) for name, _, bk, pos, neg in TABLE1}
+    symbols = {a.row["problem_id"]: a.record["symbolic_trace"]["symbols"]
+               for a in external}
+    problems = {}
+    for a in external:
+        if a.row["class"] != "named":
+            continue
+        name, st = a.row["name"], a.record["symbolic_trace"]
+        anon = symbols.get(a.row["problem_id"].replace("_named", "_anon"))
+        problems[name] = {
+            "problem_id": a.row["problem_id"],
+            "bk_e+_e-": sizes[name],
+            "posed": a.row["meta"]["posed"],
+            "symbols": dict(collections.Counter(st["symbols"])),
+            "new_rules": len(st["final_new_rules"]),
+            "new_assumptions": len(st["final_assumptions"])
+                               - len(a.problem.background.assumptions),
+            "anon_same_steps": None if anon is None else anon == st["symbols"],
+            "r2_gap": len(a.row["meta"]["r2_gap"]),
+        }
+    return {"source": {"doi": ZENODO_DOI, "md5": ZENODO_MD5,
+                       "release": RELEASE},
+            "not_posed": list(TABLE1_NOT_POSED), "problems": problems}
+
+
 def _manifest(cfg: CorpusConfig, out_dir: Path, accepted: List[Accepted],
-              rejects: List[Dict]) -> Dict:
+              rejects: List[Dict], external: List[Accepted]) -> Dict:
     from src.aba_tracelog import _git_rev
 
     counts = collections.defaultdict(collections.Counter)
@@ -457,9 +563,16 @@ def _manifest(cfg: CorpusConfig, out_dir: Path, accepted: List[Accepted],
         "no signature shared across problems": (
             len({a.row["signature"] for a in accepted}) == len(accepted)),
     }
+    if external:
+        gates["no generated problem shares a Table 1 signature"] = not (
+            {a.row["signature"] for a in accepted}
+            & {a.row["signature"] for a in external})
 
     files = ["problems.jsonl", "traces.jsonl", "sft_trace.jsonl",
              "sft_endpoint.jsonl", "eval.jsonl", "rejects.jsonl"]
+    if external:
+        files += ["table1_problems.jsonl", "table1_traces.jsonl",
+                  "table1_eval.jsonl"]
     import clingo
     import platform
     return {
@@ -484,6 +597,7 @@ def _manifest(cfg: CorpusConfig, out_dir: Path, accepted: List[Accepted],
                                "endpoint_mean": round(mean(chars["endpoint"]), 1),
                                "ratio": round(ratio, 2)},
         "arm_matching": ARM_MATCHING,
+        "table1": _table1_manifest(external) if external else None,
         "gates": gates,
         "notes": NOTES,
         "sha256": {f: _sha256(out_dir / f) for f in files},
@@ -526,6 +640,23 @@ def _manifest_md(m: Dict) -> str:
     L += ["", "Generator duplicate rate (rejected duplicates / attempts): "
           + ", ".join(f"{t} {v:.1%}" for t, v in m["duplicate_rate"].items())
           + "."]
+    if m.get("table1"):
+        t1 = m["table1"]
+        L += ["", "## Table 1 (external held-out, never trained on)", "",
+              f"Zenodo doi {t1['source']['doi']}, release "
+              f"`{t1['source']['release']}`, md5 `{t1['source']['md5']}`. "
+              "Posed problems have a named and an anonymised prompt.", "",
+              "| problem | BK / E+ / E− | posed | R1 | R2 | R3 | R4 | new rules "
+              "| new assumptions | anon same steps | R2 gap |",
+              "|---|---|---|---|---|---|---|---|---|---|---|"]
+        for name, x in t1["problems"].items():
+            s = x["symbols"]
+            L.append(f"| {name} | {' / '.join(map(str, x['bk_e+_e-']))} | "
+                     f"{'yes' if x['posed'] else 'no'} | {s.get('R1', 0)} | "
+                     f"{s.get('R2', 0)} | {s.get('R3', 0)} | {s.get('R4', 0)} | "
+                     f"{x['new_rules']} | {x['new_assumptions']} | "
+                     f"{'—' if x['anon_same_steps'] is None else x['anon_same_steps']} | "
+                     f"{x['r2_gap']} |")
     L += ["", "## Notes", ""] + [f"- {n}" for n in m["notes"]]
     L += ["", "## Files (sha256)", ""]
     L += [f"- `{f}` {h}" for f, h in m["sha256"].items()]

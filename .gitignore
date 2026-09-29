@@ -21,3 +21,5 @@ slurm-*.out
 # Corpus data: `python build_corpus.py` rebuilds it byte for byte; the
 # committed MANIFEST carries the sha256 of every file.
 corpus/*/*.jsonl
+# The Zenodo release (GPL-3.0-or-later), downloaded by build_corpus.py.
+corpus/zenodo/

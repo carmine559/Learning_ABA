@@ -1,141 +1,21 @@
 """
 aba_dataset.py
-Dataset loading (from the paper's Zenodo benchmarks),
-synthetic generation, and train/val/test splitting.
+Hard-coded benchmark problems and synthetic problem generation.
+The paper's Table 1 benchmarks are read by src/aba_zenodo.py.
 """
 from __future__ import annotations
 import os
-import re
 import json
 import random
 import copy
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, Iterator
-from pathlib import Path
 
 from src.aba_types import Rule, ABAFramework, LearningProblem, LearningTrace
 from src.aba_validator import (
     check_brave_entailment, run_rote_learning,
     check_has_stable_extension
 )
-
-
-# ---------------------------------------------------------------------------
-# Prolog file parser
-# ---------------------------------------------------------------------------
-
-def _strip_comments(text: str) -> str:
-    text = re.sub(r'%.*', '', text)
-    return text
-
-
-def _parse_prolog_rule(line: str) -> Optional[Rule]:
-    line = line.strip().rstrip('.')
-    if ':-' in line:
-        head, body = line.split(':-', 1)
-        body_atoms = [b.strip() for b in body.split(',') if b.strip()]
-        return Rule(head=head.strip(), body=body_atoms)
-    elif line:
-        return Rule(head=line.strip(), body=[])
-    return None
-
-
-def parse_framework_from_prolog(text: str) -> ABAFramework:
-    """
-    Parse an ABA framework from a Prolog-style text file.
-
-    Expected format (as used in the paper's Zenodo archive):
-        % Rules
-        pacifist(X) :- quaker(X), normal_quaker(X).
-        quaker(a).
-
-        % Assumptions
-        assumption(normal_quaker(X)).
-
-        % Contraries
-        contrary(normal_quaker(X), abnormal_quaker(X)).
-    """
-    text = _strip_comments(text)
-    rules: List[Rule] = []
-    assumptions: List[str] = []
-    contraries: Dict[str, str] = {}
-
-    for raw_line in text.split('\n'):
-        line = raw_line.strip().rstrip('.')
-        if not line:
-            continue
-
-        # Assumption declaration
-        asm_match = re.match(r'assumption\((.+)\)', line)
-        if asm_match:
-            assumptions.append(asm_match.group(1).strip())
-            continue
-
-        # Contrary declaration
-        cnt_match = re.match(r'contrary\((.+),\s*(.+)\)', line)
-        if cnt_match:
-            asm = cnt_match.group(1).strip()
-            contrary = cnt_match.group(2).strip()
-            contraries[asm] = contrary
-            continue
-
-        # Learnable predicate hint (used in dataset files)
-        if line.startswith('learnable(') or line.startswith('#learnable'):
-            continue
-
-        # Regular rule or fact
-        rule = _parse_prolog_rule(line + '.')
-        if rule and rule.head:
-            rules.append(rule)
-
-    return ABAFramework(rules=rules, assumptions=assumptions,
-                        contraries=contraries)
-
-
-def parse_learning_problem_from_dir(directory: str) -> LearningProblem:
-    """
-    Load a learning problem from a directory with the structure:
-        background.pl   — background ABA framework
-        examples.pl     — positive/negative examples
-        learnable.txt   — list of learnable predicate names (one per line)
-    """
-    base = Path(directory)
-    problem_id = base.name
-
-    bg_text = (base / 'background.pl').read_text()
-    background = parse_framework_from_prolog(bg_text)
-
-    positive, negative, learnable = [], [], []
-
-    ex_path = base / 'examples.pl'
-    if ex_path.exists():
-        ex_text = _strip_comments(ex_path.read_text())
-        for line in ex_text.split('\n'):
-            line = line.strip().rstrip('.')
-            pos_m = re.match(r'pos\((.+)\)', line)
-            neg_m = re.match(r'neg\((.+)\)', line)
-            if pos_m:
-                positive.append(pos_m.group(1).strip())
-            elif neg_m:
-                negative.append(neg_m.group(1).strip())
-
-    learn_path = base / 'learnable.txt'
-    if learn_path.exists():
-        learnable = [
-            l.strip() for l in learn_path.read_text().split('\n')
-            if l.strip()
-        ]
-
-    domain = background.get_domain()
-
-    return LearningProblem(
-        background=background,
-        positive=positive,
-        negative=negative,
-        learnable=learnable,
-        domain=domain,
-        problem_id=problem_id,
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -936,7 +816,7 @@ class DatasetEntry:
     problem: LearningProblem
     solution: Optional[ABAFramework] = None
     trace: Optional[LearningTrace] = None
-    source: str = "unknown"   # "benchmark" | "synthetic" | "zenodo"
+    source: str = "unknown"   # "benchmark" | "synthetic" | "synthetic_complex" | "benchmark_<tier>"
     name_map: Optional[object] = None   # NameMap if the problem was anonymised
 
 
@@ -974,25 +854,6 @@ class ABADataset:
             self.entries.append(DatasetEntry(
                 problem=p, solution=sol, source="benchmark"
             ))
-
-    def load_from_directory(self, base_dir: str, solve: bool = True) -> None:
-        """
-        Load all problems from subdirectories of base_dir.
-        Each subdirectory should have background.pl and examples.pl.
-        """
-        base = Path(base_dir)
-        for subdir in sorted(base.iterdir()):
-            if subdir.is_dir():
-                try:
-                    problem = parse_learning_problem_from_dir(str(subdir))
-                    sol = None
-                    if solve:
-                        sol = self._solve_with_role(problem)
-                    self.entries.append(DatasetEntry(
-                        problem=problem, solution=sol, source="zenodo"
-                    ))
-                except Exception as e:
-                    print(f"Warning: could not load {subdir.name}: {e}")
 
     def add_synthetic(
         self,
