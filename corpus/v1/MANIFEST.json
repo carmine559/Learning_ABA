@@ -1,6 +1,6 @@
 {
   "corpus_version": "v1",
-  "code_rev": "4ea1f31",
+  "code_rev": "502b725",
   "clingo": "5.8.0",
   "python": "3.12.3",
   "config": {
@@ -187,18 +187,220 @@
     "primary": "same optimiser steps: both arms see the same train problems, in the same order, for the same number of epochs, with the same batch size and learning-rate schedule",
     "secondary": "same supervised target tokens: the endpoint arm is trained for as many extra epochs as it takes to see the trace arm's total target tokens; the ratio is fixed once, on the train split, with the model's own tokenizer, before any run"
   },
+  "table1": {
+    "source": {
+      "doi": "10.5281/zenodo.13330013",
+      "md5": "32c39f6f437d334206d748412b55df74",
+      "release": "ASP-ABAlearn_B"
+    },
+    "not_posed": [
+      "autism",
+      "breast_w"
+    ],
+    "problems": {
+      "flies": {
+        "problem_id": "table1_01_named",
+        "bk_e+_e-": [
+          8,
+          4,
+          2
+        ],
+        "posed": true,
+        "symbols": {
+          "R1": 4,
+          "R3": 2,
+          "R4": 5,
+          "R2": 1
+        },
+        "new_rules": 3,
+        "new_assumptions": 2,
+        "anon_same_steps": true,
+        "r2_gap": 2
+      },
+      "flies_birds_planes": {
+        "problem_id": "table1_02_named",
+        "bk_e+_e-": [
+          10,
+          5,
+          2
+        ],
+        "posed": true,
+        "symbols": {
+          "R1": 5,
+          "R3": 3,
+          "R4": 3,
+          "R2": 2
+        },
+        "new_rules": 5,
+        "new_assumptions": 3,
+        "anon_same_steps": true,
+        "r2_gap": 2
+      },
+      "innocent": {
+        "problem_id": "table1_03_named",
+        "bk_e+_e-": [
+          15,
+          2,
+          2
+        ],
+        "posed": true,
+        "symbols": {
+          "R1": 3,
+          "R2": 1,
+          "R3": 2,
+          "R4": 1
+        },
+        "new_rules": 3,
+        "new_assumptions": 1,
+        "anon_same_steps": true,
+        "r2_gap": 4
+      },
+      "nixon_diamond": {
+        "problem_id": "table1_04_named",
+        "bk_e+_e-": [
+          6,
+          1,
+          1
+        ],
+        "posed": true,
+        "symbols": {
+          "R1": 1,
+          "R3": 3
+        },
+        "new_rules": 3,
+        "new_assumptions": 2,
+        "anon_same_steps": true,
+        "r2_gap": 0
+      },
+      "nixon_diamond_2": {
+        "problem_id": "table1_05_named",
+        "bk_e+_e-": [
+          15,
+          3,
+          2
+        ],
+        "posed": true,
+        "symbols": {
+          "R1": 2,
+          "R2": 1,
+          "R3": 2
+        },
+        "new_rules": 3,
+        "new_assumptions": 1,
+        "anon_same_steps": true,
+        "r2_gap": 3
+      },
+      "tax_law": {
+        "problem_id": "table1_06_named",
+        "bk_e+_e-": [
+          16,
+          2,
+          2
+        ],
+        "posed": true,
+        "symbols": {
+          "R1": 2,
+          "R3": 3,
+          "R4": 2,
+          "R2": 1
+        },
+        "new_rules": 4,
+        "new_assumptions": 2,
+        "anon_same_steps": true,
+        "r2_gap": 5
+      },
+      "tax_law_2": {
+        "problem_id": "table1_07_named",
+        "bk_e+_e-": [
+          17,
+          2,
+          2
+        ],
+        "posed": true,
+        "symbols": {
+          "R1": 2,
+          "R2": 1,
+          "R3": 2,
+          "R4": 1
+        },
+        "new_rules": 3,
+        "new_assumptions": 1,
+        "anon_same_steps": true,
+        "r2_gap": 6
+      },
+      "acute": {
+        "problem_id": "table1_08_named",
+        "bk_e+_e-": [
+          96,
+          21,
+          19
+        ],
+        "posed": true,
+        "symbols": {
+          "R1": 21,
+          "R3": 3,
+          "R4": 32
+        },
+        "new_rules": 3,
+        "new_assumptions": 2,
+        "anon_same_steps": true,
+        "r2_gap": 0
+      },
+      "autism": {
+        "problem_id": "table1_09_named",
+        "bk_e+_e-": [
+          5716,
+          189,
+          515
+        ],
+        "posed": false,
+        "symbols": {
+          "R1": 189,
+          "R3": 38,
+          "R4": 1213,
+          "R2": 20
+        },
+        "new_rules": 58,
+        "new_assumptions": 24,
+        "anon_same_steps": null,
+        "r2_gap": 0
+      },
+      "breast_w": {
+        "problem_id": "table1_10_named",
+        "bk_e+_e-": [
+          6291,
+          241,
+          458
+        ],
+        "posed": false,
+        "symbols": {
+          "R1": 241,
+          "R3": 38,
+          "R4": 687,
+          "R2": 24
+        },
+        "new_rules": 62,
+        "new_assumptions": 23,
+        "anon_same_steps": null,
+        "r2_gap": 0
+      }
+    }
+  },
   "gates": {
     "every tier and split exactly 50/50 by class": true,
     "R3 in every defeasible problem (coverage)": true,
     "exception-fact cues <= 0.55 on train": true,
     "t4_nested reuse in >= 20% of problems": true,
-    "no signature shared across problems": true
+    "no signature shared across problems": true,
+    "no generated problem shares a Table 1 signature": true
   },
   "notes": [
     "Problems are posed whole (Definition 1): prompt and gold trace see all examples. No example-level split; evaluation uses separate problems.",
     "Fold alternatives are taken in background-rule order, dom(X) last. The paper leaves this order open (Definition 3); t8_decoy depends on it, t9_reuse's forbidden answer does not.",
     "t5_twopath here is tier spec v2 and is not comparable with set 05's t5_twopath, whose 20 problems are one structure in 20 surface forms.",
-    "Held-out and test problems never appear in sft_*.jsonl."
+    "Held-out and test problems never appear in sft_*.jsonl.",
+    "Table 1 (Zenodo release, src/aba_zenodo.py) is read as the released tool reads it; T and dom follow that tool and lines 211-212; integer constants are renamed n<k>. It is posed named and anonymised; autism and breast_w are solved but not posed (prompts of 98k and 207k chars).",
+    "The reference's R2 folds with unary background facts and dom only; the paper's R2 folds with any rule of R, of any arity (lines 326-329). `r2_gap` counts the background rules this leaves out. Gold traces are the reference's."
   ],
   "sha256": {
     "problems.jsonl": "a50b82612cf8b38a252a45fb491a70a41fcec951685a07dab86b601362f119e8",
@@ -206,6 +408,9 @@
     "sft_trace.jsonl": "d5ae9edcb8f7bc1835bc9378aab2a6f8b34644d368e236e3886da1f98000718d",
     "sft_endpoint.jsonl": "1bd841cbc912f0c6171f06abc21e3e066420ffcc47d18bcf8a98bc85f2f40258",
     "eval.jsonl": "d8c1df85b631d0f6809583f3ded8936730783e81652dd82b032d0e041032ce25",
-    "rejects.jsonl": "32bd98a6e52e93bf4bf0c27e32a132bb34c0bf030dc5652970607eedc76a9084"
+    "rejects.jsonl": "32bd98a6e52e93bf4bf0c27e32a132bb34c0bf030dc5652970607eedc76a9084",
+    "table1_problems.jsonl": "3c4f932241bf20623fe09d99856b03aaeff8fada4a5f369d49f1b5f4fb7f099b",
+    "table1_traces.jsonl": "7f76bee1407d0239ff2e1f0de8d7e74de1fbaf541be5bdd1a5eb58ddf589d22b",
+    "table1_eval.jsonl": "ba2cef57b8238898b398bb20e4cfc90f9a562942a62d9ad08bf4f1a5b16f5151"
   }
 }
