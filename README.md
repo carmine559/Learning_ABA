@@ -1,7 +1,7 @@
 # Learning ABA — can an LLM replicate ABA Learning?
 
 > **Research question.** Can a large language model *execute* the ASP-ABAlearnB
-> algorithm — learning an Assumption-Based Argumentation framework from
+> algorithm? Being more precise, can it learn an Assumption-Based Argumentation framework from
 > background knowledge and examples that **generalises to unseen cases**,
 > rather than memorising the examples it was shown?
 
@@ -49,7 +49,7 @@ table below. See [docs/EXPERIMENTS.md](docs/EXPERIMENTS.md) for the registry and
 ## Headline results
 
 Four models, 103 anonymised problems (5 capability tiers × 20 + 3 built-ins),
-4 prompting modes, k = 3 samples per problem. Cells are **clean@k** — the
+4 prompting modes, k = 3 samples per problem. Cells are **clean@k**, the
 fraction of problems where at least one of the 3 attempts produced a legal,
 stable, fitting, generalising, non-degenerate solution.
 
@@ -65,7 +65,7 @@ stable, fitting, generalising, non-degenerate solution.
 resolved by n = 103.
 
 **The reference, on the same footing.** ASP-ABAlearnB solves 100% of these
-problems when it sees every example — but that is a different task from the one
+problems when it sees every example, but that is a different task from the one
 the models face. Given only the training split and scored on the held-out
 examples exactly like an LLM, the symbolic algorithm reaches **53.8%**. It is a
 ceiling, not a perfect score, and the gap it leaves is mostly the same gap the
@@ -160,8 +160,8 @@ Each stage must pass before the next; the first failure names the `error_type`.
 ### Why there is a second generalisation metric
 
 Brave ABA Learning is permissive by construction. A framework can contain
-mutually attacking assumptions that leave an unseen atom **free** — accepted in
-one stable extension, rejected in another — and brave entailment then scores a
+mutually attacking assumptions that leave an unseen atom **free** (accepted in
+one stable extension, rejected in another) and brave entailment then scores a
 coin flip as a success. This is not hypothetical: on the paper's own Nixon
 Diamond, the reference solution leaves `pacifist(e)` free once `e` is held out.
 
