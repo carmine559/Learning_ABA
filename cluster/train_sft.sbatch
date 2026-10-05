@@ -1,21 +1,12 @@
 #!/bin/bash
-# ---------------------------------------------------------------------------
-# SFT ablation on one L40: train an arm, then evaluate it, in one job (one L40
-# job per user, and a long queue).
-#
-#   sbatch cluster/train_sft.sbatch                                  # endpoint
-#   sbatch --export=ALL,ARMS="endpoint base" cluster/train_sft.sbatch
+# SFT: train an arm, then evaluate it, in one job.
+#   sbatch cluster/train_sft.sbatch                                     # endpoint
+#   sbatch --export=ALL,ARMS="endpoint base" cluster/train_sft.sbatch   # + the base model
 #   sbatch --export=ALL,ARMS=trace cluster/train_sft.sbatch
 #   sbatch --export=ALL,ARMS=endpoint,MATCH=tokens cluster/train_sft.sbatch
-#
-# ARMS runs in order: endpoint | trace (train, then evaluate) | base (the model
-# without adapter, same decoding). Adapters in runs/<run>/, generations and
-# scores in results/sft/<run>/. The job is idempotent: resubmitted, it skips a
-# finished adapter, resumes from the last checkpoint, and continues generation.
-#
-# Once, on giano: pip3 install --no-cache-dir -r requirements-train.txt (in
-# venv/); corpus/v1/*.jsonl and TOKENS.json synced; Qwen2.5-7B-Instruct cached.
-# ---------------------------------------------------------------------------
+# Resubmitted, it skips a finished adapter, resumes training from the last
+# checkpoint and continues generation. Check the corpus before submitting:
+#   python3 -c "from pathlib import Path; from src.aba_train import load_audit; load_audit(Path('corpus/v1'), 'qwen2.5-7b'); print('ok')"
 #SBATCH --job-name=sft
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=carmine.santella@studio.unibo.it
@@ -29,9 +20,8 @@
 #SBATCH --output=slurm-%x-%j.out
 
 set -euo pipefail
-
 export HF_HOME="/scratch.hpc/$USER/hf_cache"
-export HF_HUB_OFFLINE=1                  # the model is cached: never download in a GPU job
+export HF_HUB_OFFLINE=1                  # cached by cluster/prefetch_model.sh
 export TOKENIZERS_PARALLELISM=false
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
@@ -39,7 +29,7 @@ cd "/scratch.hpc/$USER/Learning_aba"
 source venv/bin/activate
 nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader
 
-ARMS="${ARMS:-endpoint}"
+ARMS="${ARMS:-endpoint}"                 # endpoint | trace | base, run in order
 MATCH="${MATCH:-steps}"                  # steps (primary) | tokens (secondary)
 
 for arm in $ARMS; do

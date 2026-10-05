@@ -9,17 +9,21 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
-# Working experiment outputs (curated snapshots live in experiments/).
-# The pattern below was missing, so results/ was tracked while every doc
-# described it as ignored.
+# results/ is tracked: runs on giano come back with git push.
 
-
-# Raw SLURM logs — the ones worth keeping are promoted into experiments/
+# Raw SLURM logs; the ones worth keeping go into experiments/
 cluster/outputs/
 slurm-*.out
 
-# Corpus data: `python build_corpus.py` rebuilds it byte for byte; the
-# committed MANIFEST carries the sha256 of every file.
+# Corpus: corpus/v1 is tracked, so giano gets it with git pull; scratch builds
+# (build_corpus.py --out corpus/<other>) stay local. The Zenodo release is GPL,
+# downloaded by build_corpus.py.
 corpus/*/*.jsonl
-# The Zenodo release (GPL-3.0-or-later), downloaded by build_corpus.py.
+!corpus/v1/*.jsonl
 corpus/zenodo/
+
+# LoRA weights (over GitHub's 100 MB limit) and checkpoints stay on scratch;
+# runs/<run>/TRAINING_MANIFEST.json is tracked, and results/sft/<run>/
+# EVAL_MANIFEST.json records the adapter's sha256.
+runs/*/adapter/
+runs/*/checkpoint-*/

@@ -1,0 +1,5 @@
+# MANIFEST.json hashes the corpus byte for byte: never convert its line endings.
+corpus/**/*.jsonl -text
+# bash on giano rejects CRLF scripts
+*.sh     text eol=lf
+*.sbatch text eol=lf

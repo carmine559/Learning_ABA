@@ -425,6 +425,12 @@ LOCAL_MODELS: Dict[str, str] = {
 }
 
 
+def to_messages(prompt: str, target: Optional[str] = None) -> List[Dict[str, str]]:
+    """The chat a local model sees: one user turn, then the target when training."""
+    msgs = [{"role": "user", "content": prompt}]
+    return msgs if target is None else msgs + [{"role": "assistant", "content": target}]
+
+
 class LocalHFBackend(LLMBackend):
     """
     Load a HuggingFace causal-LM locally on the GPU and generate with it.
@@ -444,6 +450,7 @@ class LocalHFBackend(LLMBackend):
         load_4bit: bool = False,
         dtype: str = "bfloat16",
         device: str = "cuda",
+        adapter: Optional[str] = None,          # a trained LoRA adapter directory
     ):
         try:
             import torch
@@ -492,6 +499,9 @@ class LocalHFBackend(LLMBackend):
                     self.model_id, torch_dtype=getattr(torch, dtype), **load_kwargs)
             model_obj = model_obj.to(device)      # plain .to(), no accelerate hooks
 
+        if adapter:
+            from peft import PeftModel            # unmerged: the weights as trained
+            model_obj = PeftModel.from_pretrained(model_obj, adapter)
         model_obj.eval()
 
         self._torch = torch
@@ -503,17 +513,19 @@ class LocalHFBackend(LLMBackend):
         # the torch module here made every SampleResult unserialisable.
         self.model = self.model_id
         print(f"[local] loaded {self.model_id} "
-              f"({'4-bit nf4' if load_4bit else dtype}) on {model_obj.device}")
+              f"({'4-bit nf4' if load_4bit else dtype}) on {model_obj.device}"
+              + (f" + adapter {adapter}" if adapter else ""))
 
     def generate(
         self,
         prompt: str,
         temperature: float = 0.3,
         max_tokens: int = 1024,
+        repetition_penalty: Optional[float] = None,   # None: the model's own config
     ) -> ModelResponse:
         torch = self._torch
         device = self._model.device
-        messages = [{"role": "user", "content": prompt}]
+        messages = to_messages(prompt)
 
         # apply_chat_template's return type changed across transformers versions
         # (tensor vs BatchEncoding dict; accessing .shape on a BatchEncoding
@@ -539,6 +551,8 @@ class LocalHFBackend(LLMBackend):
         )
         if attention_mask is not None:
             gen_kwargs["attention_mask"] = attention_mask
+        if repetition_penalty is not None:
+            gen_kwargs["repetition_penalty"] = repetition_penalty
         if do_sample:
             gen_kwargs.update(temperature=temperature, top_p=0.95)
 
