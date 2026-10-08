@@ -1,0 +1,104 @@
+{
+ "v1": {
+  "stamp": {
+   "templates": {
+    "t1_base": {
+     "always guard": "NEW RULES:\nv(X) :- p(X), alpha_0(X).\nc_alpha_0(X) :- q(X).\n\nNEW ASSUMPTIONS:\nalpha_0(X) defeated_by c_alpha_0(X)",
+     "always monotonic": "NEW RULES:\nv(X) :- p(X).\n\nNEW ASSUMPTIONS:\nNONE"
+    },
+    "t2_noise": {
+     "always guard": "NEW RULES:\np1(X) :- p(X), alpha_0(X).\nc_alpha_0(X) :- q(X).\n\nNEW ASSUMPTIONS:\nalpha_0(X) defeated_by c_alpha_0(X)",
+     "always monotonic": "NEW RULES:\np1(X) :- p(X).\n\nNEW ASSUMPTIONS:\nNONE"
+    },
+    "t3_domain": {
+     "always guard": "NEW RULES:\nv(X) :- p(X), alpha_0(X).\nc_alpha_0(X) :- q(X).\n\nNEW ASSUMPTIONS:\nalpha_0(X) defeated_by c_alpha_0(X)",
+     "always monotonic": "NEW RULES:\nv(X) :- p(X).\n\nNEW ASSUMPTIONS:\nNONE"
+    },
+    "t4_nested": {
+     "always guard": "NEW RULES:\nq1(X) :- q(X), alpha_0(X).\nc_alpha_0(X) :- p(X), v(X).\n\nNEW ASSUMPTIONS:\nalpha_0(X) defeated_by c_alpha_0(X)",
+     "always monotonic": "NEW RULES:\nq1(X) :- q(X).\n\nNEW ASSUMPTIONS:\nNONE"
+    },
+    "t5_twopath": {
+     "always guard": "NEW RULES:\nr1(X) :- p(X), alpha_0(X).\nr1(X) :- q(X), alpha_1(X).\nc_alpha_0(X) :- r(X).\nc_alpha_1(X) :- s(X).\n\nNEW ASSUMPTIONS:\nalpha_0(X) defeated_by c_alpha_0(X)\nalpha_1(X) defeated_by c_alpha_1(X)",
+     "always monotonic": "NEW RULES:\nr1(X) :- p(X).\nr1(X) :- q(X).\n\nNEW ASSUMPTIONS:\nNONE"
+    }
+   },
+   "sft_endpoint": "1bd841cbc912f0c6171f06abc21e3e066420ffcc47d18bcf8a98bc85f2f40258",
+   "inputs": {
+    "problems.jsonl": "a50b82612cf8b38a252a45fb491a70a41fcec951685a07dab86b601362f119e8",
+    "eval.jsonl": "d8c1df85b631d0f6809583f3ded8936730783e81652dd82b032d0e041032ce25"
+   }
+  },
+  "responders": {
+   "always guard": {
+    "valid": 0.99,
+    "clean": 0.99,
+    "exact": 0.435,
+    "agreement": 0.7175
+   },
+   "always monotonic": {
+    "valid": 0.5,
+    "clean": 0.5,
+    "exact": 0.5,
+    "agreement": 0.5
+   }
+  }
+ },
+ "permuted": {
+  "stamp": {
+   "templates": {
+    "t1_base": {
+     "always guard": "NEW RULES:\nv(X) :- p(X), alpha_0(X).\nc_alpha_0(X) :- q(X).\n\nNEW ASSUMPTIONS:\nalpha_0(X) defeated_by c_alpha_0(X)",
+     "always monotonic": "NEW RULES:\nv(X) :- p(X).\n\nNEW ASSUMPTIONS:\nNONE"
+    },
+    "t2_noise": {
+     "always guard": "NEW RULES:\np1(X) :- p(X), alpha_0(X).\nc_alpha_0(X) :- q(X).\n\nNEW ASSUMPTIONS:\nalpha_0(X) defeated_by c_alpha_0(X)",
+     "always monotonic": "NEW RULES:\np1(X) :- p(X).\n\nNEW ASSUMPTIONS:\nNONE"
+    },
+    "t3_domain": {
+     "always guard": "NEW RULES:\nv(X) :- p(X), alpha_0(X).\nc_alpha_0(X) :- q(X).\n\nNEW ASSUMPTIONS:\nalpha_0(X) defeated_by c_alpha_0(X)",
+     "always monotonic": "NEW RULES:\nv(X) :- p(X).\n\nNEW ASSUMPTIONS:\nNONE"
+    },
+    "t4_nested": {
+     "always guard": "NEW RULES:\nq1(X) :- q(X), alpha_0(X).\nc_alpha_0(X) :- p(X), v(X).\n\nNEW ASSUMPTIONS:\nalpha_0(X) defeated_by c_alpha_0(X)",
+     "always monotonic": "NEW RULES:\nq1(X) :- q(X).\n\nNEW ASSUMPTIONS:\nNONE"
+    },
+    "t5_twopath": {
+     "always guard": "NEW RULES:\nr1(X) :- p(X), alpha_0(X).\nr1(X) :- q(X), alpha_1(X).\nc_alpha_0(X) :- r(X).\nc_alpha_1(X) :- s(X).\n\nNEW ASSUMPTIONS:\nalpha_0(X) defeated_by c_alpha_0(X)\nalpha_1(X) defeated_by c_alpha_1(X)",
+     "always monotonic": "NEW RULES:\nr1(X) :- p(X).\nr1(X) :- q(X).\n\nNEW ASSUMPTIONS:\nNONE"
+    }
+   },
+   "sft_endpoint": "1bd841cbc912f0c6171f06abc21e3e066420ffcc47d18bcf8a98bc85f2f40258",
+   "inputs": {
+    "problems.jsonl": "886a211ff3c43577c41d0c76df5d27485001fbdc6692b0475bec16f5e5fccb29",
+    "eval.jsonl": "ab362692f4ce7f7734fc881f9635b59fea207e3ff1cffeec80ac2a01294ca594"
+   }
+  },
+  "responders": {
+   "always guard": {
+    "valid": 0.99,
+    "clean": 0.99,
+    "exact": 0.435,
+    "agreement": 0.7175
+   },
+   "name copier, always guard": {
+    "valid": 0.0,
+    "clean": 0.0,
+    "exact": 0.0,
+    "agreement": 0.0
+   },
+   "always monotonic": {
+    "valid": 0.5,
+    "clean": 0.5,
+    "exact": 0.5,
+    "agreement": 0.5
+   },
+   "name copier, always monotonic": {
+    "valid": 0.0,
+    "clean": 0.0,
+    "exact": 0.0,
+    "agreement": 0.0
+   }
+  }
+ }
+}

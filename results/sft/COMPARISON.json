@@ -1,0 +1,1271 @@
+{
+ "floors": {
+  "v1": {
+   "always guard": {
+    "valid": 0.99,
+    "clean": 0.99,
+    "exact": 0.435,
+    "agreement": 0.7175
+   },
+   "always monotonic": {
+    "valid": 0.5,
+    "clean": 0.5,
+    "exact": 0.5,
+    "agreement": 0.5
+   }
+  },
+  "permuted": {
+   "always guard": {
+    "valid": 0.99,
+    "clean": 0.99,
+    "exact": 0.435,
+    "agreement": 0.7175
+   },
+   "name copier, always guard": {
+    "valid": 0.0,
+    "clean": 0.0,
+    "exact": 0.0,
+    "agreement": 0.0
+   },
+   "always monotonic": {
+    "valid": 0.5,
+    "clean": 0.5,
+    "exact": 0.5,
+    "agreement": 0.5
+   },
+   "name copier, always monotonic": {
+    "valid": 0.0,
+    "clean": 0.0,
+    "exact": 0.0,
+    "agreement": 0.0
+   }
+  }
+ },
+ "arms": {
+  "v1": {
+   "base": {
+    "t8_decoy decoy_first": {
+     "parse_ok": {
+      "k": 25,
+      "n": 25,
+      "p": 1.0,
+      "ci": [
+       0.8628,
+       1.0
+      ]
+     },
+     "valid": {
+      "k": 1,
+      "n": 25,
+      "p": 0.04,
+      "ci": [
+       0.001,
+       0.2035
+      ]
+     },
+     "clean": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "exact": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "agreement": {
+      "mean": 0.0133,
+      "n": 25,
+      "ci": [
+       0.0,
+       0.04
+      ]
+     },
+     "r3_balanced": null,
+     "exact_by_gold_in_train": {
+      "True": {
+       "k": 0,
+       "n": 25,
+       "p": 0.0,
+       "ci": [
+        0.0,
+        0.1372
+       ]
+      },
+      "False": {
+       "k": 0,
+       "n": 0,
+       "p": null,
+       "ci": null
+      }
+     },
+     "algorithm_choice": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "forbidden_choice": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "main_rule": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "step_level": null
+    },
+    "t8_decoy key_first": {
+     "parse_ok": {
+      "k": 25,
+      "n": 25,
+      "p": 1.0,
+      "ci": [
+       0.8628,
+       1.0
+      ]
+     },
+     "valid": {
+      "k": 1,
+      "n": 25,
+      "p": 0.04,
+      "ci": [
+       0.001,
+       0.2035
+      ]
+     },
+     "clean": {
+      "k": 1,
+      "n": 25,
+      "p": 0.04,
+      "ci": [
+       0.001,
+       0.2035
+      ]
+     },
+     "exact": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "agreement": {
+      "mean": 0.04,
+      "n": 25,
+      "ci": [
+       0.0,
+       0.12
+      ]
+     },
+     "r3_balanced": null,
+     "exact_by_gold_in_train": {
+      "True": {
+       "k": 0,
+       "n": 0,
+       "p": null,
+       "ci": null
+      },
+      "False": {
+       "k": 0,
+       "n": 25,
+       "p": 0.0,
+       "ci": [
+        0.0,
+        0.1372
+       ]
+      }
+     },
+     "algorithm_choice": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "forbidden_choice": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "main_rule": {
+      "k": 1,
+      "n": 25,
+      "p": 0.04,
+      "ci": [
+       0.001,
+       0.2035
+      ]
+     },
+     "contrary": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "step_level": null
+    },
+    "t9_reuse reuse_fails": {
+     "parse_ok": {
+      "k": 25,
+      "n": 25,
+      "p": 1.0,
+      "ci": [
+       0.8628,
+       1.0
+      ]
+     },
+     "valid": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "clean": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "exact": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "agreement": {
+      "mean": 0.0,
+      "n": 25,
+      "ci": [
+       0.0,
+       0.0
+      ]
+     },
+     "r3_balanced": null,
+     "exact_by_gold_in_train": {
+      "True": {
+       "k": 0,
+       "n": 0,
+       "p": null,
+       "ci": null
+      },
+      "False": {
+       "k": 0,
+       "n": 25,
+       "p": 0.0,
+       "ci": [
+        0.0,
+        0.1372
+       ]
+      }
+     },
+     "algorithm_choice": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "forbidden_choice": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "step_level": null
+    },
+    "t9_reuse reuse_ok": {
+     "parse_ok": {
+      "k": 25,
+      "n": 25,
+      "p": 1.0,
+      "ci": [
+       0.8628,
+       1.0
+      ]
+     },
+     "valid": {
+      "k": 4,
+      "n": 25,
+      "p": 0.16,
+      "ci": [
+       0.0454,
+       0.3608
+      ]
+     },
+     "clean": {
+      "k": 3,
+      "n": 25,
+      "p": 0.12,
+      "ci": [
+       0.0255,
+       0.3122
+      ]
+     },
+     "exact": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "agreement": {
+      "mean": 0.16,
+      "n": 25,
+      "ci": [
+       0.04,
+       0.32
+      ]
+     },
+     "r3_balanced": null,
+     "exact_by_gold_in_train": {
+      "True": {
+       "k": 0,
+       "n": 0,
+       "p": null,
+       "ci": null
+      },
+      "False": {
+       "k": 0,
+       "n": 25,
+       "p": 0.0,
+       "ci": [
+        0.0,
+        0.1372
+       ]
+      }
+     },
+     "algorithm_choice": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "forbidden_choice": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "step_level": null
+    },
+    "table1 anon": {
+     "parse_ok": {
+      "k": 8,
+      "n": 8,
+      "p": 1.0,
+      "ci": [
+       0.6306,
+       1.0
+      ]
+     },
+     "valid": {
+      "k": 0,
+      "n": 8,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.3694
+      ]
+     },
+     "clean": {
+      "k": 0,
+      "n": 8,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.3694
+      ]
+     },
+     "exact": {
+      "k": 0,
+      "n": 8,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.3694
+      ]
+     },
+     "agreement": {
+      "mean": 0.0,
+      "n": 3,
+      "ci": [
+       0.0,
+       0.0
+      ]
+     },
+     "r3_balanced": null,
+     "exact_by_gold_in_train": {
+      "True": {
+       "k": 0,
+       "n": 0,
+       "p": null,
+       "ci": null
+      },
+      "False": {
+       "k": 0,
+       "n": 8,
+       "p": 0.0,
+       "ci": [
+        0.0,
+        0.3694
+       ]
+      }
+     },
+     "step_level": null
+    },
+    "table1 named": {
+     "parse_ok": {
+      "k": 8,
+      "n": 8,
+      "p": 1.0,
+      "ci": [
+       0.6306,
+       1.0
+      ]
+     },
+     "valid": {
+      "k": 1,
+      "n": 8,
+      "p": 0.125,
+      "ci": [
+       0.0032,
+       0.5265
+      ]
+     },
+     "clean": {
+      "k": 0,
+      "n": 8,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.3694
+      ]
+     },
+     "exact": {
+      "k": 0,
+      "n": 8,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.3694
+      ]
+     },
+     "agreement": {
+      "mean": 0.3333,
+      "n": 3,
+      "ci": [
+       0.0,
+       1.0
+      ]
+     },
+     "r3_balanced": null,
+     "exact_by_gold_in_train": {
+      "True": {
+       "k": 0,
+       "n": 0,
+       "p": null,
+       "ci": null
+      },
+      "False": {
+       "k": 0,
+       "n": 8,
+       "p": 0.0,
+       "ci": [
+        0.0,
+        0.3694
+       ]
+      }
+     },
+     "step_level": null
+    },
+    "test": {
+     "parse_ok": {
+      "k": 200,
+      "n": 200,
+      "p": 1.0,
+      "ci": [
+       0.9817,
+       1.0
+      ]
+     },
+     "valid": {
+      "k": 26,
+      "n": 200,
+      "p": 0.13,
+      "ci": [
+       0.0867,
+       0.1847
+      ]
+     },
+     "clean": {
+      "k": 15,
+      "n": 200,
+      "p": 0.075,
+      "ci": [
+       0.0426,
+       0.1207
+      ]
+     },
+     "exact": {
+      "k": 0,
+      "n": 200,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.0183
+      ]
+     },
+     "agreement": {
+      "mean": 0.1133,
+      "n": 200,
+      "ci": [
+       0.0717,
+       0.1542
+      ]
+     },
+     "r3_balanced": 0.51,
+     "exact_by_gold_in_train": {
+      "True": {
+       "k": 0,
+       "n": 200,
+       "p": 0.0,
+       "ci": [
+        0.0,
+        0.0183
+       ]
+      },
+      "False": {
+       "k": 0,
+       "n": 0,
+       "p": null,
+       "ci": null
+      }
+     },
+     "step_level": null
+    }
+   },
+   "sft_endpoint": {
+    "t8_decoy decoy_first": {
+     "parse_ok": {
+      "k": 25,
+      "n": 25,
+      "p": 1.0,
+      "ci": [
+       0.8628,
+       1.0
+      ]
+     },
+     "valid": {
+      "k": 25,
+      "n": 25,
+      "p": 1.0,
+      "ci": [
+       0.8628,
+       1.0
+      ]
+     },
+     "clean": {
+      "k": 25,
+      "n": 25,
+      "p": 1.0,
+      "ci": [
+       0.8628,
+       1.0
+      ]
+     },
+     "exact": {
+      "k": 25,
+      "n": 25,
+      "p": 1.0,
+      "ci": [
+       0.8628,
+       1.0
+      ]
+     },
+     "agreement": {
+      "mean": 1.0,
+      "n": 25,
+      "ci": [
+       1.0,
+       1.0
+      ]
+     },
+     "r3_balanced": null,
+     "exact_by_gold_in_train": {
+      "True": {
+       "k": 25,
+       "n": 25,
+       "p": 1.0,
+       "ci": [
+        0.8628,
+        1.0
+       ]
+      },
+      "False": {
+       "k": 0,
+       "n": 0,
+       "p": null,
+       "ci": null
+      }
+     },
+     "algorithm_choice": {
+      "k": 25,
+      "n": 25,
+      "p": 1.0,
+      "ci": [
+       0.8628,
+       1.0
+      ]
+     },
+     "forbidden_choice": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "main_rule": {
+      "k": 25,
+      "n": 25,
+      "p": 1.0,
+      "ci": [
+       0.8628,
+       1.0
+      ]
+     },
+     "step_level": null
+    },
+    "t8_decoy key_first": {
+     "parse_ok": {
+      "k": 25,
+      "n": 25,
+      "p": 1.0,
+      "ci": [
+       0.8628,
+       1.0
+      ]
+     },
+     "valid": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "clean": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "exact": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "agreement": {
+      "mean": 0.0,
+      "n": 25,
+      "ci": [
+       0.0,
+       0.0
+      ]
+     },
+     "r3_balanced": null,
+     "exact_by_gold_in_train": {
+      "True": {
+       "k": 0,
+       "n": 0,
+       "p": null,
+       "ci": null
+      },
+      "False": {
+       "k": 0,
+       "n": 25,
+       "p": 0.0,
+       "ci": [
+        0.0,
+        0.1372
+       ]
+      }
+     },
+     "algorithm_choice": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "forbidden_choice": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "main_rule": {
+      "k": 25,
+      "n": 25,
+      "p": 1.0,
+      "ci": [
+       0.8628,
+       1.0
+      ]
+     },
+     "contrary": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "step_level": null
+    },
+    "t9_reuse reuse_fails": {
+     "parse_ok": {
+      "k": 25,
+      "n": 25,
+      "p": 1.0,
+      "ci": [
+       0.8628,
+       1.0
+      ]
+     },
+     "valid": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "clean": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "exact": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "agreement": {
+      "mean": 0.0,
+      "n": 25,
+      "ci": [
+       0.0,
+       0.0
+      ]
+     },
+     "r3_balanced": null,
+     "exact_by_gold_in_train": {
+      "True": {
+       "k": 0,
+       "n": 0,
+       "p": null,
+       "ci": null
+      },
+      "False": {
+       "k": 0,
+       "n": 25,
+       "p": 0.0,
+       "ci": [
+        0.0,
+        0.1372
+       ]
+      }
+     },
+     "algorithm_choice": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "forbidden_choice": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "step_level": null
+    },
+    "t9_reuse reuse_ok": {
+     "parse_ok": {
+      "k": 25,
+      "n": 25,
+      "p": 1.0,
+      "ci": [
+       0.8628,
+       1.0
+      ]
+     },
+     "valid": {
+      "k": 21,
+      "n": 25,
+      "p": 0.84,
+      "ci": [
+       0.6392,
+       0.9546
+      ]
+     },
+     "clean": {
+      "k": 21,
+      "n": 25,
+      "p": 0.84,
+      "ci": [
+       0.6392,
+       0.9546
+      ]
+     },
+     "exact": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "agreement": {
+      "mean": 0.84,
+      "n": 25,
+      "ci": [
+       0.68,
+       0.96
+      ]
+     },
+     "r3_balanced": null,
+     "exact_by_gold_in_train": {
+      "True": {
+       "k": 0,
+       "n": 0,
+       "p": null,
+       "ci": null
+      },
+      "False": {
+       "k": 0,
+       "n": 25,
+       "p": 0.0,
+       "ci": [
+        0.0,
+        0.1372
+       ]
+      }
+     },
+     "algorithm_choice": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "forbidden_choice": {
+      "k": 0,
+      "n": 25,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.1372
+      ]
+     },
+     "step_level": null
+    },
+    "table1 anon": {
+     "parse_ok": {
+      "k": 8,
+      "n": 8,
+      "p": 1.0,
+      "ci": [
+       0.6306,
+       1.0
+      ]
+     },
+     "valid": {
+      "k": 0,
+      "n": 8,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.3694
+      ]
+     },
+     "clean": {
+      "k": 0,
+      "n": 8,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.3694
+      ]
+     },
+     "exact": {
+      "k": 0,
+      "n": 8,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.3694
+      ]
+     },
+     "agreement": {
+      "mean": 0.0,
+      "n": 3,
+      "ci": [
+       0.0,
+       0.0
+      ]
+     },
+     "r3_balanced": null,
+     "exact_by_gold_in_train": {
+      "True": {
+       "k": 0,
+       "n": 0,
+       "p": null,
+       "ci": null
+      },
+      "False": {
+       "k": 0,
+       "n": 8,
+       "p": 0.0,
+       "ci": [
+        0.0,
+        0.3694
+       ]
+      }
+     },
+     "step_level": null
+    },
+    "table1 named": {
+     "parse_ok": {
+      "k": 8,
+      "n": 8,
+      "p": 1.0,
+      "ci": [
+       0.6306,
+       1.0
+      ]
+     },
+     "valid": {
+      "k": 0,
+      "n": 8,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.3694
+      ]
+     },
+     "clean": {
+      "k": 0,
+      "n": 8,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.3694
+      ]
+     },
+     "exact": {
+      "k": 0,
+      "n": 8,
+      "p": 0.0,
+      "ci": [
+       0.0,
+       0.3694
+      ]
+     },
+     "agreement": {
+      "mean": 0.0,
+      "n": 3,
+      "ci": [
+       0.0,
+       0.0
+      ]
+     },
+     "r3_balanced": null,
+     "exact_by_gold_in_train": {
+      "True": {
+       "k": 0,
+       "n": 0,
+       "p": null,
+       "ci": null
+      },
+      "False": {
+       "k": 0,
+       "n": 8,
+       "p": 0.0,
+       "ci": [
+        0.0,
+        0.3694
+       ]
+      }
+     },
+     "step_level": null
+    },
+    "test": {
+     "parse_ok": {
+      "k": 200,
+      "n": 200,
+      "p": 1.0,
+      "ci": [
+       0.9817,
+       1.0
+      ]
+     },
+     "valid": {
+      "k": 200,
+      "n": 200,
+      "p": 1.0,
+      "ci": [
+       0.9817,
+       1.0
+      ]
+     },
+     "clean": {
+      "k": 200,
+      "n": 200,
+      "p": 1.0,
+      "ci": [
+       0.9817,
+       1.0
+      ]
+     },
+     "exact": {
+      "k": 200,
+      "n": 200,
+      "p": 1.0,
+      "ci": [
+       0.9817,
+       1.0
+      ]
+     },
+     "agreement": {
+      "mean": 1.0,
+      "n": 200,
+      "ci": [
+       1.0,
+       1.0
+      ]
+     },
+     "r3_balanced": 1.0,
+     "exact_by_gold_in_train": {
+      "True": {
+       "k": 200,
+       "n": 200,
+       "p": 1.0,
+       "ci": [
+        0.9817,
+        1.0
+       ]
+      },
+      "False": {
+       "k": 0,
+       "n": 0,
+       "p": null,
+       "ci": null
+      }
+     },
+     "step_level": null
+    }
+   }
+  }
+ },
+ "invariance": {},
+ "contrasts": {
+  "v1 t8_decoy decoy_first: base vs sft_endpoint": {
+   "n": 25,
+   "first_only": 0,
+   "second_only": 25,
+   "p": 0.0,
+   "p_exact": 5.96046447753906e-08
+  },
+  "v1 t8_decoy key_first: base vs sft_endpoint": {
+   "n": 25,
+   "first_only": 0,
+   "second_only": 0,
+   "p": 1.0,
+   "p_exact": 1.0
+  },
+  "v1 t9_reuse reuse_fails: base vs sft_endpoint": {
+   "n": 25,
+   "first_only": 0,
+   "second_only": 0,
+   "p": 1.0,
+   "p_exact": 1.0
+  },
+  "v1 t9_reuse reuse_ok: base vs sft_endpoint": {
+   "n": 25,
+   "first_only": 0,
+   "second_only": 0,
+   "p": 1.0,
+   "p_exact": 1.0
+  },
+  "v1 table1 anon: base vs sft_endpoint": {
+   "n": 8,
+   "first_only": 0,
+   "second_only": 0,
+   "p": 1.0,
+   "p_exact": 1.0
+  },
+  "v1 table1 named: base vs sft_endpoint": {
+   "n": 8,
+   "first_only": 0,
+   "second_only": 0,
+   "p": 1.0,
+   "p_exact": 1.0
+  },
+  "v1 test: base vs sft_endpoint": {
+   "n": 200,
+   "first_only": 0,
+   "second_only": 200,
+   "p": 0.0,
+   "p_exact": 1.2446030555722242e-60
+  }
+ },
+ "decisions": {
+  "pending": "v1: 100 of 200 scores missing; permuted: 600 of 600 scores missing"
+ },
+ "novelty": {
+  "v1": {
+   "base": {
+    "True": {
+     "k": 0,
+     "n": 225,
+     "p": 0.0,
+     "ci": [
+      0.0,
+      0.0163
+     ]
+    },
+    "False": {
+     "k": 0,
+     "n": 91,
+     "p": 0.0,
+     "ci": [
+      0.0,
+      0.0397
+     ]
+    }
+   },
+   "sft_endpoint": {
+    "True": {
+     "k": 225,
+     "n": 225,
+     "p": 1.0,
+     "ci": [
+      0.9837,
+      1.0
+     ]
+    },
+    "False": {
+     "k": 0,
+     "n": 91,
+     "p": 0.0,
+     "ci": [
+      0.0,
+      0.0397
+     ]
+    }
+   }
+  }
+ },
+ "r3_by_tier": {
+  "v1": {
+   "base": {
+    "t8_decoy": 0.36,
+    "t9_reuse": null
+   },
+   "sft_endpoint": {
+    "t8_decoy": 1.0,
+    "t9_reuse": null
+   }
+  }
+ }
+}
