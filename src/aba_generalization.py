@@ -149,6 +149,35 @@ def _pred_of(atom: str) -> Optional[str]:
     return m.group(1)
 
 
+_VAR_RE = re.compile(r'\b[A-Z_]\w*\b')
+_CMP_RE = re.compile(r'^([^()]+?)\s*(!=|<=|>=|=|<|>)\s*([^()]+)$')
+
+
+def _unsafe_vars(rule) -> List[str]:
+    """Variables of `rule` that Clingo cannot bind: none of its positive atoms
+    holds them and no `=` chain ties them to a bound term ('_' is anonymous)."""
+    vars_of = lambda t: set(_VAR_RE.findall(t)) - {"_"}
+    bound, eqs = set(), []
+    for b in rule.body:
+        b = b.strip()
+        m = _CMP_RE.match(b)
+        if m:
+            if m.group(2) == "=":
+                eqs.append((vars_of(m.group(1)), vars_of(m.group(3)), m.group(1).strip(),
+                            m.group(3).strip()))
+        elif not b.startswith("not "):
+            bound |= vars_of(b)
+    grew = True
+    while grew:                                     # X = t binds X once t is bound
+        grew = False
+        for lv, rv, lt, rt in eqs:
+            for var, term, other in ((lt, rv, lv), (rt, lv, rv)):
+                if var in other and len(other) == 1 and term <= bound and var not in bound:
+                    bound.add(var)
+                    grew = True
+    return sorted(vars_of(" ".join([rule.head, *rule.body])) - bound)
+
+
 def wellformed_violations(
     candidate: ABAFramework,
     background: ABAFramework,
@@ -172,6 +201,9 @@ def wellformed_violations(
             NON-assumption predicate. Re-listing an EXISTING background
             assumption is legal reuse (Definition 4) and is NOT a violation,
             even though the parser files it under "NEW ASSUMPTIONS".
+      safety: every variable of a NEW rule occurs in a positive body atom or
+            an equality to a constant; Clingo cannot ground the ASP encoding
+            (Definition 2(a)) of a rule that breaks this.
     """
     viol: List[str] = []
 
@@ -202,6 +234,10 @@ def wellformed_violations(
         elif hp in bg_lang and hp not in learn:
             viol.append(f"condition (ii) violated: head '{hp}' is a background "
                         f"predicate not in the learnable set")
+        free = _unsafe_vars(r)
+        if free:
+            viol.append(f"unsafe rule: {', '.join(free)} not bound in the body "
+                        f"of '{r.to_prolog()}'")
 
     for a in background.assumptions:
         old_c = background.contraries.get(a)

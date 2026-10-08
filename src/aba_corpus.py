@@ -14,6 +14,10 @@ Layout of a built corpus (`build_corpus.py` writes it):
                         and anonymised: problems, traces, eval; never trained on
     MANIFEST.json/.md   provenance, counts, gates, pre-registrations
 
+`build_permuted` writes an evaluation-only corpus (problems.jsonl, eval.jsonl,
+MANIFEST.json/.md): a built corpus's test and held-out problems, re-posed under
+a seeded derangement of each problem's predicate names.
+
 Problems are posed whole, as in Definition 1: prompt and gold trace see all of
 a problem's examples. Leakage is prevented between problems instead: no two
 accepted problems, in any split, share a structural signature, and none shares
@@ -28,20 +32,22 @@ from __future__ import annotations
 import collections
 import hashlib
 import json
+import random
 import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Tuple
 
 from src.aba_types import ABAFramework, LearningProblem, Rule
-from src.aba_anonymize import anonymize_problem, rewrite_atom, rewrite_rule
+from src.aba_anonymize import (NameMap, anonymize_problem, collect_symbols,
+                               rewrite_atom, rewrite_rule)
 from src.aba_dataset import (
     CORPUS_TIERS, CORPUS_TIER_SPEC_VERSION, HELDOUT_TIERS,
     generate_corpus_problem, generate_heldout_problem, check_heldout,
 )
 from src.aba_sft import sft_example, gold_self_score, Untrainable
 from src.aba_replay import check_example
-from src.aba_prompts import SFT_PROMPT_VERSION
+from src.aba_prompts import SFT_PROMPT_VERSION, _parse_rule_line
 from src.aba_tracelog import solve_and_log
 from src.aba_zenodo import (TABLE1, ZENODO_DOI, ZENODO_MD5, RELEASE,
                             load_table1, r2_gap)
@@ -657,6 +663,207 @@ def _manifest_md(m: Dict) -> str:
                      f"{x['new_rules']} | {x['new_assumptions']} | "
                      f"{'—' if x['anon_same_steps'] is None else x['anon_same_steps']} | "
                      f"{x['r2_gap']} |")
+    L += ["", "## Notes", ""] + [f"- {n}" for n in m["notes"]]
+    L += ["", "## Files (sha256)", ""]
+    L += [f"- `{f}` {h}" for f, h in m["sha256"].items()]
+    return "\n".join(L) + "\n"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Name-permuted evaluation set
+# ─────────────────────────────────────────────────────────────────────────────
+
+PERMUTED_SPLITS = ("test", "heldout")
+_PRED_CALL = re.compile(r"\b([a-z]\w*)\(")
+
+PERMUTED_NOTES = [
+    "The source's test and held-out problems, each re-posed with its predicate "
+    "symbols renamed by a derangement of themselves; Table 1 is not included. "
+    "Never trained on: there are no sft_*.jsonl.",
+    "Constants, and the order of rules, assumptions, contraries, examples, "
+    "learnable predicates and domain, are the source's; dom is never renamed. "
+    "The inverse permutation gives the source problem back (asserted).",
+    "problem_id, tier, split and class are the source's: each row pairs with "
+    "the source eval row of the same id.",
+    "The gold is the reference's run on the permuted problem. "
+    "gold_equal_renamed counts the golds equal to the source gold with its "
+    "predicates renamed (alpha_k / c_alpha_k are minted by the algorithm and "
+    "keep their names); a problem absent from gold_differences is equal on both "
+    "targets.",
+    "permutation maps the source's predicate names to this problem's; "
+    "name_map is the source name_map composed with it.",
+    "Held-out meta.answers are the source's, renamed; expected, forbidden and "
+    "half are unchanged.",
+    "TOKENS.json (python train_sft.py --audit --corpus <this corpus>) has no "
+    "arm matching and inherits the source's max_new_tokens, so both sets are "
+    "generated under one budget.",
+]
+
+
+def derangement(names: List[str], seed: str) -> Dict[str, str]:
+    """A uniformly random permutation of `names` with no fixed point, by rejection."""
+    assert len(set(names)) == len(names) > 1, names
+    rng = random.Random(seed)
+    while True:
+        new = list(names)
+        rng.shuffle(new)
+        if all(a != b for a, b in zip(names, new)):
+            return dict(zip(names, new))
+
+
+def rename_preds(text: str, perm: Dict[str, str]) -> str:
+    """`text` with every predicate symbol in `perm` renamed, all at once."""
+    return _PRED_CALL.sub(lambda m: perm.get(m.group(1), m.group(1)) + "(", text)
+
+
+def _gold_diff(want: str, got: str) -> Optional[Dict]:
+    """The first line where `got` departs from `want`; None if they are equal."""
+    if want == got:
+        return None
+    a, b = want.split("\n"), got.split("\n")
+    k = next((i for i, (x, y) in enumerate(zip(a, b)) if x != y),
+             min(len(a), len(b)))
+    return {"line": k + 1, "renamed_source": a[k] if k < len(a) else None,
+            "permuted": b[k] if k < len(b) else None}
+
+
+def build_permuted(source: Path, out_dir: Path) -> Dict:
+    """Re-pose `source`'s test and held-out problems under predicate-name
+    derangements, verify and write them; return the manifest.
+
+    One derangement per problem, seeded on its id, of its predicate symbols in
+    `collect_symbols` order. A failed replay or a held-out answer that is not
+    the reference's stops the build.
+    """
+    import clingo
+    import platform
+    from src.aba_tracelog import _git_rev
+
+    assert out_dir.resolve() != source.resolve(), "would overwrite the source"
+    src_m = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    read = ("problems.jsonl", "eval.jsonl")
+    src_sha = {f: _sha256(source / f) for f in read}
+    assert src_sha == {f: src_m["sha256"][f] for f in read}, \
+        f"{source} differs from its MANIFEST.json"
+    load = lambda f: [json.loads(x) for x in
+                      (source / f).read_text(encoding="utf-8").splitlines()]
+    rows = {r["problem_id"]: r for r in load("problems.jsonl")}
+    evals = [e for e in load("eval.jsonl") if e["split"] in PERMUTED_SPLITS]
+    seed = f"{src_m['config']['base_seed']}-permuted"
+    targets = ("endpoint_target", "trace_target")
+
+    pairs: List[Tuple[Dict, Accepted]] = []        # (source eval row, permuted)
+    replay: Dict[str, Optional[str]] = {}
+    expected: Dict[str, bool] = {}
+    diffs: Dict[str, Dict] = {}
+    for ev in evals:
+        src = rows[ev["problem_id"]]
+        pid = src["problem_id"]
+        perm = derangement(collect_symbols(problem_from_dict(src["problem"]))[0],
+                           f"{seed}:{pid}")
+        nm = NameMap(pred_map=perm, const_map={})
+        problem, _ = anonymize_problem(problem_from_dict(src["problem"]), name_map=nm)
+        problem.problem_id = pid
+        back = problem_to_dict(anonymize_problem(problem, name_map=nm.inverse())[0])
+        assert {**back, "problem_id": pid} == src["problem"], f"{pid}: not a renaming"
+        ex = sft_example(problem)
+        replay[pid] = check_example(ex, problem)
+        assert replay[pid] is None, (pid, replay[pid])
+        meta = src["meta"]
+        if src["split"] == "heldout":
+            answers = {k: ([_parse_rule_line(r) for r in v["new_rules"]], v["contraries"])
+                       for k, v in meta["answers"].items()}
+            meta = {**meta, "answers": _anon_answers({"answers": answers}, nm)}
+            got = sorted(r.to_prolog() for r in ex["solution"].new_rules)
+            expected[pid] = got == sorted(meta["answers"][meta["expected"]]["new_rules"])
+            assert expected[pid], (pid, got)
+        row = {**src, "signature": structural_signature(problem),
+               "problem": problem_to_dict(problem),
+               "name_map": {"pred": {k: perm[v] for k, v in src["name_map"]["pred"].items()},
+                            "const": src["name_map"]["const"]},
+               "meta": meta, "permutation": perm, "source": source.as_posix()}
+        pairs.append((ev, Accepted(row, {}, ex, problem)))   # no traces.jsonl
+        d = {t: _gold_diff(rename_preds(ev[t], perm), ex[t]) for t in targets}
+        if any(d.values()):
+            diffs[pid] = {t: v for t, v in d.items() if v}
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    evals_out = [_eval_row(a) for _, a in pairs]
+    _jsonl(out_dir / "problems.jsonl", [a.row for _, a in pairs])
+    _jsonl(out_dir / "eval.jsonl", evals_out)
+
+    counts = collections.defaultdict(collections.Counter)
+    for _, a in pairs:
+        counts[a.row["tier"]][f"{a.row['split']}/{a.row['class']}"] += 1
+    gates = {
+        "every permutation is a derangement and a bijection": all(
+            sorted(p) == sorted(p.values())
+            == sorted(collect_symbols(problem_from_dict(rows[pid]["problem"]))[0])
+            and all(k != v for k, v in p.items())
+            for pid, p in ((a.row["problem_id"], a.row["permutation"])
+                           for _, a in pairs)),
+        "check_example passes on every problem": (
+            len(replay) == len(pairs) and not any(replay.values())),
+        "held-out expected answer is the reference's": (
+            len(expected) == sum(a.row["split"] == "heldout" for _, a in pairs)
+            and all(expected.values())),
+        "prompts differ from the source prompts on every row": all(
+            e["prompt"] != ev["prompt"] for (ev, _), e in zip(pairs, evals_out)),
+        "no signature changes": all(
+            a.row["signature"] == rows[a.row["problem_id"]]["signature"]
+            for _, a in pairs),
+    }
+    same = {t: len(pairs) - sum(t in d for d in diffs.values()) for t in targets}
+    files = ("problems.jsonl", "eval.jsonl")
+    manifest = {
+        "corpus_version": out_dir.name,
+        "code_rev": _git_rev(),
+        "clingo": clingo.__version__,
+        "python": platform.python_version(),
+        "prompt_version": SFT_PROMPT_VERSION,
+        "source": {"corpus": source.as_posix(),
+                   "corpus_version": src_m["corpus_version"],
+                   "code_rev": src_m["code_rev"], "sha256": src_sha},
+        "splits": list(PERMUTED_SPLITS),
+        "seed_scheme": f"random.Random(f'{seed}:{{problem_id}}'); a copy of the "
+                       "problem's predicate symbols (collect_symbols order) is "
+                       "shuffled until no symbol maps to itself",
+        "counts": {t: dict(c) for t, c in sorted(counts.items())},
+        "gold_equal_renamed": {**same, "both": len(pairs) - len(diffs),
+                               "n": len(pairs)},
+        "gold_differences": diffs,
+        "gates": gates,
+        "notes": PERMUTED_NOTES,
+        "sha256": {f: _sha256(out_dir / f) for f in files},
+    }
+    (out_dir / "MANIFEST.json").write_text(
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    (out_dir / "MANIFEST.md").write_text(_permuted_manifest_md(manifest),
+                                         encoding="utf-8")
+    return manifest
+
+
+def _permuted_manifest_md(m: Dict) -> str:
+    s = m["source"]
+    L = [f"# Corpus {m['corpus_version']}", "",
+         f"- code rev: `{m['code_rev']}`; clingo {m['clingo']}; "
+         f"python {m['python']}",
+         f"- prompt: {m['prompt_version']}; splits: {', '.join(m['splits'])}",
+         f"- source: `{s['corpus']}` (corpus {s['corpus_version']}, code rev "
+         f"`{s['code_rev']}`); "
+         + "; ".join(f"`{f}` {h}" for f, h in s["sha256"].items()),
+         f"- seed: {m['seed_scheme']}", "", "## Gates", ""]
+    L += [f"- [{'x' if ok else ' '}] {g}" for g, ok in m["gates"].items()]
+    L += ["", "## Counts", "", "| tier | split/class | n |", "|---|---|---|"]
+    for t, c in m["counts"].items():
+        L += [f"| {t} | {k} | {v} |" for k, v in sorted(c.items())]
+    g = m["gold_equal_renamed"]
+    L += ["", "## Gold vs the source gold renamed (reported, not gated)", "",
+          f"Equal: endpoint {g['endpoint_target']}/{g['n']}, trace "
+          f"{g['trace_target']}/{g['n']}, both {g['both']}/{g['n']}."]
+    for pid, d in m["gold_differences"].items():
+        L += [f"- {pid} {t} line {x['line']}: `{x['renamed_source']}` -> "
+              f"`{x['permuted']}`" for t, x in d.items()]
     L += ["", "## Notes", ""] + [f"- {n}" for n in m["notes"]]
     L += ["", "## Files (sha256)", ""]
     L += [f"- `{f}` {h}" for f, h in m["sha256"].items()]

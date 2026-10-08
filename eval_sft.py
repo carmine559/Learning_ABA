@@ -97,8 +97,12 @@ def _mean(xs) -> Optional[float]:
 
 
 def _balanced(c: collections.Counter) -> Optional[float]:
-    """Mean of the recall on truth-yes and on truth-no; 0.5 for any constant answer."""
-    yes, no = c["yes/yes"] + c["yes/no"], c["no/no"] + c["no/yes"]
+    """Mean of the recall on truth-yes and on truth-no; 0.5 for any constant answer.
+
+    An omitted decision is a miss.
+    """
+    yes = c["yes/yes"] + c["yes/no"] + c["yes/omitted"]
+    no = c["no/no"] + c["no/yes"] + c["no/omitted"]
     return round((c["yes/yes"] / yes + c["no/no"] / no) / 2, 4) if yes and no else None
 
 
@@ -124,13 +128,27 @@ def _aggregate(rs: List[Dict]) -> Dict:
     audits = [r["audit"] for r in rs if r["audit"]]
     if audits:
         conf = {k: collections.Counter() for k in YES_NO}
+        kinds, omitted = collections.defaultdict(lambda: [0, 0]), collections.Counter()
+        no_truth = collections.Counter()
         for au in audits:
             for k, c in au["confusion"].items():
                 conf[k].update(c)
+            for k, (right, total) in au["by_kind"].items():
+                kinds[k][0] += right
+                kinds[k][1] += total
+            omitted.update(au["omitted"])
+            no_truth.update(au["omitted_no_truth"])
+        total = sum(t for _, t in kinds.values())
         out["audit"] = {"n": len(audits),
                         "accuracy": _mean(au["accuracy"] for au in audits),
+                        "written_accuracy": _mean(au["written_accuracy"] for au in audits),
+                        "omitted_share": round(sum(omitted.values()) / total, 4) if total else None,
                         "any_illegal": _mean(bool(au["illegal"]) for au in audits),
-                        "balanced": {k: _balanced(c) for k, c in conf.items()}}
+                        "halted": _mean(bool(au["gave_up"]) for au in audits),
+                        "by_kind": {k: round(r / t, 4) for k, (r, t) in kinds.items()},
+                        "omitted": dict(omitted),
+                        "balanced": {k: _balanced(c) for k, c in conf.items()},
+                        "balanced_excludes": dict(no_truth)}
     return out
 
 

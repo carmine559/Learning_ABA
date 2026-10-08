@@ -1,6 +1,7 @@
 """LoRA SFT of one arm on the corpus: endpoint or trace, identical otherwise.
 
     python train_sft.py --audit                  # once, before any run: TOKENS.json
+    python train_sft.py --audit --corpus corpus/v1-permuted   # evaluation only
     python train_sft.py --arm endpoint --out runs/sft_endpoint
     python train_sft.py --arm trace    --out runs/sft_trace
     python train_sft.py --arm endpoint --match tokens --out runs/sft_endpoint_tokens
@@ -50,12 +51,14 @@ def audit(corpus: Path, model: str) -> int:
                          "if the corpus or the model changed")
     t = token_audit(corpus, model)
     _write(path, t)
-    m = t["arm_matching"]
-    print(f"wrote {path}\n  longest row {t['longest_row']} tokens (context {t['context']})"
-          f"\n  target tokens on train: trace {m['trace_target_tokens_train']}, "
-          f"endpoint {m['endpoint_target_tokens_train']}, ratio {m['ratio']}"
-          f"\n  secondary endpoint epochs {m['secondary_endpoint_epochs']}"
-          f"\n  max_new_tokens {t['max_new_tokens']}")
+    print(f"wrote {path}\n  longest row {t['longest_row']} tokens (context {t['context']})")
+    m = t.get("arm_matching")                  # None for an evaluation-only corpus
+    if m:
+        print(f"  target tokens on train: trace {m['trace_target_tokens_train']}, "
+              f"endpoint {m['endpoint_target_tokens_train']}, ratio {m['ratio']}"
+              f"\n  secondary endpoint epochs {m['secondary_endpoint_epochs']}")
+    print(f"  max_new_tokens {t['max_new_tokens']}"
+          + (f" (from {t['max_new_tokens_from']})" if "max_new_tokens_from" in t else ""))
     return 0
 
 

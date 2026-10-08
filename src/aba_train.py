@@ -11,7 +11,10 @@ closing token only.
 The token audit (`python train_sft.py --audit`) writes corpus/<v>/TOKENS.json
 once, before any run: token counts per file, split and target, and the
 pre-registered secondary arm matching (MANIFEST `arm_matching`): the trace/
-endpoint ratio of supervised target tokens on the train split.
+endpoint ratio of supervised target tokens on the train split. An
+evaluation-only corpus (no sft_*.jsonl) has no arm matching, and its
+max_new_tokens is that of its MANIFEST `source`, so both are generated under
+one budget.
 """
 from __future__ import annotations
 
@@ -112,11 +115,13 @@ def token_audit(corpus: Path, model: str) -> Dict:
     tok = AutoTokenizer.from_pretrained(mid)
     names = [n for n in AUDITED if (corpus / n).exists()]
     sha = verified(corpus, names)
+    trained = any(f"sft_{a}.jsonl" in names for a in ARMS)
 
-    arms = {a: rows(corpus, f"sft_{a}.jsonl") for a in ARMS}
-    assert ([(r["problem_id"], r["split"], r["prompt"]) for r in arms["trace"]]
-            == [(r["problem_id"], r["split"], r["prompt"]) for r in arms["endpoint"]]), \
-        "the two arms must pose the same problems, in the same order, with one prompt"
+    if trained:
+        arms = {a: rows(corpus, f"sft_{a}.jsonl") for a in ARMS}
+        assert ([(r["problem_id"], r["split"], r["prompt"]) for r in arms["trace"]]
+                == [(r["problem_id"], r["split"], r["prompt"]) for r in arms["endpoint"]]), \
+            "the two arms must pose the same problems, in the same order, with one prompt"
 
     files = {}
     for name in names:
@@ -132,17 +137,30 @@ def token_audit(corpus: Path, model: str) -> Dict:
     longest = max(s["total_max"] for f in files.values() for d in f.values() for s in d.values())
     assert longest < context, f"a row of {longest} tokens exceeds the context ({context})"
 
-    trace = files["sft_trace.jsonl"]["train"]["target"]["target_sum"]
-    endpoint = files["sft_endpoint.jsonl"]["train"]["target"]["target_sum"]
     gold = max(s["trace_target"]["target_max"] for name in ("eval.jsonl", "table1_eval.jsonl")
                if name in files for s in files[name].values())
-    return {
+    audit = {
         "model": mid, "revision": revision(mid), "versions": versions(),
         "chat": "one user turn (the prompt), Qwen's default system turn, then the "
                 "target and <|im_end|>; target tokens include <|im_end|>",
         "sha256": sha,
         "context": context, "longest_row": longest,
         "files": files,
+    }
+    if not trained:
+        # Evaluation only: the source corpus's budget, so both sets get the same one.
+        src = Path(json.loads((corpus / "MANIFEST.json").read_text(encoding="utf-8"))
+                   ["source"]["corpus"])
+        budget = load_audit(src, model)["max_new_tokens"]
+        assert budget >= 2 * gold, f"{src}'s budget {budget} is under twice this corpus's " \
+                                   f"longest gold trace ({gold} tokens)"
+        return {**audit, "max_new_tokens": budget,
+                "max_new_tokens_from": (src / "TOKENS.json").as_posix()}
+
+    trace = files["sft_trace.jsonl"]["train"]["target"]["target_sum"]
+    endpoint = files["sft_endpoint.jsonl"]["train"]["target"]["target_sum"]
+    return {
+        **audit,
         "arm_matching": {
             "trace_target_tokens_train": trace,
             "endpoint_target_tokens_train": endpoint,
