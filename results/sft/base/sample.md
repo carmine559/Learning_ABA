@@ -1,4 +1,4 @@
-# Hand audit: 20 rows of results/sft/base
+# Hand audit: 20 rows of results\sft\base
 
 ## t1_base_0017 (test, monotonic)
 
@@ -167,7 +167,7 @@ u(X) defeated_by t(X)
 
 ## t2_noise_0008 (test, defeasible)
 
-error `illegal_transformation`, finish `stop`, valid True, clean True, exact False
+error `ok`, finish `stop`, valid True, clean True, exact False
 
 ```
 NEW RULES:
@@ -204,7 +204,7 @@ w(X) defeated_by v(X)
 
 ## t2_noise_0030 (test, defeasible)
 
-error `illegal_transformation`, finish `stop`, valid True, clean True, exact False
+error `ok`, finish `stop`, valid True, clean True, exact False
 
 ```
 NEW RULES:
@@ -646,7 +646,7 @@ The new rule ensures that the positive examples are derivable and the negative e
 
 ## t4_nested_0037 (test, monotonic)
 
-error `illegal_transformation`, finish `stop`, valid True, clean True, exact False
+error `ok`, finish `stop`, valid True, clean True, exact False
 
 ```
 To solve this problem, we need to construct a new framework (R', A', C') that satisfies the given conditions. We will start by analyzing the positive and negative examples and the learnable predicates to derive the necessary rules and assumptions.
@@ -1344,7 +1344,7 @@ alpha(X) defeated_by c_alpha(X)
 
 ## t9_reuse_0042 (heldout, reuse_ok)
 
-error `illegal_transformation`, finish `stop`, valid True, clean True, exact False
+error `ok`, finish `stop`, valid True, clean True, exact False
 
 ```
 NEW RULES:

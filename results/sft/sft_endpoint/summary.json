@@ -7,15 +7,16 @@
   "clean": 0.7785,
   "exact": 0.712,
   "agreement": 0.8039,
-  "reward": 1.15,
+  "reward": 1.1503,
   "algorithm_choice": 0.25,
-  "r2_exact": 0.881,
+  "r2_exact": 0.8861,
   "r3_balanced": 0.9921,
   "trace_f1": null,
   "trace_f1_ceiling": 0.9947,
   "errors": {
    "ok": 246,
-   "not_a_solution": 70
+   "not_a_solution": 69,
+   "illformed": 1
   }
  },
  "split:heldout": {
@@ -85,7 +86,7 @@
   "agreement": 1.0,
   "reward": 1.5,
   "algorithm_choice": null,
-  "r2_exact": 0.9926,
+  "r2_exact": 1.0,
   "r3_balanced": 1.0,
   "trace_f1": null,
   "trace_f1_ceiling": 0.9916,
@@ -175,7 +176,7 @@
   "agreement": 1.0,
   "reward": 1.5,
   "algorithm_choice": null,
-  "r2_exact": 0.931,
+  "r2_exact": 1.0,
   "r3_balanced": 1.0,
   "trace_f1": null,
   "trace_f1_ceiling": 0.9581,
@@ -191,14 +192,15 @@
   "clean": 0.0,
   "exact": 0.0,
   "agreement": 0.0,
-  "reward": -0.225,
+  "reward": -0.2188,
   "algorithm_choice": null,
   "r2_exact": 0.4737,
   "r3_balanced": null,
   "trace_f1": null,
   "trace_f1_ceiling": 1.0,
   "errors": {
-   "not_a_solution": 16
+   "not_a_solution": 15,
+   "illformed": 1
   }
  },
  "tier:table1": {
@@ -209,14 +211,15 @@
   "clean": 0.0,
   "exact": 0.0,
   "agreement": 0.0,
-  "reward": -0.225,
+  "reward": -0.2188,
   "algorithm_choice": null,
   "r2_exact": 0.4737,
   "r3_balanced": null,
   "trace_f1": null,
   "trace_f1_ceiling": 1.0,
   "errors": {
-   "not_a_solution": 16
+   "not_a_solution": 15,
+   "illformed": 1
   }
  }
 }

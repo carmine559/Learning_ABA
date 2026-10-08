@@ -1,4 +1,4 @@
-# Hand audit: 20 rows of results/sft/sft_endpoint
+# Hand audit: 20 rows of results\sft\sft_endpoint
 
 ## t1_base_0017 (test, monotonic)
 

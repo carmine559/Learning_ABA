@@ -72,6 +72,14 @@ def test_changed_background_contrary_is_illformed(ref):
 def test_renamed_assumption_is_still_the_algorithms_answer(ref):
     card = score_output(ref.endpoint_target.replace("alpha_0", "abnormal"), ref)
     assert card.exact and card.clean
+    assert card.r2_bodies == {"n": 2, "exact": 2}       # c_abnormal pairs with c_alpha_0
+
+
+def test_unsafe_rule_is_illformed(ref):
+    head = ref.solution.new_rules[0].head.replace("(X)", "(Y)")
+    card = score_output(ref.endpoint_target.replace(
+        "NEW RULES:\n", f"NEW RULES:\n{head} :- dom(X).\n"), ref)
+    assert card.error == "illformed" and any("unsafe" in v for v in card.illformed)
 
 
 def test_wrong_branch_of_a_decoy_problem():
@@ -96,3 +104,41 @@ def test_one_flipped_check_is_localised(ref):
     assert audit["first_error"] == i + 1
     right, total = audit["by_kind"]["check"]
     assert right == total - 1 and audit["accuracy"] < 1.0
+
+
+@pytest.mark.parametrize("prefix,kind", [("R2? [", "check"), ("R4?", "subsume"),
+                                         ("R3 reuse:", "reuse_scan")])
+def test_omitted_decisions_are_charged(ref, prefix, kind):
+    lines = ref.trace_target.split("\n")
+    dropped = sum(ln.startswith(prefix) for ln in lines)
+    audit = score_output("\n".join(ln for ln in lines if not ln.startswith(prefix)), ref).audit
+    assert dropped and audit["omitted"] == {kind: dropped} and audit["accuracy"] < 1.0
+
+
+def test_list_markers_and_bold_are_read(ref):
+    body, block = ref.trace_target.split("\n\nNEW RULES:")
+    marked = "\n".join(f"{i}. **{ln}**" for i, ln in enumerate(body.split("\n"), 1))
+    audit = score_output(f"{marked}\n\nNEW RULES:{block}", ref).audit
+    assert audit["accuracy"] == 1.0
+    assert audit["n_decisions"] == score_output(ref.trace_target, ref).audit["n_decisions"]
+
+
+def test_a_halt_with_nothing_failing_owes_every_fact(ref):
+    body, block = ref.trace_target.split("\n\nNEW RULES:")
+    role = body.split("\nGen.")[0]
+    audit = score_output(f"{role}\nGen.\nno option works.\n\nNEW RULES:{block}", ref).audit
+    assert audit["illegal"] and not audit["gave_up"]
+    assert audit["omitted"]["subsume"] == role.count("\nR1 ") and audit["accuracy"] < 0.5
+
+
+def test_a_trace_cut_before_its_answer_is_still_audited(ref):
+    card = score_output(ref.trace_target.split("\n\nNEW RULES:")[0], ref)
+    assert card.error == "parse_error" and card.audit["accuracy"] == 1.0
+    assert not card.audit["answer_matches_trace"]
+
+
+def test_a_declaration_in_prose_is_not_a_trace(ref):
+    asm = ref.solution.new_assumptions[0]
+    card = score_output(f"I guard the rule.\n{asm} defeated_by c_{asm}\n\n"
+                        f"{ref.endpoint_target}", ref)
+    assert card.audit is None and card.error == "ok"
