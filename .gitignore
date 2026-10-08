@@ -14,11 +14,12 @@ __pycache__/
 # Raw SLURM logs; the ones worth keeping go into experiments/
 cluster/outputs/
 
-# Corpus: corpus/v1 is tracked, so giano gets it with git pull; scratch builds
-# (build_corpus.py --out corpus/<other>) stay local. The Zenodo release is GPL,
-# downloaded by build_corpus.py.
+# Corpus: corpus/v1 and corpus/v1-permuted are tracked, so giano gets them with
+# git pull; scratch builds (build_corpus.py --out corpus/<other>) stay local. The
+# Zenodo release is GPL, downloaded by build_corpus.py.
 corpus/*/*.jsonl
 !corpus/v1/*.jsonl
+!corpus/v1-permuted/*.jsonl
 corpus/zenodo/
 
 # LoRA weights (over GitHub's 100 MB limit) and checkpoints stay on scratch;
