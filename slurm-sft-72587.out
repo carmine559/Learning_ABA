@@ -1,0 +1,142 @@
+NVIDIA L40, 535.261.03, 46068 MiB
+[job 72587] arm=endpoint match=steps corpus=corpus/v1-permuted out=results/sft-permuted
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights: 100%|██████████| 339/339 [00:00<00:00, 4031.10it/s]
+[local] loaded Qwen/Qwen2.5-7B-Instruct (bfloat16) on cuda:0 + adapter runs/sft_endpoint/adapter
+generating 300 rows (0 already done), budget 3456
+  10/300  last 46 tokens in 2s
+  20/300  last 19 tokens in 1s
+  30/300  last 19 tokens in 1s
+  40/300  last 46 tokens in 2s
+  50/300  last 46 tokens in 2s
+  60/300  last 47 tokens in 2s
+  70/300  last 46 tokens in 2s
+  80/300  last 46 tokens in 2s
+  90/300  last 46 tokens in 2s
+  100/300  last 46 tokens in 2s
+  110/300  last 46 tokens in 2s
+  120/300  last 46 tokens in 2s
+  130/300  last 19 tokens in 1s
+  140/300  last 19 tokens in 1s
+  150/300  last 46 tokens in 2s
+  160/300  last 46 tokens in 2s
+  170/300  last 19 tokens in 1s
+  180/300  last 46 tokens in 2s
+  190/300  last 46 tokens in 2s
+  200/300  last 46 tokens in 2s
+  210/300  last 19 tokens in 1s
+  220/300  last 19 tokens in 1s
+  230/300  last 47 tokens in 2s
+  240/300  last 85 tokens in 4s
+  250/300  last 20 tokens in 1s
+  260/300  last 51 tokens in 2s
+  270/300  last 47 tokens in 2s
+  280/300  last 26 tokens in 1s
+  290/300  last 19 tokens in 1s
+  300/300  last 19 tokens in 1s
+
+group                 n parse_ok truncate    valid    clean    exact agreemen algorith    audit
+all                 300    1.000    0.000    0.500    0.497    0.387    0.480    0.260        -
+split:heldout       100    1.000    0.000    0.490    0.490    0.260    0.475    0.260        -
+tier:t8_decoy        50    1.000    0.000    0.740    0.740    0.520    0.720    0.520        -
+tier:t9_reuse        50    1.000    0.000    0.240    0.240    0.000    0.230    0.000        -
+split:test          200    1.000    0.000    0.505    0.500    0.450    0.483        -        -
+tier:t1_base         40    1.000    0.000    0.625    0.625    0.550    0.613        -        -
+tier:t2_noise        40    1.000    0.000    0.600    0.600    0.525    0.544        -        -
+tier:t3_domain       40    1.000    0.000    0.700    0.700    0.700    0.700        -        -
+tier:t4_nested       40    1.000    0.000    0.525    0.500    0.425    0.492        -        -
+tier:t5_twopath      40    1.000    0.000    0.075    0.075    0.050    0.065        -        -
+missing: 0 rows without a generation
+[job 72587] arm=trace match=steps corpus=corpus/v1-permuted out=results/sft-permuted
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights: 100%|██████████| 339/339 [00:00<00:00, 4137.95it/s]
+[local] loaded Qwen/Qwen2.5-7B-Instruct (bfloat16) on cuda:0 + adapter runs/sft_trace/adapter
+generating 300 rows (0 already done), budget 3456
+  10/300  last 374 tokens in 16s
+  20/300  last 403 tokens in 17s
+  30/300  last 403 tokens in 18s
+  40/300  last 336 tokens in 14s
+  50/300  last 578 tokens in 25s
+  60/300  last 391 tokens in 17s
+  70/300  last 169 tokens in 7s
+  80/300  last 387 tokens in 17s
+  90/300  last 186 tokens in 8s
+  100/300  last 382 tokens in 16s
+  110/300  last 130 tokens in 6s
+  120/300  last 130 tokens in 6s
+  130/300  last 386 tokens in 17s
+  140/300  last 334 tokens in 14s
+  150/300  last 374 tokens in 16s
+  160/300  last 147 tokens in 6s
+  170/300  last 147 tokens in 6s
+  180/300  last 365 tokens in 16s
+  190/300  last 455 tokens in 19s
+  200/300  last 455 tokens in 19s
+  210/300  last 199 tokens in 8s
+  220/300  last 208 tokens in 9s
+  230/300  last 400 tokens in 17s
+  240/300  last 413 tokens in 18s
+  250/300  last 353 tokens in 15s
+  260/300  last 417 tokens in 18s
+  270/300  last 418 tokens in 18s
+  280/300  last 238 tokens in 10s
+  290/300  last 463 tokens in 20s
+  300/300  last 426 tokens in 18s
+
+group                 n parse_ok truncate    valid    clean    exact agreemen algorith    audit
+all                 300    1.000    0.000    0.277    0.257    0.137    0.247    0.120    0.686
+split:heldout       100    1.000    0.000    0.350    0.330    0.120    0.330    0.120    0.702
+tier:t8_decoy        50    1.000    0.000    0.460    0.420    0.200    0.425    0.200    0.727
+tier:t9_reuse        50    1.000    0.000    0.240    0.240    0.040    0.235    0.040    0.676
+split:test          200    1.000    0.000    0.240    0.220    0.145    0.205        -    0.679
+tier:t1_base         40    1.000    0.000    0.325    0.300    0.125    0.212        -    0.725
+tier:t2_noise        40    1.000    0.000    0.225    0.225    0.125    0.188        -    0.637
+tier:t3_domain       40    1.000    0.000    0.300    0.275    0.250    0.292        -    0.721
+tier:t4_nested       40    1.000    0.000    0.350    0.300    0.225    0.333        -    0.727
+tier:t5_twopath      40    1.000    0.000    0.000    0.000    0.000    0.000        -    0.583
+missing: 0 rows without a generation
+[job 72587] arm=base match=steps corpus=corpus/v1-permuted out=results/sft-permuted
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights: 100%|██████████| 339/339 [00:00<00:00, 5214.40it/s]
+[local] loaded Qwen/Qwen2.5-7B-Instruct (bfloat16) on cuda:0
+generating 300 rows (0 already done), budget 3456
+  10/300  last 726 tokens in 19s
+  20/300  last 251 tokens in 7s
+  30/300  last 750 tokens in 19s
+  40/300  last 253 tokens in 7s
+  50/300  last 847 tokens in 22s
+  60/300  last 296 tokens in 8s
+  70/300  last 282 tokens in 7s
+  80/300  last 572 tokens in 15s
+  90/300  last 369 tokens in 10s
+  100/300  last 295 tokens in 8s
+  110/300  last 241 tokens in 6s
+  120/300  last 1166 tokens in 30s
+  130/300  last 1016 tokens in 26s
+  140/300  last 243 tokens in 6s
+  150/300  last 911 tokens in 23s
+  160/300  last 515 tokens in 13s
+  170/300  last 873 tokens in 22s
+  180/300  last 715 tokens in 18s
+  190/300  last 780 tokens in 20s
+  200/300  last 309 tokens in 8s
+  210/300  last 846 tokens in 22s
+  220/300  last 299 tokens in 8s
+  230/300  last 1014 tokens in 26s
+  240/300  last 796 tokens in 21s
+  250/300  last 278 tokens in 7s
+  260/300  last 1025 tokens in 26s
+  270/300  last 1209 tokens in 31s
+  280/300  last 539 tokens in 14s
+  290/300  last 914 tokens in 24s
+  300/300  last 1142 tokens in 30s
+
+group                 n parse_ok truncate    valid    clean    exact agreemen algorith    audit
+all                 300    0.993    0.007    0.057    0.023    0.000    0.044    0.000        -
+split:heldout       100    1.000    0.000    0.090    0.030    0.000    0.090    0.000        -
+tier:t8_decoy        50    1.000    0.000    0.040    0.000    0.000    0.040    0.000        -
+tier:t9_reuse        50    1.000    0.000    0.140    0.060    0.000    0.140    0.000        -
+split:test          200    0.990    0.010    0.040    0.020    0.000    0.021        -        -
+tier:t1_base         40    0.975    0.025    0.075    0.000    0.000    0.038        -        -
+tier:t2_noise        40    1.000    0.000    0.075    0.075    0.000    0.029        -        -
+tier:t3_domain       40    1.000    0.000    0.000    0.000    0.000    0.000        -        -
+tier:t4_nested       40    1.000    0.000    0.050    0.025    0.000    0.037        -        -
+tier:t5_twopath      40    0.975    0.025    0.000    0.000    0.000    0.000        -        -
+missing: 0 rows without a generation

@@ -1,0 +1,27 @@
+{
+ "model": "Qwen/Qwen2.5-7B-Instruct",
+ "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+ "adapter": "runs/sft_trace/adapter",
+ "adapter_sha256": "7361b944cd3a9e7e02961e6b0ec9e6df7ff80aa31a457bbf57382709c690e182",
+ "decoding": {
+  "greedy": true,
+  "repetition_penalty": 1.0,
+  "max_new_tokens": 3456
+ },
+ "code_rev": "17c8b6a-dirty",
+ "versions": {
+  "python": "3.11.2",
+  "torch": "2.7.1+cu118",
+  "transformers": "5.17.0",
+  "tokenizers": "0.23.2",
+  "accelerate": "1.15.0",
+  "peft": "0.21.0",
+  "clingo": "5.8.2"
+ },
+ "sha256": {
+  "problems.jsonl": "886a211ff3c43577c41d0c76df5d27485001fbdc6692b0475bec16f5e5fccb29",
+  "eval.jsonl": "ab362692f4ce7f7734fc881f9635b59fea207e3ff1cffeec80ac2a01294ca594"
+ },
+ "cuda": "11.8",
+ "gpu": "NVIDIA L40"
+}
