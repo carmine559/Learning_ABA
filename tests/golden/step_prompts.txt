@@ -1,0 +1,517 @@
+### v1-step t4_nested_0080
+### kind check
+YOUR TASK: execute ONE step of ASP-ABAlearnB (Algorithm 1, De Angelis,
+Proietti & Toni) on the problem below, at the state shown, and answer that step only.
+The state lists Rl, the rules learnt so far, without the fact rho being processed;
+with the background rules R it forms Rt (line 15). Facts are listed in the order of
+T, then of the domain. applyFolding (line 17, Definition 3) replaces the equality
+X = t of rho by the head of each background rule that holds for t by an equality
+(a fact p(t). or a rule p(X) :- X = t, ...), in the order R lists them, and last by
+dom(X); never by learnt rules. An assumption alpha(X) is relative to a body B
+(Definition 4) if a rule H :- B, alpha(X) is in Rt. The tests at lines 16 and 18
+are answered with the examples that fail in the framework's stable extension
+(positive examples not accepted, negative examples accepted), then yes if none
+fails, else no.
+
+=== BACKGROUND KNOWLEDGE (ABA framework) ===
+% Domain: dom/1 holds for each constant below, and every
+% assumption is instantiated once per constant.
+  dom(a). dom(h). dom(f). dom(g). dom(c). dom(b). dom(e). dom(d).
+
+% Rules R
+  p(a).
+  p(b).
+  p(c).
+  q(d).
+  q(e).
+  q(a).
+  q(c).
+  r(a).
+  s(a).
+  s(f).
+  s(g).
+  s(e).
+  t(f).
+  t(c).
+  t(e).
+  u(X) :- p(X), v(X).
+  w(X) :- r(X).
+
+% Assumptions A, with their contraries
+  p1(X) defeated_by u(X)
+  v(X) defeated_by w(X)
+
+=== POSITIVE EXAMPLES E+ (all accepted in ONE common stable extension) ===
+  + q1(e)
+  + q1(d)
+  + q1(a)
+
+=== NEGATIVE EXAMPLES E- (none accepted in that same extension) ===
+  - q1(h)
+  - q1(c)
+  - q1(f)
+
+=== LEARNABLE PREDICATES T ===
+  q1, u
+
+=== RULES LEARNT SO FAR (Rl, without rho) ===
+  q1(X) :- X = e.
+  q1(X) :- X = d.
+
+STEP: the test at line 18 on rho: q1(X) :- X = a.
+with rho_f: q1(X) :- p(X).
+Is ASP(<Rt u {rho_f}, A, C>, <E+, E->, {}) satisfiable?
+Answer: fails: <examples, or none>. yes.   or   ... no.
+### target
+fails: q1(c). no.
+### kind check (extra)
+YOUR TASK: execute ONE step of ASP-ABAlearnB (Algorithm 1, De Angelis,
+Proietti & Toni) on the problem below, at the state shown, and answer that step only.
+The state lists Rl, the rules learnt so far, without the fact rho being processed;
+with the background rules R it forms Rt (line 15). Facts are listed in the order of
+T, then of the domain. applyFolding (line 17, Definition 3) replaces the equality
+X = t of rho by the head of each background rule that holds for t by an equality
+(a fact p(t). or a rule p(X) :- X = t, ...), in the order R lists them, and last by
+dom(X); never by learnt rules. An assumption alpha(X) is relative to a body B
+(Definition 4) if a rule H :- B, alpha(X) is in Rt. The tests at lines 16 and 18
+are answered with the examples that fail in the framework's stable extension
+(positive examples not accepted, negative examples accepted), then yes if none
+fails, else no.
+
+=== BACKGROUND KNOWLEDGE (ABA framework) ===
+% Domain: dom/1 holds for each constant below, and every
+% assumption is instantiated once per constant.
+  dom(a). dom(h). dom(f). dom(g). dom(c). dom(b). dom(e). dom(d).
+
+% Rules R
+  p(a).
+  p(b).
+  p(c).
+  q(d).
+  q(e).
+  q(a).
+  q(c).
+  r(a).
+  s(a).
+  s(f).
+  s(g).
+  s(e).
+  t(f).
+  t(c).
+  t(e).
+  u(X) :- p(X), v(X).
+  w(X) :- r(X).
+
+% Assumptions A, with their contraries
+  p1(X) defeated_by u(X)
+  v(X) defeated_by w(X)
+
+=== POSITIVE EXAMPLES E+ (all accepted in ONE common stable extension) ===
+  + q1(e)
+  + q1(d)
+  + q1(a)
+
+=== NEGATIVE EXAMPLES E- (none accepted in that same extension) ===
+  - q1(h)
+  - q1(c)
+  - q1(f)
+
+=== LEARNABLE PREDICATES T ===
+  q1, u
+
+=== RULES LEARNT SO FAR (Rl, without rho) ===
+  q1(X) :- X = e.
+  q1(X) :- X = d.
+
+STEP: the test at line 18 on rho: q1(X) :- X = a.
+with rho_f: q1(X) :- r(X).
+Is ASP(<Rt u {rho_f}, A, C>, <E+, E->, {}) satisfiable?
+Answer: fails: <examples, or none>. yes.   or   ... no.
+### target
+fails: none. yes.
+### kind contrary_facts
+YOUR TASK: execute ONE step of ASP-ABAlearnB (Algorithm 1, De Angelis,
+Proietti & Toni) on the problem below, at the state shown, and answer that step only.
+The state lists Rl, the rules learnt so far, without the fact rho being processed;
+with the background rules R it forms Rt (line 15). Facts are listed in the order of
+T, then of the domain. applyFolding (line 17, Definition 3) replaces the equality
+X = t of rho by the head of each background rule that holds for t by an equality
+(a fact p(t). or a rule p(X) :- X = t, ...), in the order R lists them, and last by
+dom(X); never by learnt rules. An assumption alpha(X) is relative to a body B
+(Definition 4) if a rule H :- B, alpha(X) is in Rt. The tests at lines 16 and 18
+are answered with the examples that fail in the framework's stable extension
+(positive examples not accepted, negative examples accepted), then yes if none
+fails, else no.
+
+=== BACKGROUND KNOWLEDGE (ABA framework) ===
+% Domain: dom/1 holds for each constant below, and every
+% assumption is instantiated once per constant.
+  dom(a). dom(h). dom(f). dom(g). dom(c). dom(b). dom(e). dom(d).
+
+% Rules R
+  p(a).
+  p(b).
+  p(c).
+  q(d).
+  q(e).
+  q(a).
+  q(c).
+  r(a).
+  s(a).
+  s(f).
+  s(g).
+  s(e).
+  t(f).
+  t(c).
+  t(e).
+  u(X) :- p(X), v(X).
+  w(X) :- r(X).
+
+% Assumptions A, with their contraries
+  p1(X) defeated_by u(X)
+  v(X) defeated_by w(X)
+
+=== POSITIVE EXAMPLES E+ (all accepted in ONE common stable extension) ===
+  + q1(e)
+  + q1(d)
+  + q1(a)
+
+=== NEGATIVE EXAMPLES E- (none accepted in that same extension) ===
+  - q1(h)
+  - q1(c)
+  - q1(f)
+
+=== LEARNABLE PREDICATES T ===
+  q1, u
+
+=== RULES LEARNT SO FAR (Rl, without rho) ===
+  q1(X) :- X = e.
+  q1(X) :- X = d.
+
+STEP: lines 41-44 on rho_f: q1(X) :- q(X).
+A new assumption alpha_0(X), with contrary c_alpha_0(X), gives
+rho_d: q1(X) :- q(X), alpha_0(X).
+List the facts for c_alpha_0 in S := getAS(ASP(F, <E+, E->, {c_alpha_0})), where
+F = <Rt u {rho_d}, A u {alpha_0(X)}, C u {alpha_0(X) -> c_alpha_0(X)}>; lines 23-25 learn them.
+One per line: R1 c_alpha_0(X) :- X = t.   or: none.
+### target
+R1 c_alpha_0(X) :- X = c.
+### kind fold_candidates
+YOUR TASK: execute ONE step of ASP-ABAlearnB (Algorithm 1, De Angelis,
+Proietti & Toni) on the problem below, at the state shown, and answer that step only.
+The state lists Rl, the rules learnt so far, without the fact rho being processed;
+with the background rules R it forms Rt (line 15). Facts are listed in the order of
+T, then of the domain. applyFolding (line 17, Definition 3) replaces the equality
+X = t of rho by the head of each background rule that holds for t by an equality
+(a fact p(t). or a rule p(X) :- X = t, ...), in the order R lists them, and last by
+dom(X); never by learnt rules. An assumption alpha(X) is relative to a body B
+(Definition 4) if a rule H :- B, alpha(X) is in Rt. The tests at lines 16 and 18
+are answered with the examples that fail in the framework's stable extension
+(positive examples not accepted, negative examples accepted), then yes if none
+fails, else no.
+
+=== BACKGROUND KNOWLEDGE (ABA framework) ===
+% Domain: dom/1 holds for each constant below, and every
+% assumption is instantiated once per constant.
+  dom(a). dom(h). dom(f). dom(g). dom(c). dom(b). dom(e). dom(d).
+
+% Rules R
+  p(a).
+  p(b).
+  p(c).
+  q(d).
+  q(e).
+  q(a).
+  q(c).
+  r(a).
+  s(a).
+  s(f).
+  s(g).
+  s(e).
+  t(f).
+  t(c).
+  t(e).
+  u(X) :- p(X), v(X).
+  w(X) :- r(X).
+
+% Assumptions A, with their contraries
+  p1(X) defeated_by u(X)
+  v(X) defeated_by w(X)
+
+=== POSITIVE EXAMPLES E+ (all accepted in ONE common stable extension) ===
+  + q1(e)
+  + q1(d)
+  + q1(a)
+
+=== NEGATIVE EXAMPLES E- (none accepted in that same extension) ===
+  - q1(h)
+  - q1(c)
+  - q1(f)
+
+=== LEARNABLE PREDICATES T ===
+  q1, u
+
+=== RULES LEARNT SO FAR (Rl, without rho) ===
+  q1(X) :- X = e.
+  q1(X) :- X = d.
+
+STEP: applyFolding (line 17) on rho: q1(X) :- X = a.
+List every fold of rho, in order.
+Answer: R2 candidates: [<rule>] [<rule>] ...
+### target
+R2 candidates: [q1(X) :- p(X).] [q1(X) :- q(X).] [q1(X) :- r(X).] [q1(X) :- s(X).] [q1(X) :- dom(X).]
+### kind reuse_check
+YOUR TASK: execute ONE step of ASP-ABAlearnB (Algorithm 1, De Angelis,
+Proietti & Toni) on the problem below, at the state shown, and answer that step only.
+The state lists Rl, the rules learnt so far, without the fact rho being processed;
+with the background rules R it forms Rt (line 15). Facts are listed in the order of
+T, then of the domain. applyFolding (line 17, Definition 3) replaces the equality
+X = t of rho by the head of each background rule that holds for t by an equality
+(a fact p(t). or a rule p(X) :- X = t, ...), in the order R lists them, and last by
+dom(X); never by learnt rules. An assumption alpha(X) is relative to a body B
+(Definition 4) if a rule H :- B, alpha(X) is in Rt. The tests at lines 16 and 18
+are answered with the examples that fail in the framework's stable extension
+(positive examples not accepted, negative examples accepted), then yes if none
+fails, else no.
+
+=== BACKGROUND KNOWLEDGE (ABA framework) ===
+% Domain: dom/1 holds for each constant below, and every
+% assumption is instantiated once per constant.
+  dom(a). dom(h). dom(f). dom(g). dom(c). dom(b). dom(e). dom(d).
+
+% Rules R
+  p(a).
+  p(b).
+  p(c).
+  q(d).
+  q(e).
+  q(a).
+  q(c).
+  r(a).
+  s(a).
+  s(f).
+  s(g).
+  s(e).
+  t(f).
+  t(c).
+  t(e).
+  u(X) :- p(X), v(X).
+  w(X) :- r(X).
+
+% Assumptions A, with their contraries
+  p1(X) defeated_by u(X)
+  v(X) defeated_by w(X)
+
+=== POSITIVE EXAMPLES E+ (all accepted in ONE common stable extension) ===
+  + q1(e)
+  + q1(d)
+  + q1(a)
+
+=== NEGATIVE EXAMPLES E- (none accepted in that same extension) ===
+  - q1(h)
+  - q1(c)
+  - q1(f)
+
+=== LEARNABLE PREDICATES T ===
+  q1, u
+
+=== RULES LEARNT SO FAR (Rl, without rho) ===
+  q1(X) :- X = e.
+  q1(X) :- X = d.
+
+STEP: the test at line 38 with the relative assumption v(X)
+rho_d: q1(X) :- p(X), v(X).
+Is ASP(<Rt u {rho_d}, A, C>, <E+, E->, {}) satisfiable?
+Answer: yes.   or: no.
+### target
+no.
+### kind reuse_scan
+YOUR TASK: execute ONE step of ASP-ABAlearnB (Algorithm 1, De Angelis,
+Proietti & Toni) on the problem below, at the state shown, and answer that step only.
+The state lists Rl, the rules learnt so far, without the fact rho being processed;
+with the background rules R it forms Rt (line 15). Facts are listed in the order of
+T, then of the domain. applyFolding (line 17, Definition 3) replaces the equality
+X = t of rho by the head of each background rule that holds for t by an equality
+(a fact p(t). or a rule p(X) :- X = t, ...), in the order R lists them, and last by
+dom(X); never by learnt rules. An assumption alpha(X) is relative to a body B
+(Definition 4) if a rule H :- B, alpha(X) is in Rt. The tests at lines 16 and 18
+are answered with the examples that fail in the framework's stable extension
+(positive examples not accepted, negative examples accepted), then yes if none
+fails, else no.
+
+=== BACKGROUND KNOWLEDGE (ABA framework) ===
+% Domain: dom/1 holds for each constant below, and every
+% assumption is instantiated once per constant.
+  dom(a). dom(h). dom(f). dom(g). dom(c). dom(b). dom(e). dom(d).
+
+% Rules R
+  p(a).
+  p(b).
+  p(c).
+  q(d).
+  q(e).
+  q(a).
+  q(c).
+  r(a).
+  s(a).
+  s(f).
+  s(g).
+  s(e).
+  t(f).
+  t(c).
+  t(e).
+  u(X) :- p(X), v(X).
+  w(X) :- r(X).
+
+% Assumptions A, with their contraries
+  p1(X) defeated_by u(X)
+  v(X) defeated_by w(X)
+
+=== POSITIVE EXAMPLES E+ (all accepted in ONE common stable extension) ===
+  + q1(e)
+  + q1(d)
+  + q1(a)
+
+=== NEGATIVE EXAMPLES E- (none accepted in that same extension) ===
+  - q1(h)
+  - q1(c)
+  - q1(f)
+
+=== LEARNABLE PREDICATES T ===
+  q1, u
+
+=== RULES LEARNT SO FAR (Rl, without rho) ===
+  q1(X) :- X = e.
+  q1(X) :- X = d.
+
+STEP: applyAsmIntro (line 36) on rho_f: q1(X) :- p(X).
+List the assumptions in A relative to the body of rho_f.
+Answer: R3 reuse: [<assumption>] ... .   or: R3 reuse: none.
+### target
+R3 reuse: [v(X)].
+### kind role
+YOUR TASK: execute ONE step of ASP-ABAlearnB (Algorithm 1, De Angelis,
+Proietti & Toni) on the problem below, at the state shown, and answer that step only.
+The state lists Rl, the rules learnt so far, without the fact rho being processed;
+with the background rules R it forms Rt (line 15). Facts are listed in the order of
+T, then of the domain. applyFolding (line 17, Definition 3) replaces the equality
+X = t of rho by the head of each background rule that holds for t by an equality
+(a fact p(t). or a rule p(X) :- X = t, ...), in the order R lists them, and last by
+dom(X); never by learnt rules. An assumption alpha(X) is relative to a body B
+(Definition 4) if a rule H :- B, alpha(X) is in Rt. The tests at lines 16 and 18
+are answered with the examples that fail in the framework's stable extension
+(positive examples not accepted, negative examples accepted), then yes if none
+fails, else no.
+
+=== BACKGROUND KNOWLEDGE (ABA framework) ===
+% Domain: dom/1 holds for each constant below, and every
+% assumption is instantiated once per constant.
+  dom(a). dom(h). dom(f). dom(g). dom(c). dom(b). dom(e). dom(d).
+
+% Rules R
+  p(a).
+  p(b).
+  p(c).
+  q(d).
+  q(e).
+  q(a).
+  q(c).
+  r(a).
+  s(a).
+  s(f).
+  s(g).
+  s(e).
+  t(f).
+  t(c).
+  t(e).
+  u(X) :- p(X), v(X).
+  w(X) :- r(X).
+
+% Assumptions A, with their contraries
+  p1(X) defeated_by u(X)
+  v(X) defeated_by w(X)
+
+=== POSITIVE EXAMPLES E+ (all accepted in ONE common stable extension) ===
+  + q1(e)
+  + q1(d)
+  + q1(a)
+
+=== NEGATIVE EXAMPLES E- (none accepted in that same extension) ===
+  - q1(h)
+  - q1(c)
+  - q1(f)
+
+=== LEARNABLE PREDICATES T ===
+  q1, u
+
+STEP: RoLe (lines 3-12). List the facts that lines 8-10 learn: a minimal set
+of facts p(X) :- X = t, with p in T, that makes the framework a solution.
+One per line: R1 p(X) :- X = t.   or: none.
+### target
+R1 q1(X) :- X = a.
+R1 q1(X) :- X = e.
+R1 q1(X) :- X = d.
+### kind subsume
+YOUR TASK: execute ONE step of ASP-ABAlearnB (Algorithm 1, De Angelis,
+Proietti & Toni) on the problem below, at the state shown, and answer that step only.
+The state lists Rl, the rules learnt so far, without the fact rho being processed;
+with the background rules R it forms Rt (line 15). Facts are listed in the order of
+T, then of the domain. applyFolding (line 17, Definition 3) replaces the equality
+X = t of rho by the head of each background rule that holds for t by an equality
+(a fact p(t). or a rule p(X) :- X = t, ...), in the order R lists them, and last by
+dom(X); never by learnt rules. An assumption alpha(X) is relative to a body B
+(Definition 4) if a rule H :- B, alpha(X) is in Rt. The tests at lines 16 and 18
+are answered with the examples that fail in the framework's stable extension
+(positive examples not accepted, negative examples accepted), then yes if none
+fails, else no.
+
+=== BACKGROUND KNOWLEDGE (ABA framework) ===
+% Domain: dom/1 holds for each constant below, and every
+% assumption is instantiated once per constant.
+  dom(a). dom(h). dom(f). dom(g). dom(c). dom(b). dom(e). dom(d).
+
+% Rules R
+  p(a).
+  p(b).
+  p(c).
+  q(d).
+  q(e).
+  q(a).
+  q(c).
+  r(a).
+  s(a).
+  s(f).
+  s(g).
+  s(e).
+  t(f).
+  t(c).
+  t(e).
+  u(X) :- p(X), v(X).
+  w(X) :- r(X).
+
+% Assumptions A, with their contraries
+  p1(X) defeated_by u(X)
+  v(X) defeated_by w(X)
+
+=== POSITIVE EXAMPLES E+ (all accepted in ONE common stable extension) ===
+  + q1(e)
+  + q1(d)
+  + q1(a)
+
+=== NEGATIVE EXAMPLES E- (none accepted in that same extension) ===
+  - q1(h)
+  - q1(c)
+  - q1(f)
+
+=== LEARNABLE PREDICATES T ===
+  q1, u
+
+=== RULES LEARNT SO FAR (Rl, without rho) ===
+  q1(X) :- X = e.
+  q1(X) :- X = d.
+
+STEP: Fact Subsumption (line 16) on rho: q1(X) :- X = a.
+Is ASP(<Rt, A, C>, <E+, E->, {}) satisfiable?
+Answer: fails: <examples, or none>. yes.   or   ... no.
+### target
+fails: q1(a). no.

@@ -868,3 +868,182 @@ def _permuted_manifest_md(m: Dict) -> str:
     L += ["", "## Files (sha256)", ""]
     L += [f"- `{f}` {h}" for f, h in m["sha256"].items()]
     return "\n".join(L) + "\n"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step rows (arm S2, src/aba_steps.py)
+# ─────────────────────────────────────────────────────────────────────────────
+
+STEP_SPLITS = ("train", "val")
+_STEP_FIELDS = ("kind", "state", "target", "verdict", "witness", "n_models", "event", "src",
+                "rank", "first", "extra", "cell")
+
+STEP_NOTES = [
+    "One row per step the reference takes on each train and val problem of the source "
+    "(src/aba_steps.py), plus `extra` rows: line 18 asked at every non-dom fold candidate "
+    "the search does not reach. Extra rows are training-only.",
+    "Prompts are not stored: src/aba_steps.step_prompt rebuilds them from the problem and "
+    "`state`; prompt_sha256 pins them per split and kind.",
+    "Lines 16 and 18 name the failing examples of the unique answer set of "
+    "ASP(F, <{}, {}>, {}) before the verdict; the gates require that answer set to be "
+    "unique and its failing examples empty iff the verdict is yes.",
+    "Test, held-out, Table 1 and the permuted set are harvested here only for the gates "
+    "and for longest_target; the evaluation harvests them again.",
+]
+
+
+def build_steps(source: Path, permuted: Path, out_dir: Path) -> Dict:
+    """Harvest arm S2's step rows from `source`'s train and val problems, gate them on
+    every problem of `source` (Table 1 included) and of `permuted`, write steps.jsonl."""
+    import clingo
+    import platform
+    from src.aba_steps import (STEP_PROMPT_VERSION, WITNESSED, ModelOracle, _line18,
+                               chained_run, gold_backend, harvest, parse_answer,
+                               same_answer, step_prompt)
+    from src.aba_tracelog import _git_rev
+
+    assert out_dir.resolve() not in (source.resolve(), permuted.resolve()), "would overwrite"
+    code_rev = _git_rev()                        # before writing: the outputs would read as dirty
+    load = lambda d, f: [json.loads(x) for x in (d / f).read_text(encoding="utf-8").splitlines()]
+    src_m = json.loads((source / "MANIFEST.json").read_text(encoding="utf-8"))
+    perm_m = json.loads((permuted / "MANIFEST.json").read_text(encoding="utf-8"))
+    read = ("problems.jsonl", "traces.jsonl", "sft_trace.jsonl", "eval.jsonl",
+            "table1_problems.jsonl", "table1_traces.jsonl", "table1_eval.jsonl")
+    src_sha = {f: _sha256(source / f) for f in read}
+    perm_sha = {f: _sha256(permuted / f) for f in ("problems.jsonl", "eval.jsonl")}
+    assert src_sha == {f: src_m["sha256"][f] for f in read}, f"{source} differs from MANIFEST"
+    assert perm_sha == {f: perm_m["sha256"][f] for f in perm_sha}, f"{permuted} differs"
+
+    records = {r["problem_id"]: r for r in load(source, "traces.jsonl")}
+    records.update({r["problem_id"]: r for r in load(source, "table1_traces.jsonl")})
+    gold = {r["problem_id"]: r["target"] for r in load(source, "sft_trace.jsonl")}
+    gold.update({r["problem_id"]: r["trace_target"] for r in load(source, "eval.jsonl")})
+    gold.update({r["problem_id"]: r["trace_target"] for r in load(source, "table1_eval.jsonl")})
+    perm_gold = {r["problem_id"]: r["trace_target"] for r in load(permuted, "eval.jsonl")}
+    jobs = [("v1", r, records[r["problem_id"]], gold[r["problem_id"]])
+            for r in load(source, "problems.jsonl")]
+    jobs += [("table1", r, records[r["problem_id"]], gold[r["problem_id"]])
+             for r in load(source, "table1_problems.jsonl") if r["problem_id"] in gold]
+    jobs += [("permuted", r, None, perm_gold[r["problem_id"]])
+             for r in load(permuted, "problems.jsonl")]
+
+    fails = collections.defaultdict(list)
+    counts = collections.defaultdict(collections.Counter)
+    cells = collections.defaultdict(collections.Counter)
+    models = collections.Counter()
+    longest: Dict[str, str] = {}
+    prompts = collections.defaultdict(hashlib.sha256)
+    out_rows: List[Dict] = []
+    for group, prow, stored, target in jobs:
+        pid, split = prow["problem_id"], prow.get("split", group)
+        problem = problem_from_dict(prow["problem"])
+        problem.problem_id = pid
+        train = group == "v1" and split in STEP_SPLITS
+        rows, record = harvest(problem, extra=train)
+        if stored is not None and ({"role_facts": record.role_facts,
+                                    "events": [e.to_dict() for e in record.events]}
+                                   != {"role_facts": stored["role_facts"],
+                                       "events": stored["events"]}):
+            fails["harvest equals the stored record"].append(pid)
+        want = {"role": 1, "subsume": len(record.events),
+                "fold_candidates": sum(e.outcome not in ("subsumed", "already_intensional")
+                                       for e in record.events),
+                "check": sum(c.sat is not None for e in record.events for c in e.candidates),
+                "reuse_scan": sum(c.reuse_scan is not None
+                                  for e in record.events for c in e.candidates),
+                "reuse_check": sum(a.mode == "reuse" for e in record.events for a in e.asm_attempts),
+                "contrary_facts": sum(a.mode == "mint" for e in record.events for a in e.asm_attempts)}
+        got = collections.Counter(r["kind"] for r in rows if not r["extra"])
+        if any(got[k] != n for k, n in want.items()):
+            fails["one row per decision of the record"].append(pid)
+        for r in rows:
+            ans, _ = parse_answer(r["kind"], r["target"], problem, r["answer"], r["payload"])
+            if not same_answer(r["kind"], ans, r["answer"]):
+                fails["every target parses back to the reference's answer"].append(pid)
+            if r["kind"] in WITNESSED:
+                models[f"{group}:{r['n_models']}"] += 1
+                if train and (r["n_models"] != 1 or (r["witness"] == []) != r["verdict"]):
+                    fails["train/val witnesses: unique answer set, empty iff yes"].append(pid)
+            if train and r["kind"] == "check" and not r["extra"]:
+                p = r["payload"]
+                if _line18(problem, p["learnt"], p["new_asms"], p["idx"], p["folded"])[0] \
+                        != r["verdict"]:
+                    fails["the extra-row test equals line 18 where the search asks it"].append(pid)
+            if len(r["target"]) > len(longest.get(r["kind"], "")):
+                longest[r["kind"]] = r["target"]
+        out = chained_run(problem, ModelOracle(problem, gold_backend(rows, problem)))
+        if out["error"] or out["text"] != target:
+            fails["gold answers through the controller reproduce the trace target"].append(pid)
+        if not train:
+            continue
+        for r in rows:
+            counts[split][r["kind"] + (" (extra)" if r["extra"] else "")] += 1
+            cells[split][r["cell"]] += 1
+            prompts[f"{split}/{r['kind']}"].update(
+                step_prompt(problem, r["kind"], r["state"]).encode("utf-8") + b"\x00")
+            out_rows.append({"row_id": f"{pid}#{r['k']:02d}", "problem_id": pid,
+                             "tier": prow["tier"], "split": split, "class": prow["class"],
+                             "k": r["k"], "prompt_version": STEP_PROMPT_VERSION,
+                             **{f: r[f] for f in _STEP_FIELDS if f in r}})
+
+    held = {r["problem_id"] for g, r, _, _ in jobs if g != "v1" or r["split"] not in STEP_SPLITS}
+    gates = {name: not fails.get(name) for name in (
+        "harvest equals the stored record", "one row per decision of the record",
+        "every target parses back to the reference's answer",
+        "train/val witnesses: unique answer set, empty iff yes",
+        "the extra-row test equals line 18 where the search asks it",
+        "gold answers through the controller reproduce the trace target")}
+    gates["no test, held-out or Table 1 problem in steps.jsonl"] = not (
+        {r["problem_id"] for r in out_rows} & held)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    _jsonl(out_dir / "steps.jsonl", out_rows)
+    manifest = {
+        "corpus_version": out_dir.name,
+        "code_rev": code_rev,
+        "clingo": clingo.__version__,
+        "python": platform.python_version(),
+        "prompt_version": STEP_PROMPT_VERSION,
+        "source": {"corpus": source.as_posix(), "corpus_version": src_m["corpus_version"],
+                   "code_rev": src_m["code_rev"], "sha256": src_sha},
+        "permuted": {"corpus": permuted.as_posix(), "sha256": perm_sha},
+        "splits": list(STEP_SPLITS),
+        "gated_problems": dict(collections.Counter(g for g, *_ in jobs)),
+        "counts": {s: dict(sorted(c.items())) for s, c in counts.items()},
+        "cells": {s: dict(sorted(c.items())) for s, c in cells.items()},
+        "answer_sets_at_lines_16_18": dict(sorted(models.items())),
+        "longest_target": longest,
+        "gates": gates,
+        "failures": {k: v[:10] for k, v in fails.items()},
+        "notes": STEP_NOTES,
+        "prompt_sha256": {k: h.hexdigest() for k, h in sorted(prompts.items())},
+        "sha256": {"steps.jsonl": _sha256(out_dir / "steps.jsonl")},
+    }
+    (out_dir / "MANIFEST.json").write_text(json.dumps(manifest, indent=2) + "\n",
+                                           encoding="utf-8")
+    (out_dir / "MANIFEST.md").write_text(_steps_manifest_md(manifest), encoding="utf-8")
+    return manifest
+
+
+def _steps_manifest_md(m: Dict) -> str:
+    s = m["source"]
+    L = [f"# Corpus {m['corpus_version']}", "",
+         f"- code rev: `{m['code_rev']}`; clingo {m['clingo']}; python {m['python']}",
+         f"- prompt: {m['prompt_version']}; splits: {', '.join(m['splits'])}",
+         f"- source: `{s['corpus']}` (corpus {s['corpus_version']}, code rev "
+         f"`{s['code_rev']}`); permuted: `{m['permuted']['corpus']}`",
+         f"- gated problems: {m['gated_problems']}", "", "## Gates", ""]
+    L += [f"- [{'x' if ok else ' '}] {g}" for g, ok in m["gates"].items()]
+    for split, c in m["counts"].items():
+        L += ["", f"## Rows, {split}", "", "| kind | n |", "|---|---|"]
+        L += [f"| {k} | {v} |" for k, v in c.items()] + [f"| **total** | {sum(c.values())} |"]
+    for split, c in m["cells"].items():
+        L += ["", f"## Cells, {split}", "", "| cell | n |", "|---|---|"]
+        L += [f"| {k} | {v} |" for k, v in c.items()]
+    L += ["", "## Answer sets of ASP(F, <{}, {}>, {}) at lines 16 and 18 (group:count)", "",
+          ", ".join(f"{k}: {v}" for k, v in m["answer_sets_at_lines_16_18"].items())]
+    L += ["", "## Notes", ""] + [f"- {n}" for n in m["notes"]]
+    L += ["", "## Files (sha256)", ""] + [f"- `{f}` {h}" for f, h in m["sha256"].items()]
+    L += ["", "## Rebuilt prompts (sha256)", ""]
+    L += [f"- {k}: {h}" for k, h in m["prompt_sha256"].items()]
+    return "\n".join(L) + "\n"
