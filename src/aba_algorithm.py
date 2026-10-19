@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 import copy
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple, Dict, Callable, Iterator
+from typing import Any, List, Optional, Tuple, Dict, Callable, Iterator
 
 from src.aba_types import Rule, ABAFramework, LearningProblem, TransformStep, LearningTrace
 from src.aba_validator import (
@@ -68,6 +68,23 @@ def _current_framework(
     fw.new_rules = learnt
     fw.new_assumptions = genuinely_new
     return fw
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Step oracle: who answers each computed step of Algorithm 1
+# ──────────────────────────────────────────────────────────────────────────────
+
+# oracle(kind, state, compute) -> the step's answer; `compute` is the reference's
+# computation for that exact state. The control flow never goes through it.
+StepOracle = Callable[[str, Dict[str, Any], Callable[[], Any]], Any]
+ORACLE_KINDS = ("role", "subsume", "fold_candidates", "check", "reuse_scan",
+                "reuse_check", "contrary_facts")
+
+
+def _ask(oracle: Optional[StepOracle], kind: str, compute: Callable[[], Any],
+         **state) -> Any:
+    """The step's answer: the reference computation when there is no oracle."""
+    return compute() if oracle is None else oracle(kind, state, compute)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -288,6 +305,7 @@ def asm_intro_options(
     learnt: List[Rule],
     new_asms: Dict[str, str],
     observer: Optional[Callable[..., None]] = None,
+    oracle: Optional[StepOracle] = None,
 ) -> Iterator[Tuple[Rule, str, str, List[Rule]]]:
     """
     Every way `applyAsmIntro` can guard `folded_rule`, yielded lazily in order.
@@ -314,7 +332,8 @@ def asm_intro_options(
     time — leaving the un-folded ground fact in place and making every
     satisfiability check below pass for the wrong reason.
 
-    `observer` is a pure spectator, as in `gen_phase`.
+    `observer` is a pure spectator, as in `gen_phase`; `oracle` answers lines 36,
+    38 and 44 (see `_ask`).
 
     Yields (defeasible_rule, asm_atom, contrary_atom, contrary_facts).
     """
@@ -325,7 +344,9 @@ def asm_intro_options(
     dom = problem.get_domain()
 
     # ── Lines 37-41: an assumption relative to the body exists ────────────────
-    reusable = _assumptions_relative_to(folded_rule.body, current)
+    reusable = _ask(oracle, "reuse_scan",
+                    lambda: _assumptions_relative_to(folded_rule.body, current),
+                    learnt=list(learnt), new_asms=dict(new_asms), folded=folded_rule)
     _notify("asm_reuse_scan", candidates=list(reusable))
     if reusable:
         for asm in reusable:
@@ -337,9 +358,11 @@ def asm_intro_options(
             test_learnt = [r for r in learnt
                            if r.to_prolog() != folded_rule.to_prolog()] + [defeasible]
             fw = _current_framework(background, test_learnt, candidate_asms)
-            sat, _, _ = check_brave_entailment(
-                fw, problem.positive, problem.negative, dom
-            )
+            sat = _ask(oracle, "reuse_check",
+                       lambda: check_brave_entailment(
+                           fw, problem.positive, problem.negative, dom)[0],
+                       learnt=list(learnt), new_asms=dict(new_asms),
+                       folded=folded_rule, asm=asm, guarded=defeasible)
             _notify("asm_reuse_try", asm=asm, answer=sat)
             if sat:
                 contrary = current.contraries.get(asm, f"c_{asm}")
@@ -372,7 +395,11 @@ def asm_intro_options(
         domain=dom,
         problem_id=problem.problem_id + "_asm_intro",
     )
-    contrary_facts, ok, _ = run_rote_learning(rote_problem)
+    contrary_facts, ok, _ = _ask(oracle, "contrary_facts",
+                                 lambda: run_rote_learning(rote_problem),
+                                 learnt=list(learnt), new_asms=dict(new_asms),
+                                 folded=folded_rule, asm=asm, contrary=contrary,
+                                 guarded=defeasible)
     if not ok:
         _notify("asm_decision", mode="mint", asm=asm, contrary=contrary,
                 rote_ok=False)
@@ -391,10 +418,11 @@ def assumption_introduction(
     learnt: List[Rule],
     new_asms: Dict[str, str],
     observer: Optional[Callable[..., None]] = None,
+    oracle: Optional[StepOracle] = None,
 ) -> Optional[Tuple[Rule, str, str, List[Rule]]]:
     """The first option `asm_intro_options` offers, or None (incl. line 39)."""
     return next(asm_intro_options(folded_rule, background, current, problem,
-                                  learnt, new_asms, observer), None)
+                                  learnt, new_asms, observer, oracle), None)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -415,6 +443,7 @@ def gen_phase(
     verbose: bool = False,
     observer: Optional[Callable[..., None]] = None,
     search_budget: int = GEN_SEARCH_BUDGET,
+    oracle: Optional[StepOracle] = None,
 ) -> Tuple[ABAFramework, LearningTrace]:
     """
     Apply Fact Subsumption, Folding and Assumption Introduction to
@@ -441,6 +470,9 @@ def gen_phase(
     states this search actually visits. Re-implementing the search in a
     separate harvester would let the probe states drift away from the reference
     algorithm, which is the one thing that must not happen.
+
+    `oracle`, when given, answers the computed steps (lines 16, 17, 18, 36, 38,
+    44) through `_ask`, so the same search runs on someone else's answers.
     """
     def _notify(kind: str, learnt, new_asms, idx, rule, **extra) -> None:
         if observer is not None:
@@ -453,7 +485,10 @@ def gen_phase(
     def _options(learnt: List[Rule], new_asms: Dict[str, str], idx: int,
                  rule: Rule):
         """The fact's choices, lazily, in the order documented above."""
-        folds_traced = apply_folding_traced(rule, background)
+        folds_traced = _ask(oracle, "fold_candidates",
+                            lambda: apply_folding_traced(rule, background),
+                            learnt=list(learnt), new_asms=dict(new_asms), idx=idx,
+                            rule=rule)
         fold_candidates = [r for r, _ in folds_traced]
         _notify("fold", learnt, new_asms, idx, rule,
                 candidates=list(fold_candidates),
@@ -463,9 +498,11 @@ def gen_phase(
         for folded in fold_candidates:                              # line 17
             test_learnt = learnt[:idx] + [folded] + learnt[idx + 1:]
             fw = _current_framework(background, test_learnt, new_asms)
-            sat, _, _ = check_brave_entailment(
-                fw, problem.positive, problem.negative, dom
-            )
+            sat = _ask(oracle, "check",
+                       lambda: check_brave_entailment(
+                           fw, problem.positive, problem.negative, dom)[0],
+                       learnt=list(learnt), new_asms=dict(new_asms), idx=idx,
+                       rule=rule, folded=folded)
             _notify("check", learnt, new_asms, idx, rule, folded=folded, answer=sat)
             if sat:                                                 # line 18
                 yield "folding", folded, None
@@ -473,7 +510,7 @@ def gen_phase(
             offered = False                                         # line 19
             for result in asm_intro_options(folded, background, fw_now, problem,
                                             test_learnt, new_asms,
-                                            observer=observer):
+                                            observer=observer, oracle=oracle):
                 offered = True
                 _notify("asm_intro", learnt, new_asms, idx, rule,
                         folded=folded, answer=result)
@@ -496,7 +533,11 @@ def gen_phase(
 
             # ── R4: Fact Subsumption (line 16) — deterministic, no choice ───
             others = learnt[:idx] + learnt[idx + 1:]
-            _subsumable = fact_subsumption(rule, background, others, new_asms, problem)
+            _subsumable = _ask(oracle, "subsume",
+                               lambda: fact_subsumption(rule, background, others,
+                                                        new_asms, problem),
+                               learnt=list(learnt), new_asms=dict(new_asms), idx=idx,
+                               rule=rule)
             _notify("subsume", learnt, new_asms, idx, rule, answer=_subsumable)
             if _subsumable:
                 learnt = others
@@ -606,6 +647,7 @@ def solve_aba_learning(
     problem: LearningProblem,
     verbose: bool = False,
     observer: Optional[Callable[..., None]] = None,
+    oracle: Optional[StepOracle] = None,
 ) -> Tuple[Optional[ABAFramework], LearningTrace]:
     """
     Full ASP-ABAlearnB pipeline: RoLe → Gen.
@@ -620,13 +662,17 @@ def solve_aba_learning(
     Before this parameter existed the observer could only be attached to
     `gen_phase` directly, so the code path that writes `symbolic_traces.jsonl`
     never materialised any of the algorithm's decisions.
+
+    `oracle` (see `_ask`) answers line 8 here and is forwarded to `gen_phase`;
+    None is the reference.
     """
     trace = LearningTrace(problem_id=problem.problem_id)
 
     # Phase 1: RoLe
     if verbose:
         print(f"[RoLe] {problem.problem_id}")
-    facts, ok, msg = run_rote_learning(problem)
+    facts, ok, msg = _ask(oracle, "role", lambda: run_rote_learning(problem),
+                          problem=problem)
     if not ok:
         trace.success = False
         return None, trace
@@ -646,7 +692,7 @@ def solve_aba_learning(
     if verbose:
         print(f"[Gen]")
     solution, gen_trace = gen_phase(facts, problem, verbose=verbose,
-                                    observer=observer)
+                                    observer=observer, oracle=oracle)
     trace.steps.extend(gen_trace.steps)
     trace.final_framework = solution
     trace.success = gen_trace.success
