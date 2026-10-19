@@ -171,8 +171,6 @@ class GroqBackend(LLMBackend):
                 attempt += 1
                 msg = str(exc)
                 wait = self._parse_retry_after(msg)
-                # If the suggested wait is huge, this is a per-day/hour cap:
-                # do not block for minutes — fail fast with a clear message.
                 if wait > self.max_wait_s or attempt > self.max_retries:
                     raise RuntimeError(
                         f"Groq rate limit not recoverable by waiting "
@@ -364,7 +362,7 @@ class GoogleAIBackend(LLMBackend):
                 )
                 self._last_call_t = time.time()
 
-                # Extract text — ignore any embedded <think> blocks
+                # Extract text. Used to ignore any embedded <think> blocks
                 text = resp.text or ""
                 usage = resp.usage_metadata
                 return ModelResponse(
@@ -507,10 +505,6 @@ class LocalHFBackend(LLMBackend):
         self._torch = torch
         self.tok = tok
         self._model = model_obj
-        # NOTE: `.model` must stay a STRING. The evaluation layer reads
-        # getattr(backend, "model") as the model NAME (all API backends store
-        # the id string there) and serialises it into results JSONL — storing
-        # the torch module here made every SampleResult unserialisable.
         self.model = self.model_id
         print(f"[local] loaded {self.model_id} "
               f"({'4-bit nf4' if load_4bit else dtype}) on {model_obj.device}"
@@ -529,8 +523,7 @@ class LocalHFBackend(LLMBackend):
 
         # apply_chat_template's return type changed across transformers versions
         # (tensor vs BatchEncoding dict; accessing .shape on a BatchEncoding
-        # raises a bare AttributeError). Request the dict form explicitly and
-        # extract the tensors ourselves — works on all versions >= 4.41.
+        # raises a bare AttributeError).
         try:
             enc = self.tok.apply_chat_template(
                 messages, add_generation_prompt=True,

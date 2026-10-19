@@ -76,7 +76,6 @@ specific individuals.
 #
 # The split is text-only: SYSTEM_PROMPT below is the two halves concatenated, so
 # the mode prompts stay byte-identical to v3 and sets 01-03 remain comparable.
-# EDITING EITHER HALF BREAKS THAT — it makes a new prompt version, not a refactor.
 _SYSTEM_PROMPT_TASK = """
 YOUR TASK: given an ABA Learning problem, construct a solution satisfying
 Definition 1. In this task an INTENSIONAL solution is REQUIRED:
@@ -128,9 +127,6 @@ SYSTEM_PROMPT = SYSTEM_PROMPT_DEFS + _SYSTEM_PROMPT_TASK
 # target is the only thing that differs between them. SYSTEM_PROMPT cannot be
 # that prompt: `_SYSTEM_PROMPT_TASK` forbids "any explanation or commentary
 # outside the two sections", and the trace target IS working outside them.
-# Training the trace arm against it would teach the model to break its own
-# instructions — a conflict the endpoint arm would not face, which confounds the
-# ablation.
 #
 # The task half below is `_SYSTEM_PROMPT_TASK` with only the formatting rules
 # changed: working is PERMITTED, not requested (the endpoint arm is trained to
@@ -194,14 +190,14 @@ SYSTEM_PROMPT_SFT = SYSTEM_PROMPT_DEFS + _SYSTEM_PROMPT_SFT_TASK
 # ---------------------------------------------------------------------------
 
 def _format_problem(problem: LearningProblem) -> str:
-    """Serialise the problem in the SAME notation the answer must use.
+    """Serialise the problem in the same notation the answer must use.
 
     The background used to be rendered as prose ("p(a) is always true.",
     "u(X) [defeated by: t(X)]") while every definition, transformation rule and
     the required output were in ABA/Prolog syntax. That forced the model to
     translate between three notations before it could start reasoning. One
     notation throughout: rules as `h :- b1, b2.`, assumptions as
-    `a(X) defeated_by c(X)` — exactly the form required in NEW ASSUMPTIONS.
+    `a(X) defeated_by c(X)`.
     """
     bg = problem.background
     domain = problem.get_domain()
@@ -730,7 +726,7 @@ def parse_llm_output(
 
     if not new_rules and not new_asms:
         # An answer of NONE/NONE is a legitimate claim ("the background already
-        # suffices"), not a parse failure — scoring it as parse_error would
+        # suffices"), not a parse failure. Scoring it as parse_error would
         # conflate "unreadable output" with "model said nothing is needed".
         # Only genuinely unstructured output fails to parse.
         if not (_RULES_HDR_RE.search(text) or _ASMS_HDR_RE.search(text)):
@@ -738,7 +734,7 @@ def parse_llm_output(
         log.append("empty answer (NONE / NONE)")
 
     # An assumption the background already declares is legal REUSE
-    # (Definition 4), not a new assumption — but keep the contrary the model
+    # (Definition 4), not a new assumption, but keep the contrary the model
     # wrote so that a changed contrary is still visible to the Definition-1(iv)
     # check rather than being silently repaired away.
     genuinely_new = [a for a in new_asms if a not in background.assumptions]
