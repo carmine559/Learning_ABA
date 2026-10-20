@@ -1,0 +1,50 @@
+#!/bin/bash
+# Arm S2: train step by step, then evaluate it chained (v1, permuted) and at gold states.
+#   sbatch cluster/stepwise_sft.sbatch
+# Resubmitted, it skips a finished adapter or evaluation, resumes training from the last
+# checkpoint and continues an evaluation where it stopped. Check first, on the login node:
+#   python3 train_step.py --out runs/sft_step --dry-run
+#   python3 eval_stepwise.py --protocol chained --dry-run --out /tmp/s2
+# compare_step.py is run after the job, once sample.md and calls_sample.md are read.
+#SBATCH --job-name=sft-step
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=carmine.santella@studio.unibo.it
+#SBATCH --time=2-00:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=48G
+#SBATCH --partition=l40
+#SBATCH --gres=gpu:1
+#SBATCH --output=slurm-%x-%j.out
+
+set -euo pipefail
+export HF_HOME="/scratch.hpc/$USER/hf_cache"
+export HF_HUB_OFFLINE=1                  # cached by cluster/prefetch_model.sh
+export TOKENIZERS_PARALLELISM=false
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+cd "/scratch.hpc/$USER/Learning_aba"
+source venv/bin/activate
+nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader
+
+RUN=runs/sft_step
+echo "[job $SLURM_JOB_ID] arm s2, run $RUN"
+if [ ! -f "$RUN/adapter/adapter_model.safetensors" ]; then
+    RESUME=""
+    compgen -G "$RUN/checkpoint-*" > /dev/null && RESUME="--resume"
+    python3 train_step.py --out "$RUN" $RESUME
+fi
+
+evaluate() {                             # protocol, out, then extra arguments
+    local protocol=$1 out=$2
+    shift 2
+    if [ -f "$out/step_summary.json" ]; then
+        echo "$out done"
+        return
+    fi
+    python3 eval_stepwise.py --protocol "$protocol" --adapter "$RUN/adapter" --out "$out" "$@"
+}
+evaluate chained results/sft-step/s2/chained
+evaluate chained results/sft-step-permuted/s2 --corpus corpus/v1-permuted
+evaluate gold results/sft-step/s2/gold

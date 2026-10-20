@@ -254,6 +254,50 @@ so; the paper's Prolog implementation (Zenodo) would settle it.
 previous reference on these 12 problems, and their probe harvest would now visit
 different states there.
 
+## Phase 9 — Training each step on its own (Oct 2026, arm S2)
+
+**Where the SFT ablation left it** (5d7f0bc). The trace arm learnt the trace's
+form, not its decisions: its first line-18 verdict is right on 107/200 test
+problems, what a guess that ignores the problem expects (107.25), and exact is
+89/200.
+
+**The suggestion** (supervisors): train the model to execute each step on its
+own, RoLe first, then Gen. Only that arm, S2, is built: RoLe is one example and
+each step of Gen (lines 16, 17, 18, 36, 38, 44) another, each counting once in
+the loss.
+
+- The reference keeps Algorithm 1's control flow (the queue, line 39's
+  backtracking, mint naming) and asks its seven computed steps (lines 8, 16, 17,
+  18, 36, 38, 44) through an oracle hook; without one it is unchanged bit for
+  bit. Each ASP step is one clingo call on that line's framework, checked
+  against Definition 2 and an independent stable-extension checker on 2,316
+  problems.
+- The prompt states the orders the paper leaves open: facts in T order, then
+  domain order; folds in background order, `dom(X)` last, never by learnt rules.
+- Lines 16 and 18 are answered with the failing examples, then the verdict;
+  line 18 is also asked at the folds the search does not reach, `dom(X)`
+  excepted (3,344 train rows).
+- A run stops on an unusable answer or a cap (200 calls, 64 learnt rules) and
+  then has no answer. Illegal list items are dropped and counted; strict exact
+  counts a run with any as wrong.
+- Evaluated on its own run (chained) and at the reference's states (gold),
+  beside a baseline that reads only the step's position.
+
+**D5**, registered in 1395f61 before any S2 output: on v1 test, supported if the
+chained first-check and R3 balanced accuracies are ≥ 0.80 and exact beats
+89/200 with McNemar p < 0.05; refuted if the first check is ≤ 0.60; otherwise
+intermediate. A run that stops before its first check, or without an answer, is
+a miss. Expected even if supported: t9 `reuse_ok` near 0, since its deciding
+answer (yes, at line 38 on a RoLe fact) never occurs in training.
+
+**N1, a question for Prof. Toni.** When the test at line 18 succeeds, the
+printed Algorithm 1 adds nothing to R: R grows only at line 20, with ρd, inside
+the then-branch. The prose (p. 3449) calls ⟨R ∪ Rl ∪ {ρf}, A, ¯⟩ "the current
+ABA framework" at that test; the reference keeps ρf, following the prose.
+
+**Corrected before registration:** "about 4× the trace arm's tokens" counted
+the tokens read; the supervised target tokens are 0.62× (299k against 482k).
+
 ## Pending
 
 - Re-run all four models with probe prompts v2; promote to `experiments/04_*`
@@ -266,3 +310,6 @@ different states there.
   fidelity measure without an explanation of the mechanism.
 - Re-score `introduce` without the line-41 fallback (Phase 8, item 2).
 - Check the fold-order convention against the Zenodo implementation.
+- S2: `cluster/stepwise_sft.sbatch` after the giano `--dry-run`s; read
+  `sample.md` and `calls_sample.md` by hand, then `compare_step.py` for D5.
+- Ask Prof. Toni about N1 (Phase 9).
