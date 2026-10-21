@@ -1,7 +1,6 @@
-# SFT on the DISI L40 nodes (driver 535, CUDA 11.8; Python 3.11 on giano).
-# Installed into the existing venv, whose versions these pins repeat, so the
-# base model and both SFT arms run on one stack; only peft is new:
-#   source venv/bin/activate && pip3 install --no-cache-dir -r requirements-train.txt
+# SFT on the DISI L40 nodes, pinned so every arm trains and is scored on one
+# stack; installed by cluster/setup_env.sh. The cu118 wheels carry their own
+# CUDA 11.8 runtime, so they run on any driver >= 520 and Python 3.9-3.13.
 # torch 2.7.1 is the last release built for CUDA 11.8.
 --extra-index-url https://download.pytorch.org/whl/cu118
 torch==2.7.1+cu118
