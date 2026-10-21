@@ -1,0 +1,1455 @@
+{
+ "all": {
+  "by_kind": {
+   "role": {
+    "n": 316,
+    "acc": 0.0127,
+    "unusable": 308,
+    "with_illegal": 8,
+    "truncated": 291
+   },
+   "subsume": {
+    "n": 1194,
+    "acc": 0.0008,
+    "unusable": 1192,
+    "with_illegal": 0,
+    "truncated": 1192,
+    "truth_yes": 0.5369,
+    "balanced": 0.0009,
+    "baseline_acc": 0.933,
+    "baseline_balanced": 0.9316,
+    "witness_correct": {
+     "n": 2,
+     "acc": 0.0
+    }
+   },
+   "fold_candidates": {
+    "n": 553,
+    "acc": 0.0,
+    "unusable": 553,
+    "with_illegal": 0,
+    "truncated": 528
+   },
+   "check": {
+    "n": 779,
+    "acc": 0.0013,
+    "unusable": 778,
+    "with_illegal": 0,
+    "truncated": 778,
+    "truth_yes": 0.3967,
+    "balanced": 0.0011,
+    "baseline_acc": 0.7125,
+    "baseline_balanced": 0.6924,
+    "witness_correct": {
+     "n": 1,
+     "acc": 0.0
+    }
+   },
+   "reuse_scan": {
+    "n": 470,
+    "acc": 0.3128,
+    "unusable": 244,
+    "with_illegal": 0,
+    "truncated": 0
+   },
+   "reuse_check": {
+    "n": 283,
+    "acc": 0.7915,
+    "unusable": 2,
+    "with_illegal": 0,
+    "truncated": 2,
+    "truth_yes": 0.2014,
+    "balanced": 0.4956,
+    "baseline_acc": 0.8693,
+    "baseline_balanced": 0.6754
+   },
+   "contrary_facts": {
+    "n": 187,
+    "acc": 0.0,
+    "unusable": 187,
+    "with_illegal": 0,
+    "truncated": 187
+   }
+  },
+  "by_cell": {
+   "after_l39_check": {
+    "n": 52,
+    "acc": 0.0,
+    "unusable": 52,
+    "with_illegal": 0,
+    "truncated": 52,
+    "truth_yes": 0.2885,
+    "balanced": 0.0,
+    "baseline_acc": 0.4038,
+    "baseline_balanced": 0.5811
+   },
+   "first_check": {
+    "n": 316,
+    "acc": 0.0,
+    "unusable": 316,
+    "with_illegal": 0,
+    "truncated": 316,
+    "truth_yes": 0.3797,
+    "balanced": 0.0,
+    "baseline_acc": 0.6456,
+    "baseline_balanced": 0.5592
+   },
+   "later_role_subsume": {
+    "n": 657,
+    "acc": 0.0,
+    "unusable": 657,
+    "with_illegal": 0,
+    "truncated": 657,
+    "truth_yes": 0.9269,
+    "balanced": 0.0,
+    "baseline_acc": 0.9269,
+    "baseline_balanced": 0.5
+   },
+   "other": {
+    "n": 2632,
+    "acc": 0.1242,
+    "unusable": 2189,
+    "with_illegal": 8,
+    "truncated": 1903,
+    "truth_yes": 0.1908,
+    "balanced": 0.0983,
+    "baseline_acc": 0.906,
+    "baseline_balanced": 0.8097,
+    "witness_correct": {
+     "n": 3,
+     "acc": 0.0
+    }
+   },
+   "role_reuse_check": {
+    "n": 77,
+    "acc": 0.6494,
+    "unusable": 2,
+    "with_illegal": 0,
+    "truncated": 2,
+    "truth_yes": 0.3247,
+    "balanced": 0.4808,
+    "baseline_acc": 0.6753,
+    "baseline_balanced": 0.5
+   },
+   "second_path_check": {
+    "n": 48,
+    "acc": 0.0,
+    "unusable": 48,
+    "with_illegal": 0,
+    "truncated": 48,
+    "truth_yes": 0.5625,
+    "balanced": 0.0,
+    "baseline_acc": 0.5625,
+    "baseline_balanced": 0.5
+   }
+  }
+ },
+ "split:heldout": {
+  "by_kind": {
+   "role": {
+    "n": 100,
+    "acc": 0.01,
+    "unusable": 98,
+    "with_illegal": 2,
+    "truncated": 97
+   },
+   "subsume": {
+    "n": 299,
+    "acc": 0.0,
+    "unusable": 299,
+    "with_illegal": 0,
+    "truncated": 299,
+    "truth_yes": 0.4983,
+    "balanced": 0.0,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   },
+   "fold_candidates": {
+    "n": 150,
+    "acc": 0.0,
+    "unusable": 150,
+    "with_illegal": 0,
+    "truncated": 149
+   },
+   "check": {
+    "n": 250,
+    "acc": 0.004,
+    "unusable": 249,
+    "with_illegal": 0,
+    "truncated": 249,
+    "truth_yes": 0.3,
+    "balanced": 0.0029,
+    "baseline_acc": 0.6,
+    "baseline_balanced": 0.5238,
+    "witness_correct": {
+     "n": 1,
+     "acc": 0.0
+    }
+   },
+   "reuse_scan": {
+    "n": 175,
+    "acc": 0.24,
+    "unusable": 85,
+    "with_illegal": 0,
+    "truncated": 0
+   },
+   "reuse_check": {
+    "n": 125,
+    "acc": 0.8,
+    "unusable": 0,
+    "with_illegal": 0,
+    "truncated": 0,
+    "truth_yes": 0.2,
+    "balanced": 0.5,
+    "baseline_acc": 0.8,
+    "baseline_balanced": 0.5
+   },
+   "contrary_facts": {
+    "n": 50,
+    "acc": 0.0,
+    "unusable": 50,
+    "with_illegal": 0,
+    "truncated": 50
+   }
+  },
+  "by_cell": {
+   "after_l39_check": {
+    "n": 25,
+    "acc": 0.0,
+    "unusable": 25,
+    "with_illegal": 0,
+    "truncated": 25,
+    "truth_yes": 0.0,
+    "balanced": null,
+    "baseline_acc": 0.0,
+    "baseline_balanced": null
+   },
+   "first_check": {
+    "n": 100,
+    "acc": 0.0,
+    "unusable": 100,
+    "with_illegal": 0,
+    "truncated": 100,
+    "truth_yes": 0.25,
+    "balanced": 0.0,
+    "baseline_acc": 0.75,
+    "baseline_balanced": 0.5
+   },
+   "later_role_subsume": {
+    "n": 149,
+    "acc": 0.0,
+    "unusable": 149,
+    "with_illegal": 0,
+    "truncated": 149,
+    "truth_yes": 1.0,
+    "balanced": null,
+    "baseline_acc": 1.0,
+    "baseline_balanced": null
+   },
+   "other": {
+    "n": 825,
+    "acc": 0.1442,
+    "unusable": 657,
+    "with_illegal": 2,
+    "truncated": 570,
+    "truth_yes": 0.1429,
+    "balanced": 0.1267,
+    "baseline_acc": 0.8571,
+    "baseline_balanced": 0.7083,
+    "witness_correct": {
+     "n": 1,
+     "acc": 0.0
+    }
+   },
+   "role_reuse_check": {
+    "n": 50,
+    "acc": 0.5,
+    "unusable": 0,
+    "with_illegal": 0,
+    "truncated": 0,
+    "truth_yes": 0.5,
+    "balanced": 0.5,
+    "baseline_acc": 0.5,
+    "baseline_balanced": 0.5
+   }
+  }
+ },
+ "tier:t8_decoy": {
+  "by_kind": {
+   "role": {
+    "n": 50,
+    "acc": 0.02,
+    "unusable": 49,
+    "with_illegal": 1,
+    "truncated": 49
+   },
+   "subsume": {
+    "n": 153,
+    "acc": 0.0,
+    "unusable": 153,
+    "with_illegal": 0,
+    "truncated": 153,
+    "truth_yes": 0.5098,
+    "balanced": 0.0,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   },
+   "fold_candidates": {
+    "n": 75,
+    "acc": 0.0,
+    "unusable": 75,
+    "with_illegal": 0,
+    "truncated": 74
+   },
+   "check": {
+    "n": 100,
+    "acc": 0.0,
+    "unusable": 100,
+    "with_illegal": 0,
+    "truncated": 100,
+    "truth_yes": 0.5,
+    "balanced": 0.0,
+    "baseline_acc": 0.75,
+    "baseline_balanced": 0.75
+   },
+   "reuse_scan": {
+    "n": 50,
+    "acc": 0.36,
+    "unusable": 31,
+    "with_illegal": 0,
+    "truncated": 0
+   },
+   "reuse_check": {
+    "n": 25,
+    "acc": 1.0,
+    "unusable": 0,
+    "with_illegal": 0,
+    "truncated": 0,
+    "truth_yes": 0.0,
+    "balanced": null,
+    "baseline_acc": 1.0,
+    "baseline_balanced": null
+   },
+   "contrary_facts": {
+    "n": 25,
+    "acc": 0.0,
+    "unusable": 25,
+    "with_illegal": 0,
+    "truncated": 25
+   }
+  },
+  "by_cell": {
+   "first_check": {
+    "n": 50,
+    "acc": 0.0,
+    "unusable": 50,
+    "with_illegal": 0,
+    "truncated": 50,
+    "truth_yes": 0.5,
+    "balanced": 0.0,
+    "baseline_acc": 0.5,
+    "baseline_balanced": 0.5
+   },
+   "later_role_subsume": {
+    "n": 78,
+    "acc": 0.0,
+    "unusable": 78,
+    "with_illegal": 0,
+    "truncated": 78,
+    "truth_yes": 1.0,
+    "balanced": null,
+    "baseline_acc": 1.0,
+    "baseline_balanced": null
+   },
+   "other": {
+    "n": 350,
+    "acc": 0.1257,
+    "unusable": 305,
+    "with_illegal": 1,
+    "truncated": 273,
+    "truth_yes": 0.1667,
+    "balanced": 0.1,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   }
+  }
+ },
+ "tier:t9_reuse": {
+  "by_kind": {
+   "role": {
+    "n": 50,
+    "acc": 0.0,
+    "unusable": 49,
+    "with_illegal": 1,
+    "truncated": 48
+   },
+   "subsume": {
+    "n": 146,
+    "acc": 0.0,
+    "unusable": 146,
+    "with_illegal": 0,
+    "truncated": 146,
+    "truth_yes": 0.4863,
+    "balanced": 0.0,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   },
+   "fold_candidates": {
+    "n": 75,
+    "acc": 0.0,
+    "unusable": 75,
+    "with_illegal": 0,
+    "truncated": 75
+   },
+   "check": {
+    "n": 150,
+    "acc": 0.0067,
+    "unusable": 149,
+    "with_illegal": 0,
+    "truncated": 149,
+    "truth_yes": 0.1667,
+    "balanced": 0.004,
+    "baseline_acc": 0.5,
+    "baseline_balanced": 0.3,
+    "witness_correct": {
+     "n": 1,
+     "acc": 0.0
+    }
+   },
+   "reuse_scan": {
+    "n": 125,
+    "acc": 0.192,
+    "unusable": 54,
+    "with_illegal": 0,
+    "truncated": 0
+   },
+   "reuse_check": {
+    "n": 100,
+    "acc": 0.75,
+    "unusable": 0,
+    "with_illegal": 0,
+    "truncated": 0,
+    "truth_yes": 0.25,
+    "balanced": 0.5,
+    "baseline_acc": 0.75,
+    "baseline_balanced": 0.5
+   },
+   "contrary_facts": {
+    "n": 25,
+    "acc": 0.0,
+    "unusable": 25,
+    "with_illegal": 0,
+    "truncated": 25
+   }
+  },
+  "by_cell": {
+   "after_l39_check": {
+    "n": 25,
+    "acc": 0.0,
+    "unusable": 25,
+    "with_illegal": 0,
+    "truncated": 25,
+    "truth_yes": 0.0,
+    "balanced": null,
+    "baseline_acc": 0.0,
+    "baseline_balanced": null
+   },
+   "first_check": {
+    "n": 50,
+    "acc": 0.0,
+    "unusable": 50,
+    "with_illegal": 0,
+    "truncated": 50,
+    "truth_yes": 0.0,
+    "balanced": null,
+    "baseline_acc": 1.0,
+    "baseline_balanced": null
+   },
+   "later_role_subsume": {
+    "n": 71,
+    "acc": 0.0,
+    "unusable": 71,
+    "with_illegal": 0,
+    "truncated": 71,
+    "truth_yes": 1.0,
+    "balanced": null,
+    "baseline_acc": 1.0,
+    "baseline_balanced": null
+   },
+   "other": {
+    "n": 475,
+    "acc": 0.1579,
+    "unusable": 352,
+    "with_illegal": 1,
+    "truncated": 297,
+    "truth_yes": 0.125,
+    "balanced": 0.1457,
+    "baseline_acc": 0.75,
+    "baseline_balanced": 0.4286,
+    "witness_correct": {
+     "n": 1,
+     "acc": 0.0
+    }
+   },
+   "role_reuse_check": {
+    "n": 50,
+    "acc": 0.5,
+    "unusable": 0,
+    "with_illegal": 0,
+    "truncated": 0,
+    "truth_yes": 0.5,
+    "balanced": 0.5,
+    "baseline_acc": 0.5,
+    "baseline_balanced": 0.5
+   }
+  }
+ },
+ "split:test": {
+  "by_kind": {
+   "role": {
+    "n": 200,
+    "acc": 0.01,
+    "unusable": 198,
+    "with_illegal": 2,
+    "truncated": 183
+   },
+   "subsume": {
+    "n": 753,
+    "acc": 0.0,
+    "unusable": 753,
+    "with_illegal": 0,
+    "truncated": 753,
+    "truth_yes": 0.5365,
+    "balanced": 0.0,
+    "baseline_acc": 0.9469,
+    "baseline_balanced": 0.9427
+   },
+   "fold_candidates": {
+    "n": 349,
+    "acc": 0.0,
+    "unusable": 349,
+    "with_illegal": 0,
+    "truncated": 331
+   },
+   "check": {
+    "n": 457,
+    "acc": 0.0,
+    "unusable": 457,
+    "with_illegal": 0,
+    "truncated": 457,
+    "truth_yes": 0.4814,
+    "balanced": 0.0,
+    "baseline_acc": 0.7768,
+    "baseline_balanced": 0.7739
+   },
+   "reuse_scan": {
+    "n": 237,
+    "acc": 0.3544,
+    "unusable": 131,
+    "with_illegal": 0,
+    "truncated": 0
+   },
+   "reuse_check": {
+    "n": 128,
+    "acc": 0.8438,
+    "unusable": 0,
+    "with_illegal": 0,
+    "truncated": 0,
+    "truth_yes": 0.1562,
+    "balanced": 0.5,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   },
+   "contrary_facts": {
+    "n": 109,
+    "acc": 0.0,
+    "unusable": 109,
+    "with_illegal": 0,
+    "truncated": 109
+   }
+  },
+  "by_cell": {
+   "after_l39_check": {
+    "n": 19,
+    "acc": 0.0,
+    "unusable": 19,
+    "with_illegal": 0,
+    "truncated": 19,
+    "truth_yes": 0.6842,
+    "balanced": 0.0,
+    "baseline_acc": 0.6842,
+    "baseline_balanced": 0.5
+   },
+   "first_check": {
+    "n": 200,
+    "acc": 0.0,
+    "unusable": 200,
+    "with_illegal": 0,
+    "truncated": 200,
+    "truth_yes": 0.455,
+    "balanced": 0.0,
+    "baseline_acc": 0.585,
+    "baseline_balanced": 0.5585
+   },
+   "later_role_subsume": {
+    "n": 444,
+    "acc": 0.0,
+    "unusable": 444,
+    "with_illegal": 0,
+    "truncated": 444,
+    "truth_yes": 0.9099,
+    "balanced": 0.0,
+    "baseline_acc": 0.9099,
+    "baseline_balanced": 0.5
+   },
+   "other": {
+    "n": 1511,
+    "acc": 0.1158,
+    "unusable": 1294,
+    "with_illegal": 2,
+    "truncated": 1130,
+    "truth_yes": 0.1769,
+    "balanced": 0.0878,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   },
+   "role_reuse_check": {
+    "n": 19,
+    "acc": 1.0,
+    "unusable": 0,
+    "with_illegal": 0,
+    "truncated": 0,
+    "truth_yes": 0.0,
+    "balanced": null,
+    "baseline_acc": 1.0,
+    "baseline_balanced": null
+   },
+   "second_path_check": {
+    "n": 40,
+    "acc": 0.0,
+    "unusable": 40,
+    "with_illegal": 0,
+    "truncated": 40,
+    "truth_yes": 0.675,
+    "balanced": 0.0,
+    "baseline_acc": 0.675,
+    "baseline_balanced": 0.5
+   }
+  }
+ },
+ "tier:t1_base": {
+  "by_kind": {
+   "role": {
+    "n": 40,
+    "acc": 0.025,
+    "unusable": 39,
+    "with_illegal": 1,
+    "truncated": 39
+   },
+   "subsume": {
+    "n": 111,
+    "acc": 0.0,
+    "unusable": 111,
+    "with_illegal": 0,
+    "truncated": 111,
+    "truth_yes": 0.4595,
+    "balanced": 0.0,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   },
+   "fold_candidates": {
+    "n": 60,
+    "acc": 0.0,
+    "unusable": 60,
+    "with_illegal": 0,
+    "truncated": 57
+   },
+   "check": {
+    "n": 80,
+    "acc": 0.0,
+    "unusable": 80,
+    "with_illegal": 0,
+    "truncated": 80,
+    "truth_yes": 0.5,
+    "balanced": 0.0,
+    "baseline_acc": 0.75,
+    "baseline_balanced": 0.75
+   },
+   "reuse_scan": {
+    "n": 40,
+    "acc": 0.325,
+    "unusable": 22,
+    "with_illegal": 0,
+    "truncated": 0
+   },
+   "reuse_check": {
+    "n": 20,
+    "acc": 1.0,
+    "unusable": 0,
+    "with_illegal": 0,
+    "truncated": 0,
+    "truth_yes": 0.0,
+    "balanced": null,
+    "baseline_acc": 1.0,
+    "baseline_balanced": null
+   },
+   "contrary_facts": {
+    "n": 20,
+    "acc": 0.0,
+    "unusable": 20,
+    "with_illegal": 0,
+    "truncated": 20
+   }
+  },
+  "by_cell": {
+   "first_check": {
+    "n": 40,
+    "acc": 0.0,
+    "unusable": 40,
+    "with_illegal": 0,
+    "truncated": 40,
+    "truth_yes": 0.5,
+    "balanced": 0.0,
+    "baseline_acc": 0.5,
+    "baseline_balanced": 0.5
+   },
+   "later_role_subsume": {
+    "n": 51,
+    "acc": 0.0,
+    "unusable": 51,
+    "with_illegal": 0,
+    "truncated": 51,
+    "truth_yes": 1.0,
+    "balanced": null,
+    "baseline_acc": 1.0,
+    "baseline_balanced": null
+   },
+   "other": {
+    "n": 280,
+    "acc": 0.1214,
+    "unusable": 241,
+    "with_illegal": 1,
+    "truncated": 216,
+    "truth_yes": 0.1667,
+    "balanced": 0.1,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   }
+  }
+ },
+ "tier:t2_noise": {
+  "by_kind": {
+   "role": {
+    "n": 40,
+    "acc": 0.0,
+    "unusable": 40,
+    "with_illegal": 0,
+    "truncated": 38
+   },
+   "subsume": {
+    "n": 122,
+    "acc": 0.0,
+    "unusable": 122,
+    "with_illegal": 0,
+    "truncated": 122,
+    "truth_yes": 0.5082,
+    "balanced": 0.0,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   },
+   "fold_candidates": {
+    "n": 60,
+    "acc": 0.0,
+    "unusable": 60,
+    "with_illegal": 0,
+    "truncated": 57
+   },
+   "check": {
+    "n": 80,
+    "acc": 0.0,
+    "unusable": 80,
+    "with_illegal": 0,
+    "truncated": 80,
+    "truth_yes": 0.5,
+    "balanced": 0.0,
+    "baseline_acc": 0.75,
+    "baseline_balanced": 0.75
+   },
+   "reuse_scan": {
+    "n": 40,
+    "acc": 0.5,
+    "unusable": 20,
+    "with_illegal": 0,
+    "truncated": 0
+   },
+   "reuse_check": {
+    "n": 20,
+    "acc": 1.0,
+    "unusable": 0,
+    "with_illegal": 0,
+    "truncated": 0,
+    "truth_yes": 0.0,
+    "balanced": null,
+    "baseline_acc": 1.0,
+    "baseline_balanced": null
+   },
+   "contrary_facts": {
+    "n": 20,
+    "acc": 0.0,
+    "unusable": 20,
+    "with_illegal": 0,
+    "truncated": 20
+   }
+  },
+  "by_cell": {
+   "first_check": {
+    "n": 40,
+    "acc": 0.0,
+    "unusable": 40,
+    "with_illegal": 0,
+    "truncated": 40,
+    "truth_yes": 0.5,
+    "balanced": 0.0,
+    "baseline_acc": 0.5,
+    "baseline_balanced": 0.5
+   },
+   "later_role_subsume": {
+    "n": 62,
+    "acc": 0.0,
+    "unusable": 62,
+    "with_illegal": 0,
+    "truncated": 62,
+    "truth_yes": 1.0,
+    "balanced": null,
+    "baseline_acc": 1.0,
+    "baseline_balanced": null
+   },
+   "other": {
+    "n": 280,
+    "acc": 0.1429,
+    "unusable": 240,
+    "with_illegal": 0,
+    "truncated": 215,
+    "truth_yes": 0.1667,
+    "balanced": 0.1,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   }
+  }
+ },
+ "tier:t3_domain": {
+  "by_kind": {
+   "role": {
+    "n": 40,
+    "acc": 0.0,
+    "unusable": 40,
+    "with_illegal": 0,
+    "truncated": 39
+   },
+   "subsume": {
+    "n": 204,
+    "acc": 0.0,
+    "unusable": 204,
+    "with_illegal": 0,
+    "truncated": 204,
+    "truth_yes": 0.7059,
+    "balanced": 0.0,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   },
+   "fold_candidates": {
+    "n": 60,
+    "acc": 0.0,
+    "unusable": 60,
+    "with_illegal": 0,
+    "truncated": 60
+   },
+   "check": {
+    "n": 80,
+    "acc": 0.0,
+    "unusable": 80,
+    "with_illegal": 0,
+    "truncated": 80,
+    "truth_yes": 0.5,
+    "balanced": 0.0,
+    "baseline_acc": 0.75,
+    "baseline_balanced": 0.75
+   },
+   "reuse_scan": {
+    "n": 40,
+    "acc": 0.275,
+    "unusable": 29,
+    "with_illegal": 0,
+    "truncated": 0
+   },
+   "reuse_check": {
+    "n": 20,
+    "acc": 1.0,
+    "unusable": 0,
+    "with_illegal": 0,
+    "truncated": 0,
+    "truth_yes": 0.0,
+    "balanced": null,
+    "baseline_acc": 1.0,
+    "baseline_balanced": null
+   },
+   "contrary_facts": {
+    "n": 20,
+    "acc": 0.0,
+    "unusable": 20,
+    "with_illegal": 0,
+    "truncated": 20
+   }
+  },
+  "by_cell": {
+   "first_check": {
+    "n": 40,
+    "acc": 0.0,
+    "unusable": 40,
+    "with_illegal": 0,
+    "truncated": 40,
+    "truth_yes": 0.5,
+    "balanced": 0.0,
+    "baseline_acc": 0.5,
+    "baseline_balanced": 0.5
+   },
+   "later_role_subsume": {
+    "n": 144,
+    "acc": 0.0,
+    "unusable": 144,
+    "with_illegal": 0,
+    "truncated": 144,
+    "truth_yes": 1.0,
+    "balanced": null,
+    "baseline_acc": 1.0,
+    "baseline_balanced": null
+   },
+   "other": {
+    "n": 280,
+    "acc": 0.1107,
+    "unusable": 249,
+    "with_illegal": 0,
+    "truncated": 219,
+    "truth_yes": 0.1667,
+    "balanced": 0.1,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   }
+  }
+ },
+ "tier:t4_nested": {
+  "by_kind": {
+   "role": {
+    "n": 40,
+    "acc": 0.0,
+    "unusable": 40,
+    "with_illegal": 0,
+    "truncated": 40
+   },
+   "subsume": {
+    "n": 125,
+    "acc": 0.0,
+    "unusable": 125,
+    "with_illegal": 0,
+    "truncated": 125,
+    "truth_yes": 0.52,
+    "balanced": 0.0,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   },
+   "fold_candidates": {
+    "n": 60,
+    "acc": 0.0,
+    "unusable": 60,
+    "with_illegal": 0,
+    "truncated": 58
+   },
+   "check": {
+    "n": 79,
+    "acc": 0.0,
+    "unusable": 79,
+    "with_illegal": 0,
+    "truncated": 79,
+    "truth_yes": 0.2532,
+    "balanced": 0.0,
+    "baseline_acc": 0.8354,
+    "baseline_balanced": 0.7742
+   },
+   "reuse_scan": {
+    "n": 59,
+    "acc": 0.339,
+    "unusable": 22,
+    "with_illegal": 0,
+    "truncated": 0
+   },
+   "reuse_check": {
+    "n": 39,
+    "acc": 0.4872,
+    "unusable": 0,
+    "with_illegal": 0,
+    "truncated": 0,
+    "truth_yes": 0.5128,
+    "balanced": 0.5,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   },
+   "contrary_facts": {
+    "n": 20,
+    "acc": 0.0,
+    "unusable": 20,
+    "with_illegal": 0,
+    "truncated": 20
+   }
+  },
+  "by_cell": {
+   "after_l39_check": {
+    "n": 19,
+    "acc": 0.0,
+    "unusable": 19,
+    "with_illegal": 0,
+    "truncated": 19,
+    "truth_yes": 0.6842,
+    "balanced": 0.0,
+    "baseline_acc": 0.6842,
+    "baseline_balanced": 0.5
+   },
+   "first_check": {
+    "n": 40,
+    "acc": 0.0,
+    "unusable": 40,
+    "with_illegal": 0,
+    "truncated": 40,
+    "truth_yes": 0.175,
+    "balanced": 0.0,
+    "baseline_acc": 0.825,
+    "baseline_balanced": 0.5
+   },
+   "later_role_subsume": {
+    "n": 65,
+    "acc": 0.0,
+    "unusable": 65,
+    "with_illegal": 0,
+    "truncated": 65,
+    "truth_yes": 1.0,
+    "balanced": null,
+    "baseline_acc": 1.0,
+    "baseline_balanced": null
+   },
+   "other": {
+    "n": 279,
+    "acc": 0.0717,
+    "unusable": 222,
+    "with_illegal": 0,
+    "truncated": 198,
+    "truth_yes": 0.2,
+    "balanced": 0.0,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   },
+   "role_reuse_check": {
+    "n": 19,
+    "acc": 1.0,
+    "unusable": 0,
+    "with_illegal": 0,
+    "truncated": 0,
+    "truth_yes": 0.0,
+    "balanced": null,
+    "baseline_acc": 1.0,
+    "baseline_balanced": null
+   }
+  }
+ },
+ "tier:t5_twopath": {
+  "by_kind": {
+   "role": {
+    "n": 40,
+    "acc": 0.025,
+    "unusable": 39,
+    "with_illegal": 1,
+    "truncated": 27
+   },
+   "subsume": {
+    "n": 191,
+    "acc": 0.0,
+    "unusable": 191,
+    "with_illegal": 0,
+    "truncated": 191,
+    "truth_yes": 0.4293,
+    "balanced": 0.0,
+    "baseline_acc": 0.7906,
+    "baseline_balanced": 0.8165
+   },
+   "fold_candidates": {
+    "n": 109,
+    "acc": 0.0,
+    "unusable": 109,
+    "with_illegal": 0,
+    "truncated": 99
+   },
+   "check": {
+    "n": 138,
+    "acc": 0.0,
+    "unusable": 138,
+    "with_illegal": 0,
+    "truncated": 138,
+    "truth_yes": 0.5797,
+    "balanced": 0.0,
+    "baseline_acc": 0.7899,
+    "baseline_balanced": 0.75
+   },
+   "reuse_scan": {
+    "n": 58,
+    "acc": 0.3448,
+    "unusable": 38,
+    "with_illegal": 0,
+    "truncated": 0
+   },
+   "reuse_check": {
+    "n": 29,
+    "acc": 1.0,
+    "unusable": 0,
+    "with_illegal": 0,
+    "truncated": 0,
+    "truth_yes": 0.0,
+    "balanced": null,
+    "baseline_acc": 1.0,
+    "baseline_balanced": null
+   },
+   "contrary_facts": {
+    "n": 29,
+    "acc": 0.0,
+    "unusable": 29,
+    "with_illegal": 0,
+    "truncated": 29
+   }
+  },
+  "by_cell": {
+   "first_check": {
+    "n": 40,
+    "acc": 0.0,
+    "unusable": 40,
+    "with_illegal": 0,
+    "truncated": 40,
+    "truth_yes": 0.6,
+    "balanced": 0.0,
+    "baseline_acc": 0.6,
+    "baseline_balanced": 0.5
+   },
+   "later_role_subsume": {
+    "n": 122,
+    "acc": 0.0,
+    "unusable": 122,
+    "with_illegal": 0,
+    "truncated": 122,
+    "truth_yes": 0.6721,
+    "balanced": 0.0,
+    "baseline_acc": 0.6721,
+    "baseline_balanced": 0.5
+   },
+   "other": {
+    "n": 392,
+    "acc": 0.1276,
+    "unusable": 342,
+    "with_illegal": 1,
+    "truncated": 282,
+    "truth_yes": 0.1859,
+    "balanced": 0.1142,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   },
+   "second_path_check": {
+    "n": 40,
+    "acc": 0.0,
+    "unusable": 40,
+    "with_illegal": 0,
+    "truncated": 40,
+    "truth_yes": 0.675,
+    "balanced": 0.0,
+    "baseline_acc": 0.675,
+    "baseline_balanced": 0.5
+   }
+  }
+ },
+ "split:table1": {
+  "by_kind": {
+   "role": {
+    "n": 16,
+    "acc": 0.0625,
+    "unusable": 12,
+    "with_illegal": 4,
+    "truncated": 11
+   },
+   "subsume": {
+    "n": 142,
+    "acc": 0.007,
+    "unusable": 140,
+    "with_illegal": 0,
+    "truncated": 140,
+    "truth_yes": 0.6197,
+    "balanced": 0.0093,
+    "baseline_acc": 0.7183,
+    "baseline_balanced": 0.7441,
+    "witness_correct": {
+     "n": 2,
+     "acc": 0.0
+    }
+   },
+   "fold_candidates": {
+    "n": 54,
+    "acc": 0.0,
+    "unusable": 54,
+    "with_illegal": 0,
+    "truncated": 48
+   },
+   "check": {
+    "n": 72,
+    "acc": 0.0,
+    "unusable": 72,
+    "with_illegal": 0,
+    "truncated": 72,
+    "truth_yes": 0.1944,
+    "balanced": 0.0,
+    "baseline_acc": 0.6944,
+    "baseline_balanced": 0.5936
+   },
+   "reuse_scan": {
+    "n": 58,
+    "acc": 0.3621,
+    "unusable": 28,
+    "with_illegal": 0,
+    "truncated": 0
+   },
+   "reuse_check": {
+    "n": 30,
+    "acc": 0.5333,
+    "unusable": 2,
+    "with_illegal": 0,
+    "truncated": 2,
+    "truth_yes": 0.4,
+    "balanced": 0.4444,
+    "baseline_acc": 0.6,
+    "baseline_balanced": 0.5
+   },
+   "contrary_facts": {
+    "n": 28,
+    "acc": 0.0,
+    "unusable": 28,
+    "with_illegal": 0,
+    "truncated": 28
+   }
+  },
+  "by_cell": {
+   "after_l39_check": {
+    "n": 8,
+    "acc": 0.0,
+    "unusable": 8,
+    "with_illegal": 0,
+    "truncated": 8,
+    "truth_yes": 0.25,
+    "balanced": 0.0,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   },
+   "first_check": {
+    "n": 16,
+    "acc": 0.0,
+    "unusable": 16,
+    "with_illegal": 0,
+    "truncated": 16,
+    "truth_yes": 0.25,
+    "balanced": 0.0,
+    "baseline_acc": 0.75,
+    "baseline_balanced": 0.5
+   },
+   "later_role_subsume": {
+    "n": 64,
+    "acc": 0.0,
+    "unusable": 64,
+    "with_illegal": 0,
+    "truncated": 64,
+    "truth_yes": 0.875,
+    "balanced": 0.0,
+    "baseline_acc": 0.875,
+    "baseline_balanced": 0.5
+   },
+   "other": {
+    "n": 296,
+    "acc": 0.1115,
+    "unusable": 238,
+    "with_illegal": 4,
+    "truncated": 203,
+    "truth_yes": 0.3714,
+    "balanced": 0.0625,
+    "baseline_acc": 0.6143,
+    "baseline_balanced": 0.5044,
+    "witness_correct": {
+     "n": 2,
+     "acc": 0.0
+    }
+   },
+   "role_reuse_check": {
+    "n": 8,
+    "acc": 0.75,
+    "unusable": 2,
+    "with_illegal": 0,
+    "truncated": 2,
+    "truth_yes": 0.0,
+    "balanced": null,
+    "baseline_acc": 1.0,
+    "baseline_balanced": null
+   },
+   "second_path_check": {
+    "n": 8,
+    "acc": 0.0,
+    "unusable": 8,
+    "with_illegal": 0,
+    "truncated": 8,
+    "truth_yes": 0.0,
+    "balanced": null,
+    "baseline_acc": 0.0,
+    "baseline_balanced": null
+   }
+  }
+ },
+ "tier:table1": {
+  "by_kind": {
+   "role": {
+    "n": 16,
+    "acc": 0.0625,
+    "unusable": 12,
+    "with_illegal": 4,
+    "truncated": 11
+   },
+   "subsume": {
+    "n": 142,
+    "acc": 0.007,
+    "unusable": 140,
+    "with_illegal": 0,
+    "truncated": 140,
+    "truth_yes": 0.6197,
+    "balanced": 0.0093,
+    "baseline_acc": 0.7183,
+    "baseline_balanced": 0.7441,
+    "witness_correct": {
+     "n": 2,
+     "acc": 0.0
+    }
+   },
+   "fold_candidates": {
+    "n": 54,
+    "acc": 0.0,
+    "unusable": 54,
+    "with_illegal": 0,
+    "truncated": 48
+   },
+   "check": {
+    "n": 72,
+    "acc": 0.0,
+    "unusable": 72,
+    "with_illegal": 0,
+    "truncated": 72,
+    "truth_yes": 0.1944,
+    "balanced": 0.0,
+    "baseline_acc": 0.6944,
+    "baseline_balanced": 0.5936
+   },
+   "reuse_scan": {
+    "n": 58,
+    "acc": 0.3621,
+    "unusable": 28,
+    "with_illegal": 0,
+    "truncated": 0
+   },
+   "reuse_check": {
+    "n": 30,
+    "acc": 0.5333,
+    "unusable": 2,
+    "with_illegal": 0,
+    "truncated": 2,
+    "truth_yes": 0.4,
+    "balanced": 0.4444,
+    "baseline_acc": 0.6,
+    "baseline_balanced": 0.5
+   },
+   "contrary_facts": {
+    "n": 28,
+    "acc": 0.0,
+    "unusable": 28,
+    "with_illegal": 0,
+    "truncated": 28
+   }
+  },
+  "by_cell": {
+   "after_l39_check": {
+    "n": 8,
+    "acc": 0.0,
+    "unusable": 8,
+    "with_illegal": 0,
+    "truncated": 8,
+    "truth_yes": 0.25,
+    "balanced": 0.0,
+    "baseline_acc": 1.0,
+    "baseline_balanced": 1.0
+   },
+   "first_check": {
+    "n": 16,
+    "acc": 0.0,
+    "unusable": 16,
+    "with_illegal": 0,
+    "truncated": 16,
+    "truth_yes": 0.25,
+    "balanced": 0.0,
+    "baseline_acc": 0.75,
+    "baseline_balanced": 0.5
+   },
+   "later_role_subsume": {
+    "n": 64,
+    "acc": 0.0,
+    "unusable": 64,
+    "with_illegal": 0,
+    "truncated": 64,
+    "truth_yes": 0.875,
+    "balanced": 0.0,
+    "baseline_acc": 0.875,
+    "baseline_balanced": 0.5
+   },
+   "other": {
+    "n": 296,
+    "acc": 0.1115,
+    "unusable": 238,
+    "with_illegal": 4,
+    "truncated": 203,
+    "truth_yes": 0.3714,
+    "balanced": 0.0625,
+    "baseline_acc": 0.6143,
+    "baseline_balanced": 0.5044,
+    "witness_correct": {
+     "n": 2,
+     "acc": 0.0
+    }
+   },
+   "role_reuse_check": {
+    "n": 8,
+    "acc": 0.75,
+    "unusable": 2,
+    "with_illegal": 0,
+    "truncated": 2,
+    "truth_yes": 0.0,
+    "balanced": null,
+    "baseline_acc": 1.0,
+    "baseline_balanced": null
+   },
+   "second_path_check": {
+    "n": 8,
+    "acc": 0.0,
+    "unusable": 8,
+    "with_illegal": 0,
+    "truncated": 8,
+    "truth_yes": 0.0,
+    "balanced": null,
+    "baseline_acc": 0.0,
+    "baseline_balanced": null
+   }
+  }
+ }
+}
