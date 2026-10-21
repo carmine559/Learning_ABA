@@ -11,12 +11,14 @@ __pycache__/
 
 # results/ is tracked: runs on giano come back with git push.
 
-# Raw SLURM logs; the ones worth keeping go into experiments/
+# Raw SLURM logs, written where a job is submitted; the ones worth keeping go into
+# experiments/ or next to their results (results/<set>/logs/).
+/slurm-*.out
 cluster/outputs/
 
 # Corpus: corpus/v1, corpus/v1-permuted and corpus/v1-step are tracked, so giano
-# gets them with git pull; scratch builds (build_corpus.py --out corpus/<other>)
-# stay local. The Zenodo release is GPL, downloaded by build_corpus.py.
+# gets them with git pull; scratch builds (sft/build_corpus.py --out corpus/<other>)
+# stay local. The Zenodo release is GPL, downloaded by sft/build_corpus.py.
 corpus/*/*.jsonl
 !corpus/v1/*.jsonl
 !corpus/v1-permuted/*.jsonl

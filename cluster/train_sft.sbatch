@@ -44,7 +44,7 @@ fi
 for arm in $ARMS; do
     echo "[job $SLURM_JOB_ID] arm=$arm match=$MATCH corpus=$CORPUS out=$OUT"
     if [ "$arm" = base ]; then
-        python3 eval_sft.py --corpus "$CORPUS" --out "$OUT/base"
+        python3 sft/eval_sft.py --corpus "$CORPUS" --out "$OUT/base"
         continue
     fi
     run="sft_${arm}"
@@ -56,7 +56,7 @@ for arm in $ARMS; do
         fi
         RESUME=""
         compgen -G "runs/$run/checkpoint-*" > /dev/null && RESUME="--resume"
-        python3 train_sft.py --arm "$arm" --match "$MATCH" --out "runs/$run" $RESUME
+        python3 sft/train_sft.py --arm "$arm" --match "$MATCH" --out "runs/$run" $RESUME
     fi
-    python3 eval_sft.py --adapter "runs/$run/adapter" --corpus "$CORPUS" --out "$OUT/$run"
+    python3 sft/eval_sft.py --adapter "runs/$run/adapter" --corpus "$CORPUS" --out "$OUT/$run"
 done

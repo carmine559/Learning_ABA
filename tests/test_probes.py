@@ -4,7 +4,7 @@ Tests for the step probes and the trace scorer.
 The load-bearing test here is `test_solver_own_decisions_score_correct`: if
 feeding the reference algorithm's own answer back into a probe does not score
 correct, the probe is mis-specified and every model number from it is
-meaningless. Two probes were found mis-specified exactly that way — one
+meaningless. It guards against two probes mis-specified exactly that way — one
 demanding an intensional contrary that Algorithm 1 only produces on a LATER Gen
 iteration (the paper's Example 10, rho17 -> rho19), and one refusing the
 assumption-reuse case where line 36 sets S := empty.
@@ -139,8 +139,8 @@ def test_both_answer_formats_score_identically(problems):
 
     The probe prompt asks for the first, the shared SYSTEM_PROMPT for the
     second, so the corpus contains both: Qwen2.5-14B wrote `RULE:` on 103/103
-    introduce probes, 32B on 11/103. Scoring only the labelled form measured
-    which instruction a model obeyed, not whether its R3 was legal.
+    introduce probes, 32B on 11/103. Scoring only the labelled form would
+    measure which instruction a model obeyed, not whether its R3 is legal.
     """
     compared = 0
     for problem in problems:

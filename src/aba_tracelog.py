@@ -1,18 +1,18 @@
 """Rich sidecar record of what ASP-ABAlearnB actually decided.
 
 `LearningTrace` records the steps the algorithm ACCEPTED. That is enough to
-reconstruct the answer, and it is what `symbolic_traces.jsonl` has always held,
+reconstruct the answer, and it is what `symbolic_traces.jsonl` holds,
 but it throws away everything that distinguishes EXECUTING the algorithm from
 arriving at its answer:
 
   * every satisfiability verdict — including the negative ones, i.e. the
-    decision to KEEP a fact rather than subsume it, which left no record at all;
+    decision to KEEP a fact rather than subsume it, which leaves no record at all;
   * the fold candidates that were tried and REJECTED before the accepted one,
     and the background rule each was folded from (the paper's rho2);
   * whether an assumption was REUSED (Definition 4, line 36) or freshly
     MINTED (line 41), and the line-39 FAILURE when every reusable one is
     rejected. The accepted step looks identical whether reused or minted, so no
-    stored result could tell the branches apart;
+    `symbolic_traces.jsonl` record can tell the branches apart;
   * Gen's BACKTRACKING: a choice whose continuation failed is retracted and the
     fact's next option tried, possibly after later facts were already
     processed. Those later events are kept, marked `abandoned`.
@@ -25,7 +25,8 @@ DESIGN. This is a SIDECAR. It adds no field to `TransformStep`/`LearningTrace`
 and changes no algorithm behaviour: it rides the existing spectator `observer`
 hook, and `RunRecord` embeds `LearningTrace.to_dict()` verbatim under
 `symbolic_trace`, so `aba_trace`, `rescore.py` and `analysis/*` keep working
-unchanged and the sidecar diffs against the committed 103 for free.
+unchanged and the sidecar diffs for free against the 103 traces committed in
+`experiments/05_scale_4bit_probes_v2/`.
 `tests/test_golden_traces.py` pins the no-behaviour-change property.
 
 Usage:

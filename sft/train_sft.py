@@ -1,10 +1,10 @@
 """LoRA SFT of one arm on the corpus: endpoint or trace, identical otherwise.
 
-    python train_sft.py --audit                  # once, before any run: TOKENS.json
-    python train_sft.py --audit --corpus corpus/v1-permuted   # evaluation only
-    python train_sft.py --arm endpoint --out runs/sft_endpoint
-    python train_sft.py --arm trace    --out runs/sft_trace
-    python train_sft.py --arm endpoint --match tokens --out runs/sft_endpoint_tokens
+    python sft/train_sft.py --audit                  # once, before any run: TOKENS.json
+    python sft/train_sft.py --audit --corpus corpus/v1-permuted   # evaluation only
+    python sft/train_sft.py --arm endpoint --out runs/sft_endpoint
+    python sft/train_sft.py --arm trace    --out runs/sft_trace
+    python sft/train_sft.py --arm endpoint --match tokens --out runs/sft_endpoint_tokens
 
 Arm matching (MANIFEST `arm_matching`). Primary: same train problems in the same
 order, same epochs, batch and schedule. The order is drawn here, one seeded
@@ -28,6 +28,8 @@ import math
 import sys
 import time
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # the repo root
 
 from src.aba_corpus import _sha256
 from src.aba_tracelog import _git_rev

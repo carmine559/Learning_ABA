@@ -1,11 +1,10 @@
-"""The SFT arm comparison, registered before the trace arm's outputs were read.
+"""The SFT arm comparison.
 
-    python compare_sft.py          # -> results/sft/COMPARISON.md and COMPARISON.json
+    python sft/compare_sft.py          # -> results/sft/COMPARISON.md and COMPARISON.json
 
 Reads what eval_sft.py scored for every arm present (results/sft/<arm>/ and
 results/sft-permuted/<arm>/; arms base, sft_endpoint, sft_trace); generates and
-re-scores nothing except the constant responders of the floors. Registered on
-2026-10-07, before any trace-arm output was scored:
+re-scores nothing except the constant responders of the floors.
 
 Sets: test (t1-t5, 200); t8_decoy and t9_reuse by half (25 each); Table 1 (8
 problems, named and anonymised); the permuted re-posing of test and held-out
@@ -40,7 +39,7 @@ Intervals: Clopper-Pearson 95% over problems; exact McNemar for paired contrasts
 (arm against arm on the same problems, original against permuted); percentile
 bootstrap over problems (2000 resamples, seed 0) for means of per-problem ratios.
 
-Decision rules (the user's, 2026-10-07/08), read only on complete scores:
+Decision rules, read only on complete scores:
 - Invariant: the bootstrap 95% CI of permuted minus original exact lies inside
   +-0.05; a drop: McNemar p < 0.05 with a negative delta. Both can hold and are
   then both reported. The registered verdict is over all 300 permuted problems;
@@ -63,6 +62,8 @@ import re
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # the repo root
 
 from src.aba_algorithm import _current_framework
 from src.aba_corpus import problem_from_dict, rename_preds

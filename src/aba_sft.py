@@ -180,7 +180,7 @@ def gold_self_score(example: Dict, problem: LearningProblem) -> Dict:
 
     Every model's fidelity must be read against this, not against 1.0, because
     `aba_trace.score_trace` does not give the gold trace full marks. Measured on
-    the 103-problem set, three reasons:
+    the 103 problems of experiments/05_scale_4bit_probes_v2, three reasons:
 
       * `rK_recall` is left at 0.0 when the gold trace has no RK step at all.
         Averaged naively that is "not applicable" scored as failure: a perfect
@@ -227,7 +227,7 @@ def sft_example(problem: LearningProblem) -> Dict:
     if not record.intensional:
         raise Untrainable("not_intensional")
     if record.n_retractions:
-        # No trace grammar for undoing an earlier fact's choice yet.
+        # No trace grammar for undoing an earlier fact's choice.
         raise Untrainable("cross_fact_backtracking")
     return {
         "problem_id": problem.problem_id,

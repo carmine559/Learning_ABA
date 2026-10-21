@@ -241,6 +241,7 @@ Every flag: [docs/CLI.md](docs/CLI.md). On the DISI SLURM cluster,
 | [`gradual/`](gradual/) | Task 2 — BSAF gradual semantics, BAF baseline, random-ABAF generator |
 | [`argllm/`](argllm/) | Task 3 — design spec only, no code yet |
 | [`extras/`](extras/) | reporting — framework export, explanations, figures |
+| [`sft/`](sft/) | SFT — corpus builder, training, evaluation, arm comparisons; run from the root as `python sft/<script>.py` |
 | [`cluster/`](cluster/) | SLURM scripts for the DISI GPU cluster |
 | [`experiments/`](experiments/) | curated, committed result sets, one `MANIFEST.md` each |
 | [`docs/`](docs/) | [CLI](docs/CLI.md) · [experiments](docs/EXPERIMENTS.md) · [prompts](docs/PROMPTS.md) · [graded semantics](docs/GRADED.md) |

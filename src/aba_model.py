@@ -55,7 +55,7 @@ class LLMBackend(ABC):
 GROQ_MODELS = {
     # model_alias          : groq_model_id
     #   https://console.groq.com/docs/models
-    "llama3-70b":          "llama-3.3-70b-versatile",   # current 70B, recommended
+    "llama3-70b":          "llama-3.3-70b-versatile",   # 70B, recommended
     "llama3-8b":           "llama-3.1-8b-instant",      # faster, smaller
     "gemma2-9b":           "gemma2-9b-it",
     "gpt-oss-120b":        "openai/gpt-oss-120b",        # strong reasoning
@@ -256,7 +256,7 @@ class HFInferenceBackend(LLMBackend):
 # Sign up: https://aistudio.google.com  → Get API key → copy to GOOGLE_API_KEY
 # Install: pip install google-genai
 #
-# Free-tier limits (AI Studio, 2025):
+# Free-tier limits (AI Studio):
 #   gemini-2.5-flash :  500 req/day  10 req/min   1 M tok/min   ← recommended
 #   gemini-2.0-flash : 1500 req/day  15 req/min   1 M tok/min
 #   gemini-2.5-pro   :   50 req/day   5 req/min  250 K tok/min
@@ -271,8 +271,8 @@ class HFInferenceBackend(LLMBackend):
 GOOGLE_MODELS: Dict[str, str] = {
     # alias              : model id used by the API
     "gemini-2.5-flash":  "gemini-2.5-flash",        # best balance — recommended
-    "gemini-3.5-flash":  "gemini-3.5-flash",        # legacy fallback
-    "gemini-3.5-lite":   "gemini-3.5-flash-lite",   # legacy fallback
+    "gemini-3.5-flash":  "gemini-3.5-flash",        # fallback
+    "gemini-3.5-lite":   "gemini-3.5-flash-lite",   # fallback
     # short aliases
     "flash":             "gemini-2.5-flash",
     "flash-2":           "gemini-3.0-flash",

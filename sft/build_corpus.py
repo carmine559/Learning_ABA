@@ -1,9 +1,9 @@
 """Build the SFT corpus (tier spec v2) into corpus/<version>/.
 
-    python build_corpus.py                      # corpus/v1, default sizes
-    python build_corpus.py --out corpus/tiny --n-train 4 --n-val 2 --n-test 2 --n-heldout 2 --no-table1
-    python build_corpus.py --permute-from corpus/v1 --out corpus/v1-permuted
-    python build_corpus.py --steps-from corpus/v1 --out corpus/v1-step
+    python sft/build_corpus.py                      # corpus/v1, default sizes
+    python sft/build_corpus.py --out corpus/tiny --n-train 4 --n-val 2 --n-test 2 --n-heldout 2 --no-table1
+    python sft/build_corpus.py --permute-from corpus/v1 --out corpus/v1-permuted
+    python sft/build_corpus.py --steps-from corpus/v1 --out corpus/v1-step
 
 The paper's Table 1 set needs the Zenodo release zip (GPL, not in the repo):
 it is downloaded to --zenodo-zip on first use and md5-checked.
@@ -24,6 +24,8 @@ import argparse
 import sys
 import time
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # the repo root
 
 from src.aba_corpus import CorpusConfig, build, build_permuted, build_steps
 

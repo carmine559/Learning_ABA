@@ -311,5 +311,5 @@ the tokens read; the supervised target tokens are 0.62× (299k against 482k).
 - Re-score `introduce` without the line-41 fallback (Phase 8, item 2).
 - Check the fold-order convention against the Zenodo implementation.
 - S2: `cluster/stepwise_sft.sbatch` after the giano `--dry-run`s; read
-  `sample.md` and `calls_sample.md` by hand, then `compare_step.py` for D5.
+  `sample.md` and `calls_sample.md` by hand, then `sft/compare_step.py` for D5.
 - Ask Prof. Toni about N1 (Phase 9).

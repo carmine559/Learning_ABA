@@ -75,7 +75,8 @@ specific individuals.
 # gives its own answer format, which the task half overrides.
 #
 # The split is text-only: SYSTEM_PROMPT below is the two halves concatenated, so
-# the mode prompts stay byte-identical to v3 and sets 01-03 remain comparable.
+# the mode prompts stay byte-identical to v3 and experiments/01_bench_prompts_v1
+# to 03_bench_prompts_v3 remain comparable.
 _SYSTEM_PROMPT_TASK = """
 YOUR TASK: given an ABA Learning problem, construct a solution satisfying
 Definition 1. In this task an INTENSIONAL solution is REQUIRED:
@@ -135,8 +136,8 @@ SYSTEM_PROMPT = SYSTEM_PROMPT_DEFS + _SYSTEM_PROMPT_TASK
 #
 # It is a frozen literal, deliberately NOT derived from `_SYSTEM_PROMPT_TASK`:
 # once training data is generated against it, a later edit to the v3 text must
-# not be able to move it. Zero-shot numbers from sets 01-05 were measured under
-# v3 and are not comparable with anything produced under this prompt.
+# not be able to move it. Zero-shot numbers measured under v3 are not comparable
+# with anything produced under this prompt.
 SFT_PROMPT_VERSION = "v4-sft"
 
 _SYSTEM_PROMPT_SFT_TASK = """
@@ -192,10 +193,10 @@ SYSTEM_PROMPT_SFT = SYSTEM_PROMPT_DEFS + _SYSTEM_PROMPT_SFT_TASK
 def _format_problem(problem: LearningProblem) -> str:
     """Serialise the problem in the same notation the answer must use.
 
-    The background used to be rendered as prose ("p(a) is always true.",
+    Rendering the background as prose ("p(a) is always true.",
     "u(X) [defeated by: t(X)]") while every definition, transformation rule and
-    the required output were in ABA/Prolog syntax. That forced the model to
-    translate between three notations before it could start reasoning. One
+    the required output are in ABA/Prolog syntax forces the model to translate
+    between three notations before it can start reasoning. One
     notation throughout: rules as `h :- b1, b2.`, assumptions as
     `a(X) defeated_by c(X)`.
     """

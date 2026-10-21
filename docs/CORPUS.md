@@ -6,7 +6,7 @@ the **endpoint** alone produce answers that pass the checker just as well? Both
 arms are trained on the same problems under one prompt (v4-sft, see
 [PROMPTS.md](PROMPTS.md)) and differ only in their target.
 
-Built by [`build_corpus.py`](../build_corpus.py) from
+Built by [`sft/build_corpus.py`](../sft/build_corpus.py) from
 [`src/aba_corpus.py`](../src/aba_corpus.py). Only the MANIFEST is committed:
 a rebuild is byte-identical given the same code and Clingo version, and the
 MANIFEST records the sha256 of every file. See [Reproducing](#reproducing).
@@ -292,7 +292,7 @@ the hard uniqueness gate plus the reported duplicate rate.
 ## Reproducing
 
 ```bash
-python build_corpus.py            # writes corpus/v1, about 2 minutes
+python sft/build_corpus.py        # writes corpus/v1, about 2 minutes
 python -m pytest tests/test_corpus.py -q
 ```
 

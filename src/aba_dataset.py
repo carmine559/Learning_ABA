@@ -210,8 +210,9 @@ class SyntheticGenerator:
         `random.Random(seed)` instead of the generator's shared stream. That is
         what makes corpora nest: with a shared stream every rejected attempt
         shifts all later problems, so a corpus of 50 is not a prefix of one of
-        200. None (the default) is the original shared-stream behaviour, which
-        `tests/test_golden_traces.py` pins against set 05.
+        200. None (the default) is the shared-stream behaviour, which
+        `tests/test_golden_traces.py` pins against
+        experiments/05_scale_4bit_probes_v2.
         """
         rng = random.Random(seed) if seed is not None else self.rng
         n_constants = max(n_constants, 6)          # need room for >=2 each side
@@ -304,7 +305,7 @@ class SyntheticGenerator:
             problem_id=f"synthetic_{target_pred}",
         )
 
-        # ── Quality filter (M6) ──────────────────────────────────────────────
+        # ── Quality filter ───────────────────────────────────────────────────
         if len(positives) < 2 or len(negatives) < 2:
             return None
         if len(consts) < 3:
@@ -487,7 +488,8 @@ class SyntheticGenerator:
 
 # Every problem carries exception facts, and fact and example counts do not
 # depend on the class, so only folding and checking tells whether R3 is needed.
-# BENCHMARK_TIERS (spec v1) stays as it was: set 05 regenerates from it.
+# BENCHMARK_TIERS (spec v1) must not change:
+# experiments/05_scale_4bit_probes_v2 regenerates from it.
 CORPUS_TIER_SPEC_VERSION = 2
 CORPUS_TIERS: List[Dict] = [
     {"name": "t1_base",    "kind": "single",
@@ -606,7 +608,7 @@ def generate_corpus_twopath(
     Hidden target: t(X) :- a(X), normal_a(X) and t(X) :- b(X), normal_b(X), each
     with its own exception. Each path has a special constant and two exception
     facts, as in `generate_corpus_single`; defeasible problems observe the
-    exception on one path or both. Group sizes vary, so problems are no longer
+    exception on one path or both. Group sizes vary, so problems are not all
     isomorphic.
     """
     rng = random.Random(seed)

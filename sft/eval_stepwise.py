@@ -1,12 +1,12 @@
 """Greedy evaluation of arm S2: the model answers each step of Algorithm 1 (src/aba_steps.py).
 
-    python eval_stepwise.py --protocol chained --adapter runs/sft_step/adapter --out results/sft-step/s2/chained
-    python eval_stepwise.py --protocol chained --adapter runs/sft_step/adapter \
+    python sft/eval_stepwise.py --protocol chained --adapter runs/sft_step/adapter --out results/sft-step/s2/chained
+    python sft/eval_stepwise.py --protocol chained --adapter runs/sft_step/adapter \
         --corpus corpus/v1-permuted --out results/sft-step-permuted/s2
-    python eval_stepwise.py --protocol gold --adapter runs/sft_step/adapter --out results/sft-step/s2/gold
-    python eval_stepwise.py ... --score-only           # re-score on CPU
-    python eval_stepwise.py ... --dry-run              # no model: hashes, reference runs, lengths
-    python eval_stepwise.py ... --smoke --limit 2      # CPU, the cached tiny Qwen2
+    python sft/eval_stepwise.py --protocol gold --adapter runs/sft_step/adapter --out results/sft-step/s2/gold
+    python sft/eval_stepwise.py ... --score-only           # re-score on CPU
+    python sft/eval_stepwise.py ... --dry-run              # no model: hashes, reference runs, lengths
+    python sft/eval_stepwise.py ... --smoke --limit 2      # CPU, the cached tiny Qwen2
 
 As eval_sft.py: batch 1, greedy, repetition_penalty 1.0; each step under its kind's budget,
 corpus/v1-step TOKENS.json `max_new_tokens`. Two protocols:
@@ -49,7 +49,11 @@ import traceback
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
 
-from eval_sft import _KEEP, _read, score
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # the repo root
+
+from sft.eval_sft import _KEEP, _read, score
+from sft.train_sft import _write
+from sft.train_step import SMOKE_MODEL, load as load_steps
 from src.aba_algorithm import ORACLE_KINDS, _current_framework, solve_aba_learning
 from src.aba_corpus import _jsonl, _sha256
 from src.aba_score import _key, _optimal, load_eval, reference
@@ -60,8 +64,6 @@ from src.aba_steps import (DECISIONS, STEP_PROMPT_VERSION, WITNESSED, ModelOracl
 from src.aba_tracelog import _git_rev
 from src.aba_train import encode, model_id, revision, verified, versions
 from src.aba_validator import _norm as _norm_atom
-from train_sft import _write
-from train_step import SMOKE_MODEL, load as load_steps
 
 PROTOCOLS = ("chained", "gold")
 _TRACES = ("traces.jsonl", "table1_traces.jsonl")

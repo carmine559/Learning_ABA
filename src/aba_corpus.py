@@ -1,6 +1,6 @@
 """The persisted SFT corpus: tier spec v2 problems, held-out tiers, splits.
 
-Layout of a built corpus (`build_corpus.py` writes it):
+Layout of a built corpus (`sft/build_corpus.py` writes it):
 
     problems.jsonl      every accepted problem, all splits, with its seed,
                         tier, split, class, structural signature and name map

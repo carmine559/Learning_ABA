@@ -28,7 +28,7 @@ through rather than restamping it, so a v1 run re-scored today still reads v1.
 
 Data sets for the SFT ablation (trace target vs endpoint target). They are
 not result sets: no model output lives here. Each is built by
-`build_corpus.py`, and only its MANIFEST is committed; the data rebuilds byte
+`sft/build_corpus.py`, and only its MANIFEST is committed; the data rebuilds byte
 for byte, and the MANIFEST carries the sha256 of every file. Full description
 in [CORPUS.md](CORPUS.md).
 

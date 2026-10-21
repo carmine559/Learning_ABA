@@ -1,8 +1,8 @@
 """
-aba_evaluation.py  (refactored)
+aba_evaluation.py
 Evaluation with held-out generalization testing and k-sampling.
 
-Key methodological upgrades over the original:
+Key methodological choices:
   - Example-level train/test split: the LLM learns from TRAIN examples and is
     scored on HELD-OUT examples, distinguishing learning from memorisation.
   - k-sampling: each problem is attempted n_samples times; we report pass@1
@@ -243,7 +243,7 @@ def evaluate_one_sample(
         )
         r.error_type = "llm_error"
         # Keep the full traceback: an opaque "AttributeError:" with no frames
-        # cost us a cluster run to diagnose. This lands in results_<mode>.jsonl.
+        # costs a cluster run to diagnose. This lands in results_<mode>.jsonl.
         r.raw_output = (f"[LLM ERROR] {type(exc).__name__}: {exc}\n"
                         + traceback.format_exc())
         return r

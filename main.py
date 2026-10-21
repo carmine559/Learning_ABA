@@ -144,9 +144,7 @@ def run_symbolic_baseline(ds: ABADataset, verbose: bool = False,
         if ok and solution is not None:
             entry.solution = solution
 
-        # The execution trace, not just its length. `DatasetEntry.trace` has
-        # existed all along but was never assigned, so the only thing about the
-        # symbolic run that reached disk was `n_steps`. The trace is what makes
+        # The execution trace, not just its length. The trace is what makes
         # the step probes possible: it names the states the algorithm visits.
         entry.trace = trace
         traces.append(trace.to_dict())

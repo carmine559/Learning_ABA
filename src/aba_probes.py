@@ -50,7 +50,7 @@ BINARY_KINDS = ("check", "subsume")
 
 # Probe prompts version themselves, independently of the end-to-end mode prompts
 # (frozen at v3). Probe results are comparable only within one version.
-#   v1  the committed Sept-2026 run. Two defects: `_head` prepended the whole
+#   v1  the run in experiments/04_step_probes. Two defects: `_head` prepended the whole
 #       SYSTEM_PROMPT, whose format block contradicted every probe's own format,
 #       and whose "NEVER leave ground facts" contradicted the RoLe probe.
 #   v2  definitions-only preamble; RoLe states that ground facts are expected;
@@ -351,9 +351,10 @@ def score_probe(probe: Probe, raw_output: str,
     # Drop echoed problem text BEFORE anything reads the answer. Qwen2.5-7B
     # echoes the whole problem after its answer in 415/780 probes, and both the
     # background facts and its `<asm> defeated_by <contrary>` declarations are
-    # otherwise indistinguishable from the model's own output: `role` scored one
-    # answer as 12 facts against an oracle of 2, and relaxing the ASSUMPTION:
-    # prefix below would read the background's contraries back as the proposal.
+    # otherwise indistinguishable from the model's own output: `role` would
+    # score one answer as 12 facts against an oracle of 2, and relaxing the
+    # ASSUMPTION: prefix below would read the background's contraries back as
+    # the proposal.
     # Region-based, not truncation: the answer often comes FIRST (aba_trace.py).
     text = "\n".join(
         _strip_echo(_clean_llm_output(raw_output or "").split("\n")))
@@ -445,10 +446,10 @@ _ASM_BARE = re.compile(r'^\s*(.+?)\s+defeated_by\s+(.+?)\s*$', re.IGNORECASE)
 def _atom(s: str) -> str:
     """Trim an atom written as a sentence: `c_alpha(X).` -> `c_alpha(X)`.
 
-    The trailing full stop is Prolog punctuation, not part of the atom, but it
-    used to be captured into the contrary and then registered AS the contrary,
-    so nothing could ever defeat the assumption. Eight 14B answers were scored
-    wrong for a full stop.
+    The trailing full stop is Prolog punctuation, not part of the atom; captured
+    into the contrary, it would be registered AS the contrary, so nothing could
+    ever defeat the assumption. Untrimmed, eight 14B answers score wrong for a
+    full stop.
     """
     return s.strip().rstrip(".").strip()
 
@@ -460,7 +461,7 @@ def _assumption_decl(lines: List[str]) -> Optional[Tuple[str, str]]:
     SYSTEM_PROMPT disagree: `_P4` asks for `ASSUMPTION: a defeated_by c`, the
     system prompt for a `NEW ASSUMPTIONS:` block of bare `a defeated_by c`
     lines. Qwen2.5-14B followed the first, 3B/7B/32B the second — and demanding
-    the label alone scored 249 answers 0 without the oracle ever running.
+    the label alone would score 249 answers 0 without the oracle ever running.
 
     Tried in precedence order, because the bare form also matches the
     background's own declarations: it is reached only when neither the label nor
@@ -528,7 +529,7 @@ def _score_introduce(probe: Probe, text: str,
                 # Line 39: reuse FAILED, so the algorithm backtracks and mints a
                 # fresh assumption instead (line 41). Scoring the single forward
                 # answer marks that wrong and so penalises the model for obeying
-                # REUSE FIRST — which inverted the scale trend when measured:
+                # REUSE FIRST — which inverts the measured scale trend:
                 # all 24 of Qwen2.5-32B's failed reuses are rescued this way.
                 sat = _fresh_assumption_works(
                     defeasible, asm, probe, problem, new_learnt, new_asms)
@@ -556,8 +557,8 @@ def _reuse_available(probe: Probe, problem: LearningProblem) -> bool:
     """Does an assumption relative to the folded rule's body exist (line 36)?
 
     When one does, Algorithm 1 reuses it and only mints a fresh assumption on
-    backtracking; when none does, minting is the correct move. Comparing the
-    model's choice against this is what `reuse_agreement` reports.
+    backtracking; when none does, minting is the correct move. It is reported
+    as `line36_reuse_available`, beside the model's `reuse_rate`.
     """
     folded = _p(probe.state.get("folded", "")) if probe.state.get("folded") else None
     if folded is None:

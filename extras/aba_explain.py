@@ -215,7 +215,7 @@ def explain_sample(
     outcomes = generalisation_trace(candidate, split, domain)
 
     # Derived flags — taken from the SAME function that produces summary.json.
-    # Recomputing them here with per-example checks made explanations.md and
+    # Recomputing them here with per-example checks would make explanations.md and
     # summary.json disagree about which samples succeeded.
     gen = evaluate_generalization(candidate, split, domain=domain)
     fit          = gen.fit_valid

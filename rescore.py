@@ -10,11 +10,6 @@ rebuild the identical problem set, re-parse each stored answer, and recompute
 the metrics. A change to the parser, to the well-formedness check or to the
 metric definitions therefore costs minutes of CPU instead of a day of GPU.
 
-That matters here in particular: the runs in `results/` were scored with a
-well-formedness check that rejected the legal reuse of a background assumption,
-which alone marked 71.8% of samples ill-formed. Nothing about the models'
-answers was wrong — only the scoring — and this script recovers them.
-
 USAGE
 -----
     # rescore in place (writes summary.json next to the results files)
@@ -143,11 +138,11 @@ def trace_stats_for_mode(path: str, mode: str,
                          gold: Dict[str, Any]) -> Optional[Dict]:
     """Secondary, descriptive trace-fidelity statistics for one mode.
 
-    Rule-keyed only. An earlier symbol-sequence measure was dropped because
-    random sequences scored 0.28-0.49 on it — matching a canonical RULE has a
-    chance rate of ~0 instead. Averaged over samples that produced a trace at
-    all, with that rate reported, since `algorithm` mode at Qwen2.5-3B has a
-    median output of 73 characters and nothing to score.
+    Rule-keyed only: random sequences score 0.28-0.49 on a symbol-sequence
+    measure, while matching a canonical RULE has a chance rate of ~0. Averaged
+    over samples that produced a trace at all, with that rate reported, since
+    `algorithm` mode at Qwen2.5-3B has a median output of 73 characters and
+    nothing to score.
     """
     import statistics
     f1s, r2s, r3s, ht, n = [], [], [], 0, 0
@@ -245,8 +240,7 @@ def rescore_probes(run_dir: str, entries: Dict[str, DatasetEntry],
             fh.write(json.dumps(r.to_dict()) + "\n")
 
     # Carry the generating prompt version through: re-scoring does not change
-    # which prompts produced the answers. Runs made before the field existed
-    # are v1 by definition.
+    # which prompts produced the answers. A run with no recorded version is v1.
     old = os.path.join(run_dir, "probe_summary.json")
     version = "v1"
     if os.path.exists(old):

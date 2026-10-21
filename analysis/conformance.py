@@ -19,9 +19,9 @@ algorithm was followed to get there — for that, use `step_fidelity.py`, which
 scores each transformation against the algorithm's trace. A run can pass every
 gate here and still reach the answer by a procedure the algorithm never takes.
 
-NOT A GATE — `n_new_assumptions` vs the algorithm's R3 count was tried and is
-wrong; it counts only freshly minted assumptions and so scores the REUSE FIRST
-branch (line 36 / Definition 4) as a divergence. See `step_fidelity.py`.
+NOT A GATE — `n_new_assumptions` vs the algorithm's R3 count is wrong; it
+counts only freshly minted assumptions and so scores the REUSE FIRST branch
+(line 36 / Definition 4) as a divergence. See `step_fidelity.py`.
 
 Reads stored rows only — no model, no GPU.
 

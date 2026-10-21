@@ -441,7 +441,7 @@ def contest_base_score(
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Crisp vs. graded comparison  (the analysis the thesis reports)
+# Crisp vs. graded comparison
 # ──────────────────────────────────────────────────────────────────────────────
 
 @dataclass

@@ -14,7 +14,7 @@ performing RoLe and then abandoning Gen.
 WHY EXTRACTION IS LABEL-FREE
 ----------------------------
 The obvious approach — count "Fold", "Remove", "STEP 2" markers — measures
-instruction-following literalism, not reasoning. Measured over the v3 corpus:
+instruction-following literalism, not reasoning. Measured on experiments/03_bench_prompts_v3:
 mistral-7b writes the requested `Remove ... (solution preserved)` template 10x
 more often than Qwen2.5-14B (35.3% vs 3.6%) and `Alternative path found` 6.5x
 more often, while being far the weaker reasoner. `algorithm` mode has 0% template
@@ -71,7 +71,7 @@ _EXAMPLE_RE  = re.compile(r'^[ \t]*[+-][ \t]+[a-z]\w*\([^()]*\)[ \t]*$')
 def ground_fact_of(rule: Rule) -> Optional[Tuple[str, str]]:
     """Return (predicate, constant) if `rule` denotes a ground fact.
 
-    The same fact is spelled three different ways in this corpus, and all three
+    The same fact is spelled three different ways, and all three
     must compare equal or every R1 mismatches:
 
         p(a).            bare fact           (models)
@@ -180,7 +180,7 @@ class Step:
     """One transformation, on either side of the comparison."""
     symbol: str                       # R1 | R2 | R3 | R4
     rule:   Optional[Rule] = None     # the rule produced (removed, for R4)
-    source: str = ""                  # provenance, for the hand-audit
+    source: str = ""                  # provenance, for auditing by hand
     key:    str = ""                  # canonical comparison key
 
     def to_dict(self) -> Dict[str, Any]:
@@ -514,9 +514,9 @@ def _align(a: List[Step], b: List[Step], exact: bool = True) -> int:
 class TraceScore:
     """Rule-keyed only, deliberately.
 
-    An earlier version scored alignment over the R1/R2/R3/R4 SYMBOL sequence.
-    Random sequences of the same lengths score 0.28-0.49 on that measure, i.e.
-    at or above everything it was meant to detect — a four-symbol alphabet over
+    No field aligns on the R1/R2/R3/R4 SYMBOL sequence alone: random
+    sequences of the same lengths score 0.28-0.49 on that measure, i.e. at or
+    above everything it would have to detect — a four-symbol alphabet over
     length-4-8 sequences cannot discriminate. Every field below instead requires
     matching a canonical RULE, whose chance rate is ~0.
     """

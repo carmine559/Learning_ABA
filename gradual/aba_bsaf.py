@@ -423,7 +423,7 @@ def claim_strength(
       "avg"      sigma*_avg : average over arguments.
       "noisy_or" accrual: 1 - Prod_E (1 - beta_Pi(E)).  NOT brave entailment;
                  treats alternative derivations as independent accruing evidence
-                 (the DF-QuAD-F behaviour of the old argument-tree module).
+                 (the DF-QuAD-F behaviour of aba_graded.py's argument tree).
 
     An underivable claim has no support -> 0.0.
     """

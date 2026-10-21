@@ -27,7 +27,8 @@ the difference between them.
       still a solution without the fact? Removable = an R4 the model skipped;
       load-bearing = it never generalised the fact, which is R1/R2 residue.
       Read R4 GATE below before using the result — the question turns out to be
-      well-posed for only 17 samples in set 05, so R4 fidelity stays UNMEASURED.
+      well-posed for only 17 samples in experiments/05_scale_4bit_probes_v2, so
+      R4 fidelity stays UNMEASURED.
 
   The line-18 solution check is an INTERNAL decision that leaves no trace in a
   final answer. It is measurable only by the `check` step probe, not here.
@@ -47,16 +48,15 @@ classified; the rest are counted as `unsound`. (Gate verified: it accepts all
 725 samples stored as gen_valid, and the 14 of those carrying ground facts
 match conformance.py's independent intensionality-gate count.)
 
-The gate turns out to be most of the story. On set 05, 1 449 of the 1 466
-ground-fact samples are unsound, so the `ground` column is overwhelmingly a
-measure of ANSWERS THAT ARE NOT SOLUTIONS, not of R4 under-application — 14B's
-49-87% in particular is unsoundness, not skipped subsumption. Only 17 samples
+The gate turns out to be most of the story. On
+experiments/05_scale_4bit_probes_v2, 1 449 of the 1 466 ground-fact samples are
+unsound, so the `ground` column is overwhelmingly a measure of ANSWERS
+THAT ARE NOT SOLUTIONS, not of R4 under-application — 14B's 49-87% in
+particular is unsoundness, not skipped subsumption. Only 17 samples
 pose R4's question well-posedly, which is far too few to score. R4 FIDELITY
-REMAINS UNMEASURED; what changed is the reason. An earlier version of this
-script said R4 was not separable because the algorithm leaves no ground facts
-for it to differ on. That reasoning was too strong — R4 fires 213 times across
+REMAINS UNMEASURED, for lack of samples only: R4 fires 213 times across
 101/103 problems, and its decision procedure runs directly on the model's own
-answer — but the conclusion stands on the sample size instead.
+answer.
 
 Two limits on reading the R4 columns at all:
   * "removable rule present" is a divergence only for GROUND FACTS, and only
@@ -68,13 +68,12 @@ Two limits on reading the R4 columns at all:
     rules without dealing with that.
   * n=17 supports no claim about how a model handles R4.
 
-RETRACTED — DO NOT REINTRODUCE. An earlier version of this script gated R3 on
-`n_new_assumptions <= the algorithm's R3 count`. That is wrong:
+DO NOT GATE R3 ON `n_new_assumptions <= the algorithm's R3 count`. That is wrong:
 `n_new_assumptions` counts only FRESHLY MINTED assumptions, so it scores a model
 that applied R3 by reusing a background assumption as a divergence — which is
-precisely what line 36 / Definition 4 REUSE FIRST asks for. It produced a
-confident false result ("the model solves defeasible problems monotonically")
-that had to be withdrawn. R3 application is detected here by whether a learnt
+precisely what line 36 / Definition 4 REUSE FIRST asks for. It produces a
+confident false result ("the model solves defeasible problems monotonically").
+R3 application is detected here by whether a learnt
 rule body carries an assumption atom AT ALL, background or fresh.
 
 Reads stored rows only — no model, no GPU.

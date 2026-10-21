@@ -443,7 +443,7 @@ def harvest(problem: LearningProblem, extra: bool = True) -> Tuple[List[Dict[str
 
 
 def signal_cell(row: Dict[str, Any]) -> str:
-    """The decisions a position-only rule cannot predict (corpus statistics, 19 Oct)."""
+    """The decisions a position-only rule cannot predict."""
     kind, src = row["kind"], row["src"]
     if kind == "check":
         if row["extra"]:

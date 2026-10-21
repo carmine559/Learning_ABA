@@ -100,8 +100,8 @@ def rule_contains_constant(rule: Rule) -> bool:
     normalised form ``p(X) :- X = c`` and a bare ground fact ``p(c).``.
     A genuinely intensional rule contains only variables.
 
-    Single implementation, shared with ``Rule.is_intensional`` so the strict
-    and permissive notions can never drift apart again.
+    Single implementation, shared with ``Rule.is_intensional`` so the two
+    checks cannot drift apart.
     """
     return rule.contains_constant()
 
@@ -124,7 +124,7 @@ def is_degenerate_solution(
 def is_intensional_strict(framework: ABAFramework) -> bool:
     """
     Strict intensionality: NO new rule mentions any individual constant.
-    Replaces the permissive equality-only check.
+    Stricter than an equality-only check.
     """
     return all(not rule_contains_constant(r) for r in framework.new_rules)
 
@@ -289,12 +289,12 @@ class GeneralizationResult:
     is_degenerate:        bool  = False
     is_intensional:       bool  = False
 
-    # Structured error profile (M9)
+    # Structured error profile
     unentailed_positives:   int = 0         # train positives NOT entailed
     spurious_negatives:     int = 0         # train negatives wrongly entailed
     # The same failures as atoms rather than counts. Recorded in the loops that
-    # already compute the counts (no extra solver calls) so the self-verification
-    # turn can tell the model WHICH examples broke, not just how many.
+    # already compute the counts (no extra solver calls), so a result names
+    # WHICH examples broke, not just how many.
     unentailed_positive_atoms: List[str] = field(default_factory=list)
     spurious_negative_atoms:   List[str] = field(default_factory=list)
 
@@ -328,7 +328,7 @@ def evaluate_generalization(
         framework, train_pos, train_neg, dom, timeout
     )
 
-    # ── Structured error profile on the training set (M9) ───────────────────
+    # ── Structured error profile on the training set ────────────────────────
     for e in train_pos:
         ok, _, _ = check_brave_entailment(framework, [e], [], dom, timeout)
         if not ok:
@@ -360,7 +360,7 @@ def evaluate_generalization(
     # DIAGNOSTIC per-example score, read off ONE witness extension of the
     # training problem. Checking each held-out example in isolation instead
     # asks "does SOME extension get this right", which is near-vacuous for a
-    # negative on a multi-extension framework and made this score routinely
+    # negative on a multi-extension framework and would make this score routinely
     # exceed fit.
     witness = witness_extension(framework, train_pos, train_neg, dom, timeout)
     if witness is not None:
@@ -403,7 +403,7 @@ def evaluate_generalization(
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Semantic comparison with a reference solution (M5)
+# Semantic comparison with a reference solution
 # ──────────────────────────────────────────────────────────────────────────────
 
 def semantic_equivalence(

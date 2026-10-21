@@ -1,5 +1,5 @@
 """
-aba_validator.py  (refactored)
+aba_validator.py
 Clingo Python-API based validation and the RoLe phase.
 Implements the ASP encoding from Definition 2 of De Angelis et al. 2024.
 """

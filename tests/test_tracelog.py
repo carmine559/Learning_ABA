@@ -157,7 +157,7 @@ def test_rejected_candidates_are_distinguished_from_unchecked(records):
 
 
 def test_assumption_branch_is_recorded(records):
-    """Reuse vs mint must be distinguishable — the whole point of E2."""
+    """Reuse vs mint must be distinguishable."""
     modes = collections.Counter()
     for problem, trace, record in records:
         for ev in record.events:
@@ -178,5 +178,5 @@ def test_serialises_to_json(records):
     for problem, trace, record in records:
         d = record.to_dict()
         assert json.loads(json.dumps(d)) == d
-        # The old consumers read this key and must keep working.
+        # Consumers of the plain trace read this key and must keep working.
         assert d["symbolic_trace"] == trace.to_dict()

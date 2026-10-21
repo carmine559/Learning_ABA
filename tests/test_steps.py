@@ -4,7 +4,7 @@ What must hold for the step rows to be supervision for Algorithm 1:
 
   1. The prompts are frozen: `tests/golden/step_prompts.txt` pins one prompt and
      target per kind, and the committed corpus's prompt_sha256 is what the builder
-     rebuilds today. Any edit to the text is a new STEP_PROMPT_VERSION.
+     rebuilds. Any edit to the text is a new STEP_PROMPT_VERSION.
   2. Every target says what the reference did: it parses back to the reference's own
      answer, a lines-16/18 witness is empty exactly when the verdict is yes, and gold
      answers fed to the controller reproduce the trace target byte for byte.

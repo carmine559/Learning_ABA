@@ -1,6 +1,6 @@
 """The Table 1 import (src/aba_zenodo.py), on the real Zenodo archive.
 
-Skipped until the archive is downloaded (`python build_corpus.py` does it).
+Skipped until the archive is downloaded (`python sft/build_corpus.py` does it).
 """
 from pathlib import Path
 

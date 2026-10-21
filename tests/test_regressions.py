@@ -1,7 +1,7 @@
 """
-Regression tests for the defects found in the July 2026 audit.
+Regression tests for known defects.
 
-Each test names the defect it locks down, because several of them changed
+Each test names the defect it locks down, because several of them change
 published numbers rather than crashing anything — they are exactly the kind of
 bug a test suite exists to prevent from coming back silently.
 
@@ -31,7 +31,7 @@ from src.aba_validator import _build_asp, conditioned_status, witness_extension
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# B5 — #minimize tuples must not collide across learnable predicates
+# #minimize tuples must not collide across learnable predicates
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _optimal_cost(program: str):
@@ -65,7 +65,7 @@ def test_minimize_line_mentions_the_predicate():
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# B3 — the parser must not silently discard what the model wrote
+# The parser must not silently discard what the model wrote
 # ─────────────────────────────────────────────────────────────────────────────
 
 @pytest.fixture
@@ -145,12 +145,12 @@ def test_reused_background_assumption_is_not_reported_as_new(background):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# B1 / B2 — Definition-1 side conditions
+# Definition-1 side conditions
 # ─────────────────────────────────────────────────────────────────────────────
 
 def test_reusing_a_background_assumption_is_legal(background):
-    """Definition 4 / Algorithm 1 line 36. This false positive marked 71.8%
-    of the v3 benchmark ill-formed."""
+    """Definition 4 / Algorithm 1 line 36. Flagging this reuse would mark 71.8%
+    of experiments/03_bench_prompts_v3 ill-formed."""
     text = "NEW RULES:\nv(X) :- q(X), u(X).\nNEW ASSUMPTIONS:\nu(X) defeated_by t(X)"
     fw = parse_llm_output(text, background)
     assert wellformed_violations(fw, background, ["v"]) == []
@@ -179,12 +179,12 @@ def test_assumption_as_a_rule_head_breaks_flatness(background):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# m1 / m2 — constants, domains and intensionality
+# Constants, domains and intensionality
 # ─────────────────────────────────────────────────────────────────────────────
 
 def test_predicate_symbols_are_not_domain_constants():
-    """get_constants used to match every lowercase token, so `quaker` and
-    `pacifist` were grounded as if they were individuals."""
+    """get_constants must not match every lowercase token, or `quaker` and
+    `pacifist` are grounded as if they were individuals."""
     r = Rule("pacifist(X)", ["quaker(X)", "normal_quaker(X)"])
     assert r.get_constants() == []
     fw = ABAFramework(rules=[r, Rule("quaker(a)", [])])
@@ -206,7 +206,7 @@ def test_propositional_assumption_gets_no_dom_guard():
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# M2 — determinacy: brave success is not evidence of learning
+# Determinacy: brave success is not evidence of learning
 # ─────────────────────────────────────────────────────────────────────────────
 
 def test_free_choice_framework_is_caught_by_determinacy():
@@ -264,10 +264,10 @@ def test_anonymisation_preserves_solvability():
 
 
 def test_problem_is_serialised_in_the_notation_the_answer_must_use():
-    """The prompt used to show the problem as prose while demanding Prolog."""
+    """The prompt must not show the problem as prose while demanding Prolog."""
     problem, _ = make_nixon_diamond()
     prompt = problem_to_prompt(problem, mode="direct")
     assert "pacifist(X) :- quaker(X), normal_quaker(X)." in prompt
     assert "normal_quaker(X) defeated_by abnormal_quaker(X)" in prompt
     assert "dom(a)." in prompt
-    assert "is always true" not in prompt      # the old prose rendering
+    assert "is always true" not in prompt      # the prose rendering

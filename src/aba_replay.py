@@ -13,7 +13,7 @@ This module proves that, two ways:
       lines that apply a transformation. Proves the SERIALISATION is lossless:
       a model that reproduces the trace has, in doing so, written down the
       algorithm's answer. This is also the natural basis for an
-      execution-fidelity reward later — replay what the model wrote and compare.
+      execution-fidelity reward — replay what the model wrote and compare.
 
 `check_example` asserts both agree with the algorithm's own final framework AND
 with `parse_llm_output` reading the answer block, and that the result is still a

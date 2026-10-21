@@ -1,6 +1,6 @@
 """Arm S2 (step-wise SFT) against the registered arms, and the D5 verdict.
 
-    python compare_step.py          # -> results/sft-step/COMPARISON_STEP.md and .json
+    python sft/compare_step.py          # -> results/sft-step/COMPARISON_STEP.md and .json
 
 D5, on v1 test (200 problems):
   (a) chained first-check balanced accuracy >= 0.80: each problem's first line-18 test on
@@ -23,9 +23,11 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from compare_sft import (CORPORA, MARGIN, _f, _p, _read, _sets, _sha, arm_report, invariance,
-                         mcnemar, prop, table1_support)
-from eval_stepwise import _balanced
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # the repo root
+
+from sft.compare_sft import (CORPORA, MARGIN, _f, _p, _read, _sets, _sha, arm_report,
+                             invariance, mcnemar, prop, table1_support)
+from sft.eval_stepwise import _balanced
 from src.aba_score import load_eval
 
 ARMS = ("base", "sft_endpoint", "sft_trace")

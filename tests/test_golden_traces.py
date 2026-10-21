@@ -5,11 +5,12 @@ measuring instrument. Any change to `src/aba_algorithm.py` that silently moves
 the instrument invalidates every number already reported against it — including
 the 12 model-mode files in `experiments/05_scale_4bit_probes_v2/`.
 
-This test pins the instrument. It regenerates the exact 103-problem corpus set
-05 used and asserts that `solve_aba_learning` still produces byte-identical
-`LearningTrace.to_dict()` records for every one of them.
+This test pins the instrument. It regenerates the exact 103-problem corpus that
+`experiments/05_scale_4bit_probes_v2/` used and asserts that
+`solve_aba_learning` still produces byte-identical `LearningTrace.to_dict()`
+records for every one of them.
 
-It exists specifically to make the trace-logging work safe: that work adds an
+It exists specifically to make `src/aba_tracelog.py` safe: the logger adds an
 observer to the algorithm, and an observer is only a spectator if the steps it
 watches are unchanged. Run this BEFORE and AFTER any edit to the algorithm.
 
@@ -31,20 +32,21 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from main import build_dataset
 from src.aba_algorithm import solve_aba_learning
 
-# Set 05 is the committed reference run. `symbolic_traces.jsonl` is written per
+# The committed reference run. `symbolic_traces.jsonl` is written per
 # bench_* directory but its contents are MODEL-INDEPENDENT (main.py writes the
 # symbolic baseline, not the LLM's answer), so any copy will do.
 _SET_05 = (Path(__file__).resolve().parents[1]
            / "experiments" / "05_scale_4bit_probes_v2")
 
-# The corpus parameters set 05 ran with. These are what make the regeneration
-# reproducible; changing any of them changes which problems are compared.
+# The corpus parameters experiments/05_scale_4bit_probes_v2 ran with. These are
+# what make the regeneration reproducible; changing any of them changes which
+# problems are compared.
 _BENCHMARK_PER_TIER = 20
 _ANONYMIZE_SCHEME = "letters"
 _EXPECTED_N = 103
 
-# Traces that changed DELIBERATELY since set 05, and why. Their current records
-# are pinned in tests/golden/repinned.jsonl; the other 91 still match set 05.
+# Traces that differ DELIBERATELY from `_SET_05`, and why. Their records
+# are pinned in tests/golden/repinned.jsonl; the other 91 match `_SET_05`.
 _LINES_17_19 = ("lines 17-19: a fold that is not a solution is guarded by "
                 "applyAsmIntro, not skipped for a later fold (paper, Algorithm 1)")
 _REPINNED = {
@@ -142,7 +144,7 @@ def test_nixon_reproduces_the_papers_solution():
 
 
 def test_observer_none_is_the_default_path(regenerated):
-    """Guards the property the instrumentation work depends on.
+    """Guards the property `src/aba_tracelog.py` depends on.
 
     `solve_aba_learning` must stay callable with no observer and must not
     require one. If this ever needs updating, the spectator contract has been

@@ -1,8 +1,8 @@
 """Greedy generation (k=1) on the evaluation problems, scored by src.aba_score.
 
-    python eval_sft.py --adapter runs/sft_endpoint/adapter --out results/sft/endpoint
-    python eval_sft.py --out results/sft/base                  # no adapter: the base model
-    python eval_sft.py --out results/sft/endpoint --score-only # re-score on CPU
+    python sft/eval_sft.py --adapter runs/sft_endpoint/adapter --out results/sft/endpoint
+    python sft/eval_sft.py --out results/sft/base                  # no adapter: the base model
+    python sft/eval_sft.py --out results/sft/endpoint --score-only # re-score on CPU
 
 Rows: eval.jsonl (test, held-out t8/t9) and table1_eval.jsonl. Greedy is the
 argmax of the model under evaluation: repetition_penalty is 1.0 for every arm,
@@ -22,6 +22,8 @@ import random
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # the repo root
 
 from src.aba_corpus import _sha256
 from src.aba_score import YES_NO, load_eval, reference, reward, score_output

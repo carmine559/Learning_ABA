@@ -253,11 +253,8 @@ class LearningTrace:
         return [s.rule_symbol for s in self.steps]
 
     def to_dict(self) -> Dict[str, Any]:
-        """JSON-ready form, written to symbolic_traces.jsonl.
-
-        Only `n_steps` used to reach disk (main.py), which made the symbolic
-        execution unavailable as a reference for scoring LLM traces.
-        """
+        """JSON-ready form, written to symbolic_traces.jsonl by main.py: the
+        reference for scoring LLM traces."""
         return {
             "problem_id": self.problem_id,
             "success":    self.success,

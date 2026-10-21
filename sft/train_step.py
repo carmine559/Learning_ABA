@@ -1,9 +1,9 @@
 """LoRA SFT of arm S2: one row per step of Algorithm 1 (corpus/v1-step, src/aba_steps.py).
 
-    python train_step.py --audit                          # once, before any run: TOKENS.json
-    python train_step.py --out runs/sft_step              # the run
-    python train_step.py --out runs/sft_step --dry-run    # everything but the model (login node)
-    python train_step.py --out <scratch> --smoke --limit 4   # CPU, the cached tiny Qwen2
+    python sft/train_step.py --audit                          # once, before any run: TOKENS.json
+    python sft/train_step.py --out runs/sft_step              # the run
+    python sft/train_step.py --out runs/sft_step --dry-run    # everything but the model (login node)
+    python sft/train_step.py --out <scratch> --smoke --limit 4   # CPU, the cached tiny Qwen2
 
 Matching to the registered arms (train_sft.py): the same train problems in the same order,
 the trace arm's `schedule(1500, 3, seed 0)` (its order hash is asserted), each problem
@@ -28,11 +28,13 @@ import sys
 import time
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # the repo root
+
+from sft.train_sft import LORA, LR, WARMUP, _write
 from src.aba_corpus import _sha256, problem_from_dict
 from src.aba_steps import STEP_PROMPT_VERSION, StepStop, parse_answer, step_prompt
 from src.aba_tracelog import _git_rev
 from src.aba_train import EPOCHS, encode, model_id, revision, schedule, versions
-from train_sft import LORA, LR, WARMUP, _write
 
 ROWS_PER_STEP, MICRO = 212, 4                # 4 x 53; 3 x 19,805 rows -> 281 steps
 EVAL_EVERY = 47                              # as the registered arms: half of 1500 / 16
@@ -226,7 +228,8 @@ def first_check_callback(tok, items):
 def train(a, corpus: Path, out: Path) -> int:
     m, probs, rows = load(corpus)
     if not a.smoke and not (corpus / "TOKENS.json").exists():
-        raise SystemExit(f"{corpus / 'TOKENS.json'} missing: run `python train_step.py --audit`")
+        raise SystemExit(f"{corpus / 'TOKENS.json'} missing: run "
+                         "`python sft/train_step.py --audit`")
     tokens = None if a.smoke else json.loads((corpus / "TOKENS.json").read_text(encoding="utf-8"))
     mid = SMOKE_MODEL if a.smoke else model_id(a.model)
     if tokens is not None:

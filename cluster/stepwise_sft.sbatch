@@ -3,9 +3,9 @@
 #   sbatch cluster/stepwise_sft.sbatch
 # Resubmitted, it skips a finished adapter or evaluation, resumes training from the last
 # checkpoint and continues an evaluation where it stopped. Check first, on the login node:
-#   python3 train_step.py --out runs/sft_step --dry-run
-#   python3 eval_stepwise.py --protocol chained --dry-run --out /tmp/s2
-# compare_step.py is run after the job, once sample.md and calls_sample.md are read.
+#   python3 sft/train_step.py --out runs/sft_step --dry-run
+#   python3 sft/eval_stepwise.py --protocol chained --dry-run --out /tmp/s2
+# sft/compare_step.py is run after the job, once sample.md and calls_sample.md are read.
 #SBATCH --job-name=sft-step
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=carmine.santella@studio.unibo.it
@@ -33,7 +33,7 @@ echo "[job $SLURM_JOB_ID] arm s2, run $RUN"
 if [ ! -f "$RUN/adapter/adapter_model.safetensors" ]; then
     RESUME=""
     compgen -G "$RUN/checkpoint-*" > /dev/null && RESUME="--resume"
-    python3 train_step.py --out "$RUN" $RESUME
+    python3 sft/train_step.py --out "$RUN" $RESUME
 fi
 
 evaluate() {                             # protocol, out, then extra arguments
@@ -43,7 +43,7 @@ evaluate() {                             # protocol, out, then extra arguments
         echo "$out done"
         return
     fi
-    python3 eval_stepwise.py --protocol "$protocol" --adapter "$RUN/adapter" --out "$out" "$@"
+    python3 sft/eval_stepwise.py --protocol "$protocol" --adapter "$RUN/adapter" --out "$out" "$@"
 }
 evaluate chained results/sft-step/s2/chained
 evaluate chained results/sft-step-permuted/s2 --corpus corpus/v1-permuted

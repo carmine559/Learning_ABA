@@ -1,14 +1,14 @@
 """The SFT corpus as token ids, the token audit, and run provenance.
 
 `encode` is the one tokenisation of a row: the token audit counts with it,
-`train_sft.py` trains on it, and generation is fed its prompt part (asserted in
-`eval_sft.py`), so the ids a model is trained after are the ids it generates
+`sft/train_sft.py` trains on it, and generation is fed its prompt part (asserted in
+`sft/eval_sft.py`), so the ids a model is trained after are the ids it generates
 after. The chat is `to_messages`: one user turn holding the v4-sft prompt, as
-every local run has sent it (Qwen's template adds its default system turn),
+`LocalHFBackend` sends it (Qwen's template adds its default system turn),
 then the target, closed by <|im_end|>. The loss is on the target and that
 closing token only.
 
-The token audit (`python train_sft.py --audit`) writes corpus/<v>/TOKENS.json
+The token audit (`python sft/train_sft.py --audit`) writes corpus/<v>/TOKENS.json
 once, before any run: token counts per file, split and target, and the
 pre-registered secondary arm matching (MANIFEST `arm_matching`): the trace/
 endpoint ratio of supervised target tokens on the train split. An
@@ -177,7 +177,8 @@ def load_audit(corpus: Path, model: str) -> Dict:
     """TOKENS.json, checked against the model and the corpus it was made from."""
     path = corpus / "TOKENS.json"
     if not path.exists():
-        raise SystemExit(f"{path} missing: run `python train_sft.py --audit` and commit it first")
+        raise SystemExit(f"{path} missing: run `python sft/train_sft.py --audit` "
+                         "and commit it first")
     audit = json.loads(path.read_text(encoding="utf-8"))
     assert audit["model"] == model_id(model), f"TOKENS.json is for {audit['model']}"
     assert verified(corpus, list(audit["sha256"])) == audit["sha256"], \

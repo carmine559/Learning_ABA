@@ -130,7 +130,8 @@ def _candidate_folds_traced(
     The paired rule is the paper's rho2 — the rule used for folding. It is not
     recorded on `TransformStep.folding_rule`, which stays None: writing it would
     change `LearningTrace.to_dict()` and break the golden master that pins this
-    algorithm against the committed set-05 traces. The provenance is carried
+    algorithm against the traces committed in
+    `experiments/05_scale_4bit_probes_v2/`. The provenance is carried
     here instead, for the trace log to pick up.
 
     `_candidate_folds` below is the plain-rule view of this function and is what
@@ -656,12 +657,9 @@ def solve_aba_learning(
     `observer` is forwarded to `gen_phase` and to `assumption_introduction`,
     and additionally receives the RoLe facts as a "role" notification so that
     R1 provenance arrives on the same stream as everything else. It is a pure
-    spectator: None (the default) is bit-for-bit the original behaviour, which
-    `tests/test_golden_traces.py` pins against the committed set-05 traces.
-
-    Before this parameter existed the observer could only be attached to
-    `gen_phase` directly, so the code path that writes `symbolic_traces.jsonl`
-    never materialised any of the algorithm's decisions.
+    spectator: None (the default) is bit-for-bit the reference behaviour, which
+    `tests/test_golden_traces.py` pins against the traces committed in
+    `experiments/05_scale_4bit_probes_v2/`.
 
     `oracle` (see `_ask`) answers line 8 here and is forwarded to `gen_phase`;
     None is the reference.
