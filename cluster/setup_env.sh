@@ -6,10 +6,6 @@
 set -euo pipefail
 cd "/scratch.hpc/$USER/Learning_aba"
 
-if [ -d venv ]; then
-    rm -rf venv.old
-    mv venv venv.old
-fi
 python3 -m venv venv
 source venv/bin/activate
 pip3 install --no-cache-dir --upgrade pip
