@@ -2,11 +2,13 @@
 
     python sft/train_step.py --audit                          # once, before any run: TOKENS.json
     python sft/train_step.py --out runs/sft_step              # the run
+    python sft/train_step.py --out runs/sft_step_s1 --seed 1  # a replicate
     python sft/train_step.py --out runs/sft_step --dry-run    # everything but the model (login node)
     python sft/train_step.py --out <scratch> --smoke --limit 4   # CPU, the cached tiny Qwen2
 
 Matching to the registered arms (train_sft.py): the same train problems in the same order,
-the trace arm's `schedule(1500, 3, seed 0)` (its order hash is asserted), each problem
+the trace arm's `schedule(1500, 3, seed 0)` (its order hash is asserted; another --seed is
+a replicate with its own order and initialisation), each problem
 expanded to its step rows; ROWS_PER_STEP rows per optimiser step, about 16 problems' worth,
 so about the same 282 steps; the same LoRA, learning rate, cosine schedule, 3% warmup and
 seed. What differs is the arm: the prompts are step prompts (rebuilt from corpus/v1-step and
@@ -240,7 +242,7 @@ def train(a, corpus: Path, out: Path) -> int:
                  if json.loads(x)["split"] == "train"]
     order = problem_order(train_ids, a.seed)
     problem_hash = hashlib.sha256("\n".join(order).encode()).hexdigest()
-    if TRACE_RUN.exists():
+    if a.seed == 0 and TRACE_RUN.exists():
         want = json.loads(TRACE_RUN.read_text(encoding="utf-8"))["order_sha256"]
         assert problem_hash == want, "not the trace arm's problem order"
     keep = set(train_ids[:a.limit]) if a.limit else None

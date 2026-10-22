@@ -340,4 +340,7 @@ extra line-18 rows. One seed.
   fidelity measure without an explanation of the mechanism.
 - Re-score `introduce` without the line-41 fallback (Phase 8, item 2).
 - Check the fold-order convention against the Zenodo implementation.
+- S2 seed 1 (`SEED=1`), a replicate with its own problem order and initialisation:
+  D5's criteria and the other figures are read on it as on seed 0; no decision
+  depends on it.
 - Ask Prof. Toni about N1 (Phase 9).
