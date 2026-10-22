@@ -41,9 +41,11 @@ generalising, non-degenerate solution:
 | Qwen2.5-7B | 40.8% | 17.5% | 10.7% | 11.7% |
 | **Qwen2.5-14B** | **56.3%** [46.7, 65.5] | 30.1% | 7.8% | 21.4% |
 
-Reference, same split and scoring: ASP-ABAlearnB given only the training
-examples reaches **53.8%**; given every example it reaches 100%. Only the first
-number is comparable with the table.
+Reference, same split and scoring: no file in this set holds a symbolic row.
+Given every example ASP-ABAlearnB solves all 103 problems, which is not
+comparable with the table. Given only the training examples, the 53.8% first
+quoted here cannot be reproduced (it is not k/103 for any k); the nearest
+recorded figure is set 05's 76/103, and the current reference gives 88/103.
 
 `det@k` (held-out labels forced in *every* train-consistent extension) equals
 `gen@k` in every cell but one — Qwen2.5-14B `direct`, 56.3% vs 55.3%. These

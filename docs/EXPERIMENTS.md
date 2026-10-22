@@ -2,9 +2,10 @@
 
 Curated, immutable result sets live in [`experiments/`](../experiments/), one
 folder per set, each with a `MANIFEST.md` (date, model, prompt version, metric
-revision, exact command, key metrics, caveats). The `results/` folder is a
-gitignored working directory: `main.py` writes there; finished runs worth
-keeping are *promoted* into `experiments/` together with a manifest.
+revision, exact command, key metrics, caveats). The `results/` folder is the
+working directory `main.py` and the SFT scripts write to; it is tracked, so runs
+on the cluster come back with `git push`. Finished prompting runs worth keeping
+are *promoted* into `experiments/` together with a manifest.
 
 | Set | Date | Models | Backend | Prompts | Metrics | Dataset | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -28,9 +29,9 @@ through rather than restamping it, so a v1 run re-scored today still reads v1.
 
 Data sets for the SFT ablation (trace target vs endpoint target). They are
 not result sets: no model output lives here. Each is built by
-`sft/build_corpus.py`, and only its MANIFEST is committed; the data rebuilds byte
-for byte, and the MANIFEST carries the sha256 of every file. Full description
-in [CORPUS.md](CORPUS.md).
+`sft/build_corpus.py` and committed with its MANIFEST, which carries the sha256
+of every file; the data rebuilds byte for byte. Full description in
+[CORPUS.md](CORPUS.md).
 
 | Corpus | Date | Tier spec | Prompt | Contents | Status |
 | --- | --- | --- | --- | --- | --- |
@@ -125,8 +126,8 @@ target predicate.
 **Two symbolic rows.** `symbolic_full_problem` is the algorithm with every
 example in view — not comparable with the LLM rows. `symbolic_train_only` runs
 ASP-ABAlearnB on the same training split and scores it with the same function
-used for LLM samples; that is the comparable ceiling (53.8% on the current
-benchmark, not 100%).
+used for LLM samples; that is the row comparable with them, and it is not 100%:
+gen 76/103 in set 05's summaries, 88/103 with the current reference.
 
 > **Metrics revision 3** (prompts v3): stage 2 added; stage 5 changed from
 > per-example held-out checks to the joint full-problem check. The old

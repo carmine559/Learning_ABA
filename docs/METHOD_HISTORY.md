@@ -9,10 +9,12 @@ are the part a methodology chapter needs and a results table hides.
 **Framing held throughout.** ASP-ABAlearnB (De Angelis, Proietti & Toni, ECAI
 2024) is the reference of the field. The LLM is scored on how faithfully it
 **replicates** the algorithm. There is no "beating" in either direction, and
-the symbolic `train_only` figure (53.8%) is not a ceiling on the algorithm: it
-solves the training problem 28/28 by construction, and 53.8% is only how often
+the symbolic `train_only` figure is not a ceiling on the algorithm: it solves
+every training split by construction (103/103), and the figure is only how often
 the solution it happened to pick *also* generalises to held-out examples —
-our added criterion, not Definition 1's.
+our added criterion, not Definition 1's. That is 76/103 in set 05's summaries,
+run before the Phase 8 fixes, and 88/103 with the current reference. The 53.8%
+quoted here before has no data file behind it, and is not k/103 for any k.
 
 ---
 
@@ -298,6 +300,34 @@ ABA framework" at that test; the reference keeps ρf, following the prose.
 **Corrected before registration:** "about 4× the trace arm's tokens" counted
 the tokens read; the supervised target tokens are 0.62× (299k against 482k).
 
+**Outcome: D5 supported** ([`COMPARISON_STEP.md`](../results/sft-step/COMPARISON_STEP.md);
+the samples were read by hand first, and the three criteria recomputed from the raw
+scores). Training ran at f23ca02, the evaluations at 19bda3d, which changes only
+`cluster/setup_env.sh`.
+
+- On v1 test the first line-18 verdict is right on 200/200 (the position
+  baseline gets 117/200), R3 balanced is 1.000, and exact is 198/200 against 89
+  (109 to 0, p = 3.1e-33). Both misses start with a RoLe answer with one or two
+  facts too many. At the reference's states every kind of step is at least 0.98
+  on test, and `t8_decoy` is 50/50.
+- Exact on test does not separate S2 from the endpoint arm (198 against 200,
+  p = 0.5); renamed, S2 keeps more (111 against 90 of 200, p = 0.009).
+- `t9_reuse` is 0/50, and every run first goes wrong at line 38: `reuse_ok`
+  answers "no" on the RoLe fact, as expected; `reuse_fails` answers "yes" on the
+  contrary fact, which was not expected.
+- Renaming drops exact from 248 to 150 of 300. In 112 of the 129 renamed test
+  runs that go wrong, the first wrong step is the fold-candidate list; RoLe
+  (198/200) and the first verdict (192/200) survive.
+- Table 1 is 0/16, with RoLe right on 6 of 16 at the reference's states.
+- The untrained model under the same prompts gives no usable answer at 88% of
+  the reference's states (prose cut by the token budgets), so its run shows only
+  that the answer format is not zero-shot.
+
+The confounds stated with D5 stand: S2 reads 4.5× the trace arm's tokens per
+epoch on 0.62× its target tokens, its prompts carry no definitions block or step
+history, the lines-16/18 targets name the failing examples, and it has 3,344
+extra line-18 rows. One seed.
+
 ## Pending
 
 - Re-run all four models with probe prompts v2; promote to `experiments/04_*`
@@ -310,6 +340,4 @@ the tokens read; the supervised target tokens are 0.62× (299k against 482k).
   fidelity measure without an explanation of the mechanism.
 - Re-score `introduce` without the line-41 fallback (Phase 8, item 2).
 - Check the fold-order convention against the Zenodo implementation.
-- S2: `cluster/stepwise_sft.sbatch` after the giano `--dry-run`s; read
-  `sample.md` and `calls_sample.md` by hand, then `sft/compare_step.py` for D5.
 - Ask Prof. Toni about N1 (Phase 9).

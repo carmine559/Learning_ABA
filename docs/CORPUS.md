@@ -7,9 +7,10 @@ arms are trained on the same problems under one prompt (v4-sft, see
 [PROMPTS.md](PROMPTS.md)) and differ only in their target.
 
 Built by [`sft/build_corpus.py`](../sft/build_corpus.py) from
-[`src/aba_corpus.py`](../src/aba_corpus.py). Only the MANIFEST is committed:
-a rebuild is byte-identical given the same code and Clingo version, and the
-MANIFEST records the sha256 of every file. See [Reproducing](#reproducing).
+[`src/aba_corpus.py`](../src/aba_corpus.py). The data files are committed with
+the MANIFEST, so the cluster gets them with `git pull`; a rebuild is
+byte-identical given the same code and Clingo version, and the MANIFEST records
+the sha256 of every file. See [Reproducing](#reproducing).
 
 | split | problems | used for |
 | --- | --- | --- |
