@@ -1,0 +1,28 @@
+{
+  "total": 3,
+  "solved": 3,
+  "intensional": 3,
+  "problems": [
+    {
+      "problem_id": "nixon_diamond",
+      "solved": true,
+      "intensional": true,
+      "n_steps": 7,
+      "n_new_rules": 3
+    },
+    {
+      "problem_id": "flies",
+      "solved": true,
+      "intensional": true,
+      "n_steps": 6,
+      "n_new_rules": 2
+    },
+    {
+      "problem_id": "tax_law",
+      "solved": true,
+      "intensional": true,
+      "n_steps": 10,
+      "n_new_rules": 4
+    }
+  ]
+}

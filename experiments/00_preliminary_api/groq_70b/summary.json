@@ -1,0 +1,46 @@
+{
+  "guided": {
+    "n_problems": 3,
+    "parse_rate": 1.0,
+    "fit_at_1": 0.133,
+    "gen_at_1": 0.0,
+    "fit_at_k": 0.333,
+    "gen_at_k": 0.0,
+    "gen_score_mean": 0.167,
+    "mean_overfit_gap": -0.033,
+    "intensional_rate": 0.333,
+    "degenerate_rate": 0.0,
+    "error_breakdown": {
+      "completeness_error": 5,
+      "soundness_error": 5,
+      "stability_error": 3,
+      "generalization_error": 2
+    }
+  },
+  "algorithm": {
+    "n_problems": 3,
+    "parse_rate": 1.0,
+    "fit_at_1": 0.0,
+    "gen_at_1": 0.0,
+    "fit_at_k": 0.0,
+    "gen_at_k": 0.0,
+    "gen_score_mean": 0.167,
+    "mean_overfit_gap": -0.167,
+    "intensional_rate": 0.0,
+    "degenerate_rate": 0.0,
+    "error_breakdown": {
+      "soundness_error": 15
+    }
+  },
+  "symbolic_baseline": {
+    "n_problems": 3,
+    "parse_rate": 1.0,
+    "fit_at_1": 1.0,
+    "gen_at_1": 1.0,
+    "fit_at_k": 1.0,
+    "gen_at_k": 1.0,
+    "intensional_rate": 1.0,
+    "degenerate_rate": 0.0,
+    "mean_overfit_gap": 0.0
+  }
+}
