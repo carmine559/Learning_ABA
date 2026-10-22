@@ -1,0 +1,528 @@
+{
+ "all": {
+  "n": 316,
+  "parse_ok": 0.9905,
+  "truncated": 0.0,
+  "valid": 0.788,
+  "clean": 0.7848,
+  "exact": 0.7848,
+  "agreement": 0.8164,
+  "reward": 1.125,
+  "algorithm_choice": 0.5,
+  "r2_exact": 0.8571,
+  "r3_balanced": 0.992,
+  "trace_f1": 0.9118,
+  "trace_f1_ceiling": 0.9947,
+  "errors": {
+   "ok": 248,
+   "not_a_solution": 64,
+   "self_defeating": 1,
+   "parse_error": 3
+  },
+  "audit": {
+   "n": 313,
+   "accuracy": 0.967,
+   "written_accuracy": 0.967,
+   "omitted_share": 0.0,
+   "any_illegal": 0.1981,
+   "halted": 0.0,
+   "by_kind": {
+    "role": 0.9649,
+    "subsume": 0.9637,
+    "fold_candidates": 0.9753,
+    "check": 0.97,
+    "reuse_scan": 0.9853,
+    "reuse_check": 0.7185,
+    "introduce": 0.9891,
+    "contrary_facts": 0.9015
+   },
+   "omitted": {},
+   "balanced": {
+    "subsume": 0.9649,
+    "check": 0.9751,
+    "reuse_check": 0.6144
+   },
+   "balanced_excludes": {}
+  }
+ },
+ "split:heldout": {
+  "n": 100,
+  "parse_ok": 1.0,
+  "truncated": 0.0,
+  "valid": 0.5,
+  "clean": 0.5,
+  "exact": 0.5,
+  "agreement": 0.5,
+  "reward": 0.625,
+  "algorithm_choice": 0.5,
+  "r2_exact": 0.6667,
+  "r3_balanced": 1.0,
+  "trace_f1": 0.8318,
+  "trace_f1_ceiling": 1.0,
+  "errors": {
+   "ok": 50,
+   "not_a_solution": 50
+  },
+  "audit": {
+   "n": 100,
+   "accuracy": 0.9563,
+   "written_accuracy": 0.9563,
+   "omitted_share": 0.0,
+   "any_illegal": 0.5,
+   "halted": 0.0,
+   "by_kind": {
+    "role": 1.0,
+    "subsume": 1.0,
+    "fold_candidates": 0.9943,
+    "check": 1.0,
+    "reuse_scan": 1.0,
+    "reuse_check": 0.4,
+    "introduce": 1.0,
+    "contrary_facts": 1.0
+   },
+   "omitted": {},
+   "balanced": {
+    "subsume": 1.0,
+    "check": 1.0,
+    "reuse_check": 0.25
+   },
+   "balanced_excludes": {}
+  }
+ },
+ "tier:t8_decoy": {
+  "n": 50,
+  "parse_ok": 1.0,
+  "truncated": 0.0,
+  "valid": 1.0,
+  "clean": 1.0,
+  "exact": 1.0,
+  "agreement": 1.0,
+  "reward": 1.5,
+  "algorithm_choice": 1.0,
+  "r2_exact": 1.0,
+  "r3_balanced": 1.0,
+  "trace_f1": 1.0,
+  "trace_f1_ceiling": 1.0,
+  "errors": {
+   "ok": 50
+  },
+  "audit": {
+   "n": 50,
+   "accuracy": 1.0,
+   "written_accuracy": 1.0,
+   "omitted_share": 0.0,
+   "any_illegal": 0.0,
+   "halted": 0.0,
+   "by_kind": {
+    "role": 1.0,
+    "subsume": 1.0,
+    "fold_candidates": 1.0,
+    "check": 1.0,
+    "reuse_scan": 1.0,
+    "reuse_check": 1.0,
+    "introduce": 1.0,
+    "contrary_facts": 1.0
+   },
+   "omitted": {},
+   "balanced": {
+    "subsume": 1.0,
+    "check": 1.0,
+    "reuse_check": null
+   },
+   "balanced_excludes": {}
+  }
+ },
+ "tier:t9_reuse": {
+  "n": 50,
+  "parse_ok": 1.0,
+  "truncated": 0.0,
+  "valid": 0.0,
+  "clean": 0.0,
+  "exact": 0.0,
+  "agreement": 0.0,
+  "reward": -0.25,
+  "algorithm_choice": 0.0,
+  "r2_exact": 0.3333,
+  "r3_balanced": null,
+  "trace_f1": 0.6637,
+  "trace_f1_ceiling": 1.0,
+  "errors": {
+   "not_a_solution": 50
+  },
+  "audit": {
+   "n": 50,
+   "accuracy": 0.9126,
+   "written_accuracy": 0.9126,
+   "omitted_share": 0.0,
+   "any_illegal": 1.0,
+   "halted": 0.0,
+   "by_kind": {
+    "role": 1.0,
+    "subsume": 1.0,
+    "fold_candidates": 0.99,
+    "check": 1.0,
+    "reuse_scan": 1.0,
+    "reuse_check": 0.25,
+    "introduce": 1.0,
+    "contrary_facts": 1.0
+   },
+   "omitted": {},
+   "balanced": {
+    "subsume": 1.0,
+    "check": null,
+    "reuse_check": 0.1667
+   },
+   "balanced_excludes": {}
+  }
+ },
+ "split:test": {
+  "n": 200,
+  "parse_ok": 1.0,
+  "truncated": 0.0,
+  "valid": 0.995,
+  "clean": 0.99,
+  "exact": 0.99,
+  "agreement": 0.995,
+  "reward": 1.49,
+  "algorithm_choice": null,
+  "r2_exact": 0.9963,
+  "r3_balanced": 1.0,
+  "trace_f1": 0.9865,
+  "trace_f1_ceiling": 0.9916,
+  "errors": {
+   "ok": 198,
+   "self_defeating": 1,
+   "not_a_solution": 1
+  },
+  "audit": {
+   "n": 200,
+   "accuracy": 0.9951,
+   "written_accuracy": 0.9951,
+   "omitted_share": 0.0,
+   "any_illegal": 0.005,
+   "halted": 0.0,
+   "by_kind": {
+    "role": 0.98,
+    "subsume": 0.9921,
+    "fold_candidates": 0.9887,
+    "check": 0.9935,
+    "reuse_scan": 1.0,
+    "reuse_check": 0.9923,
+    "introduce": 1.0,
+    "contrary_facts": 0.973
+   },
+   "omitted": {},
+   "balanced": {
+    "subsume": 0.9921,
+    "check": 0.9934,
+    "reuse_check": 0.9954
+   },
+   "balanced_excludes": {}
+  }
+ },
+ "tier:t1_base": {
+  "n": 40,
+  "parse_ok": 1.0,
+  "truncated": 0.0,
+  "valid": 1.0,
+  "clean": 1.0,
+  "exact": 1.0,
+  "agreement": 1.0,
+  "reward": 1.5,
+  "algorithm_choice": null,
+  "r2_exact": 1.0,
+  "r3_balanced": 1.0,
+  "trace_f1": 1.0,
+  "trace_f1_ceiling": 1.0,
+  "errors": {
+   "ok": 40
+  },
+  "audit": {
+   "n": 40,
+   "accuracy": 1.0,
+   "written_accuracy": 1.0,
+   "omitted_share": 0.0,
+   "any_illegal": 0.0,
+   "halted": 0.0,
+   "by_kind": {
+    "role": 1.0,
+    "subsume": 1.0,
+    "fold_candidates": 1.0,
+    "check": 1.0,
+    "reuse_scan": 1.0,
+    "reuse_check": 1.0,
+    "introduce": 1.0,
+    "contrary_facts": 1.0
+   },
+   "omitted": {},
+   "balanced": {
+    "subsume": 1.0,
+    "check": 1.0,
+    "reuse_check": null
+   },
+   "balanced_excludes": {}
+  }
+ },
+ "tier:t2_noise": {
+  "n": 40,
+  "parse_ok": 1.0,
+  "truncated": 0.0,
+  "valid": 1.0,
+  "clean": 1.0,
+  "exact": 1.0,
+  "agreement": 1.0,
+  "reward": 1.5,
+  "algorithm_choice": null,
+  "r2_exact": 1.0,
+  "r3_balanced": 1.0,
+  "trace_f1": 1.0,
+  "trace_f1_ceiling": 1.0,
+  "errors": {
+   "ok": 40
+  },
+  "audit": {
+   "n": 40,
+   "accuracy": 0.9965,
+   "written_accuracy": 0.9965,
+   "omitted_share": 0.0,
+   "any_illegal": 0.0,
+   "halted": 0.0,
+   "by_kind": {
+    "role": 1.0,
+    "subsume": 1.0,
+    "fold_candidates": 0.9667,
+    "check": 1.0,
+    "reuse_scan": 1.0,
+    "reuse_check": 1.0,
+    "introduce": 1.0,
+    "contrary_facts": 1.0
+   },
+   "omitted": {},
+   "balanced": {
+    "subsume": 1.0,
+    "check": 1.0,
+    "reuse_check": null
+   },
+   "balanced_excludes": {}
+  }
+ },
+ "tier:t3_domain": {
+  "n": 40,
+  "parse_ok": 1.0,
+  "truncated": 0.0,
+  "valid": 1.0,
+  "clean": 1.0,
+  "exact": 1.0,
+  "agreement": 1.0,
+  "reward": 1.5,
+  "algorithm_choice": null,
+  "r2_exact": 1.0,
+  "r3_balanced": 1.0,
+  "trace_f1": 0.9927,
+  "trace_f1_ceiling": 1.0,
+  "errors": {
+   "ok": 40
+  },
+  "audit": {
+   "n": 40,
+   "accuracy": 0.9915,
+   "written_accuracy": 0.9915,
+   "omitted_share": 0.0,
+   "any_illegal": 0.0,
+   "halted": 0.0,
+   "by_kind": {
+    "role": 0.95,
+    "subsume": 0.9902,
+    "fold_candidates": 0.9836,
+    "check": 1.0,
+    "reuse_scan": 1.0,
+    "reuse_check": 1.0,
+    "introduce": 1.0,
+    "contrary_facts": 0.95
+   },
+   "omitted": {},
+   "balanced": {
+    "subsume": 0.9883,
+    "check": 1.0,
+    "reuse_check": 1.0
+   },
+   "balanced_excludes": {}
+  }
+ },
+ "tier:t4_nested": {
+  "n": 40,
+  "parse_ok": 1.0,
+  "truncated": 0.0,
+  "valid": 1.0,
+  "clean": 0.975,
+  "exact": 0.975,
+  "agreement": 1.0,
+  "reward": 1.4875,
+  "algorithm_choice": null,
+  "r2_exact": 1.0,
+  "r3_balanced": 1.0,
+  "trace_f1": 0.995,
+  "trace_f1_ceiling": 1.0,
+  "errors": {
+   "ok": 39,
+   "self_defeating": 1
+  },
+  "audit": {
+   "n": 40,
+   "accuracy": 0.9954,
+   "written_accuracy": 0.9954,
+   "omitted_share": 0.0,
+   "any_illegal": 0.0,
+   "halted": 0.0,
+   "by_kind": {
+    "role": 0.975,
+    "subsume": 0.9921,
+    "fold_candidates": 1.0,
+    "check": 0.9756,
+    "reuse_scan": 1.0,
+    "reuse_check": 1.0,
+    "introduce": 1.0,
+    "contrary_facts": 0.9524
+   },
+   "omitted": {},
+   "balanced": {
+    "subsume": 0.9924,
+    "check": 0.9565,
+    "reuse_check": 1.0
+   },
+   "balanced_excludes": {}
+  }
+ },
+ "tier:t5_twopath": {
+  "n": 40,
+  "parse_ok": 1.0,
+  "truncated": 0.0,
+  "valid": 0.975,
+  "clean": 0.975,
+  "exact": 0.975,
+  "agreement": 0.975,
+  "reward": 1.4625,
+  "algorithm_choice": null,
+  "r2_exact": 0.9655,
+  "r3_balanced": 1.0,
+  "trace_f1": 0.9446,
+  "trace_f1_ceiling": 0.9581,
+  "errors": {
+   "ok": 39,
+   "not_a_solution": 1
+  },
+  "audit": {
+   "n": 40,
+   "accuracy": 0.992,
+   "written_accuracy": 0.992,
+   "omitted_share": 0.0,
+   "any_illegal": 0.025,
+   "halted": 0.0,
+   "by_kind": {
+    "role": 0.975,
+    "subsume": 0.9845,
+    "fold_candidates": 0.9909,
+    "check": 0.9928,
+    "reuse_scan": 1.0,
+    "reuse_check": 0.9655,
+    "introduce": 1.0,
+    "contrary_facts": 0.9667
+   },
+   "omitted": {},
+   "balanced": {
+    "subsume": 0.985,
+    "check": 0.9917,
+    "reuse_check": null
+   },
+   "balanced_excludes": {}
+  }
+ },
+ "split:table1": {
+  "n": 16,
+  "parse_ok": 0.8125,
+  "truncated": 0.0,
+  "valid": 0.0,
+  "clean": 0.0,
+  "exact": 0.0,
+  "agreement": 0.0,
+  "reward": -0.3125,
+  "algorithm_choice": null,
+  "r2_exact": 0.3125,
+  "r3_balanced": null,
+  "trace_f1": 0.3792,
+  "trace_f1_ceiling": 1.0,
+  "errors": {
+   "not_a_solution": 13,
+   "parse_error": 3
+  },
+  "audit": {
+   "n": 13,
+   "accuracy": 0.6171,
+   "written_accuracy": 0.6171,
+   "omitted_share": 0.0,
+   "any_illegal": 0.8462,
+   "halted": 0.0,
+   "by_kind": {
+    "role": 0.4615,
+    "subsume": 0.5135,
+    "fold_candidates": 0.7632,
+    "check": 0.6364,
+    "reuse_scan": 0.8,
+    "introduce": 0.8333,
+    "contrary_facts": 0.0,
+    "reuse_check": 1.0
+   },
+   "omitted": {},
+   "balanced": {
+    "subsume": null,
+    "check": null,
+    "reuse_check": null
+   },
+   "balanced_excludes": {}
+  }
+ },
+ "tier:table1": {
+  "n": 16,
+  "parse_ok": 0.8125,
+  "truncated": 0.0,
+  "valid": 0.0,
+  "clean": 0.0,
+  "exact": 0.0,
+  "agreement": 0.0,
+  "reward": -0.3125,
+  "algorithm_choice": null,
+  "r2_exact": 0.3125,
+  "r3_balanced": null,
+  "trace_f1": 0.3792,
+  "trace_f1_ceiling": 1.0,
+  "errors": {
+   "not_a_solution": 13,
+   "parse_error": 3
+  },
+  "audit": {
+   "n": 13,
+   "accuracy": 0.6171,
+   "written_accuracy": 0.6171,
+   "omitted_share": 0.0,
+   "any_illegal": 0.8462,
+   "halted": 0.0,
+   "by_kind": {
+    "role": 0.4615,
+    "subsume": 0.5135,
+    "fold_candidates": 0.7632,
+    "check": 0.6364,
+    "reuse_scan": 0.8,
+    "introduce": 0.8333,
+    "contrary_facts": 0.0,
+    "reuse_check": 1.0
+   },
+   "omitted": {},
+   "balanced": {
+    "subsume": null,
+    "check": null,
+    "reuse_check": null
+   },
+   "balanced_excludes": {}
+  }
+ }
+}
