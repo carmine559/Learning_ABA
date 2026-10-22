@@ -40,17 +40,17 @@ MSc thesis project, University of Bologna.
 
 ## Results so far
 
-Endpoint and trace arms, from [`sft/compare_sft.py`](sft/compare_sft.py), whose
-decisions were registered before the trace arm was scored. One seed, greedy
-decoding.
+Endpoint and trace from [`sft/compare_sft.py`](sft/compare_sft.py), registered
+before the trace arm was scored; S2 from [`sft/compare_step.py`](sft/compare_step.py),
+registered before any S2 output existed. One seed per arm, greedy decoding.
 
-| set | base | endpoint | trace | constant answer |
-| --- | --- | --- | --- | --- |
-| test, exact | 0/200 | 200/200 | 89/200 | 100/200 |
-| `t8_decoy`, exact | 0/50 | 25/50 | 13/50 | |
-| `t9_reuse`, exact | 0/50 | 0/50 | 0/50 | |
-| Table 1 (8 problems, named and anonymised), valid | 1/16 | 0/16 | 0/16 | |
-| test + held-out, exact, original → renamed | 0 → 0 | 225 → 116 | 102 → 41 | |
+| set | base | endpoint | trace | S2 | constant answer |
+| --- | --- | --- | --- | --- | --- |
+| test, exact | 0/200 | 200/200 | 89/200 | 198/200 | 100/200 |
+| `t8_decoy`, exact | 0/50 | 25/50 | 13/50 | 50/50 | |
+| `t9_reuse`, exact | 0/50 | 0/50 | 0/50 | 0/50 | |
+| Table 1 (8 problems, named and anonymised), valid | 1/16 | 0/16 | 0/16 | 0/16 | |
+| test + held-out, exact, original → renamed | 0 → 0 | 225 → 116 | 102 → 41 | 248 → 150 | |
 
 - A constant answer per tier is valid on 99% of test problems, so validity does
   not discriminate there; exact agreement and the held-out tiers do.
@@ -60,10 +60,21 @@ decoding.
   302/333 on test) and its answer follows its trace on 198/200, but its first
   line-18 verdict is right on 107/200, the level of a guess that ignores the
   problem.
-- Both fine-tuned arms lose exact answers when predicates are renamed
+- S2 meets its registered criteria (D5). Its first line-18 verdict is right on
+  200/200 test problems, where a baseline that reads only the step's position
+  gets 117/200, and at the reference's states every kind of step is at least 98%
+  right on test. Both of its test misses start with a RoLe answer with one or two
+  facts too many. Exact on test does not separate it from the endpoint arm
+  (198 vs 200); `t8_decoy` does (50/50 against 25/50).
+- S2's limits: all 50 `t9_reuse` runs first go wrong at line 38's test, with "no"
+  on the RoLe fact where the reuse works (a "yes" there never occurs in training)
+  and "yes" on the contrary fact where it does not. Renaming breaks mostly the
+  fold-candidate list, the first wrong step in 112 of the 129 renamed test runs
+  that go wrong, while RoLe (198/200) and the first line-18 verdict (192/200)
+  survive. It reads 4.5× the trace arm's tokens per epoch, but is supervised on
+  0.62× its target tokens.
+- All three fine-tuned arms lose exact answers when predicates are renamed
   (McNemar p < 0.05).
-- Arm S2 is running on the cluster; its criteria (D5) were registered in
-  [`sft/compare_step.py`](sft/compare_step.py) before any of its output existed.
 
 ## Installation
 
