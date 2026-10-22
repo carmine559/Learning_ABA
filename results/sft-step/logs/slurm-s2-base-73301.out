@@ -1,0 +1,72 @@
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   6%|▌         | 20/339 [00:00<00:01, 199.90it/s]Loading weights:  16%|█▌        | 54/339 [00:00<00:01, 281.57it/s]Loading weights:  24%|██▍       | 83/339 [00:00<00:00, 282.87it/s]Loading weights:  37%|███▋      | 124/339 [00:00<00:00, 321.27it/s]Loading weights:  46%|████▌     | 156/339 [00:00<00:00, 279.87it/s]Loading weights:  58%|█████▊    | 195/339 [00:00<00:00, 307.45it/s]Loading weights:  68%|██████▊   | 229/339 [00:00<00:00, 307.06it/s]Loading weights:  77%|███████▋  | 261/339 [00:00<00:00, 298.81it/s]Loading weights:  86%|████████▌ | 292/339 [00:01<00:00, 287.03it/s]Loading weights:  95%|█████████▍| 321/339 [00:01<00:00, 287.75it/s]Loading weights: 100%|██████████| 339/339 [00:01<00:00, 301.85it/s]
+[local] loaded Qwen/Qwen2.5-7B-Instruct (bfloat16) on cuda:0
+gold: 316 problems (0 states already asked), budgets {'role': 512, 'subsume': 32, 'fold_candidates': 192, 'check': 96, 'reuse_scan': 32, 'contrary_facts': 256, 'reuse_check': 16}
+  10/316 problems
+  20/316 problems
+  30/316 problems
+  40/316 problems
+  50/316 problems
+  60/316 problems
+  70/316 problems
+  80/316 problems
+  90/316 problems
+  100/316 problems
+  110/316 problems
+  120/316 problems
+  130/316 problems
+  140/316 problems
+  150/316 problems
+  160/316 problems
+  170/316 problems
+  180/316 problems
+  190/316 problems
+  200/316 problems
+  210/316 problems
+  220/316 problems
+  230/316 problems
+  240/316 problems
+  250/316 problems
+  260/316 problems
+  270/316 problems
+  280/316 problems
+  290/316 problems
+  300/316 problems
+  310/316 problems
+  316/316 problems
+
+all
+  role             n=  316  acc 0.0127  unusable 308
+  subsume          n= 1194  acc 0.0008  balanced 0.0009  baseline 0.9316  unusable 1192
+  fold_candidates  n=  553  acc 0.0  unusable 553
+  check            n=  779  acc 0.0013  balanced 0.0011  baseline 0.6924  unusable 778
+  reuse_scan       n=  470  acc 0.3128  unusable 244
+  reuse_check      n=  283  acc 0.7915  balanced 0.4956  baseline 0.6754  unusable 2
+  contrary_facts   n=  187  acc 0.0  unusable 187
+
+split:heldout
+  role             n=  100  acc 0.01  unusable 98
+  subsume          n=  299  acc 0.0  balanced 0.0  baseline 1.0  unusable 299
+  fold_candidates  n=  150  acc 0.0  unusable 150
+  check            n=  250  acc 0.004  balanced 0.0029  baseline 0.5238  unusable 249
+  reuse_scan       n=  175  acc 0.24  unusable 85
+  reuse_check      n=  125  acc 0.8  balanced 0.5  baseline 0.5  unusable 0
+  contrary_facts   n=   50  acc 0.0  unusable 50
+
+split:test
+  role             n=  200  acc 0.01  unusable 198
+  subsume          n=  753  acc 0.0  balanced 0.0  baseline 0.9427  unusable 753
+  fold_candidates  n=  349  acc 0.0  unusable 349
+  check            n=  457  acc 0.0  balanced 0.0  baseline 0.7739  unusable 457
+  reuse_scan       n=  237  acc 0.3544  unusable 131
+  reuse_check      n=  128  acc 0.8438  balanced 0.5  baseline 1.0  unusable 0
+  contrary_facts   n=  109  acc 0.0  unusable 109
+
+split:table1
+  role             n=   16  acc 0.0625  unusable 12
+  subsume          n=  142  acc 0.007  balanced 0.0093  baseline 0.7441  unusable 140
+  fold_candidates  n=   54  acc 0.0  unusable 54
+  check            n=   72  acc 0.0  balanced 0.0  baseline 0.5936  unusable 72
+  reuse_scan       n=   58  acc 0.3621  unusable 28
+  reuse_check      n=   30  acc 0.5333  balanced 0.4444  baseline 0.5  unusable 2
+  contrary_facts   n=   28  acc 0.0  unusable 28
+scored 3782 asked states; 0 recorded calls outside these problems

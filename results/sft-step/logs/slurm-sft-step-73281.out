@@ -1,0 +1,16 @@
+NVIDIA L40, 590.48.01, 46068 MiB
+[job 73281] arm s2, run runs/sft_step
+Traceback (most recent call last):
+  File "/scratch.hpc/carmine.santella/Learning_aba/train_step.py", line 31, in <module>
+    from src.aba_corpus import _sha256, problem_from_dict
+  File "/scratch.hpc/carmine.santella/Learning_aba/src/aba_corpus.py", line 44, in <module>
+    from src.aba_dataset import (
+    ...<2 lines>...
+    )
+  File "/scratch.hpc/carmine.santella/Learning_aba/src/aba_dataset.py", line 15, in <module>
+    from src.aba_validator import (
+    ...<2 lines>...
+    )
+  File "/scratch.hpc/carmine.santella/Learning_aba/src/aba_validator.py", line 11, in <module>
+    import clingo
+ModuleNotFoundError: No module named 'clingo'
