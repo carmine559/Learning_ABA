@@ -263,7 +263,7 @@ form, not its decisions: its first line-18 verdict is right on 107/200 test
 problems, what a guess that ignores the problem expects (107.25), and exact is
 89/200.
 
-**The suggestion** (supervisors): train the model to execute each step on its
+**The suggestion**, from the thesis supervisors: train the model to execute each step on its
 own, RoLe first, then Gen. Only that arm, S2, is built: RoLe is one example and
 each step of Gen (lines 16, 17, 18, 36, 38, 44) another, each counting once in
 the loss.
@@ -292,9 +292,9 @@ intermediate. A run that stops before its first check, or without an answer, is
 a miss. Expected even if supported: t9 `reuse_ok` near 0, since its deciding
 answer (yes, at line 38 on a RoLe fact) never occurs in training.
 
-**N1, a question for Prof. Toni.** When the test at line 18 succeeds, the
+**N1, an open reading of line 18.** When the test at line 18 succeeds, the
 printed Algorithm 1 adds nothing to R: R grows only at line 20, with ρd, inside
-the then-branch. The prose (p. 3449) calls ⟨R ∪ Rl ∪ {ρf}, A, ¯⟩ "the current
+the then-branch. The prose (p. 3450) calls ⟨R ∪ Rl ∪ {ρf}, A, ¯⟩ "the current
 ABA framework" at that test; the reference keeps ρf, following the prose.
 
 **Corrected before registration:** "about 4× the trace arm's tokens" counted
@@ -327,6 +327,21 @@ The confounds stated with D5 stand: S2 reads 4.5× the trace arm's tokens per
 epoch on 0.62× its target tokens, its prompts carry no definitions block or step
 history, the lines-16/18 targets name the failing examples, and it has 3,344
 extra line-18 rows. One seed.
+
+**Noted after the results** (docs/FINDINGS.md):
+
+- **A further confound: the controller.** The reference keeps the control flow, writes the
+  state into every prompt, applies every answer and drops illegal answer items. So every
+  comparison of S2 with the other arms mixes per-step supervision with that controller.
+- **Two criteria do not separate S2 from memorising.** The endpoint arm also reaches R3
+  balanced 1.00 and exact 200/200 on test, so neither criterion separates S2 from an arm
+  that memorises. Only the first line-18 verdict does.
+- **The renamed gain needs a qualifier.** Renamed, 8 of S2's 111 exact runs rely on dropped
+  illegal items. Under strict exact it is 103 against the endpoint's 90 (34 to 21,
+  p = 0.105).
+- **Line 16 rests on few states.** Of the 444 test states of later RoLe facts, 404 are
+  "yes" and the 40 "no" are all in `t5_twopath`, so the line-16 result rests on few
+  discriminating states.
 
 **Where the runs first go wrong** (`analysis/s2_errors.py`). Each run is replayed from its
 recorded calls, and every call is judged against the reference's answer at the same state.
@@ -442,18 +457,42 @@ problems.
 So the second seed confirms the in-distribution result and its limits. What varies between
 seeds is which renamed problems fail, and how.
 
+**Line 18 off the path: outcome** (`results/sft-step/s2/gold_extra/` and
+`results/sft-step/s2_s1/gold_extra/`). The samples and 20 more states per seed were read by
+hand first. Both seeds meet the reading fixed above.
+
+- **Test** (448 states, 94 yes):
+  - balanced 0.995 in seed 0 (447/448) and 0.993 in seed 1 (446/448);
+  - the position floor gets 0.596 (358/448);
+  - the failing examples are right on 444 and 442 of the 448 states.
+  - The three wrong verdicts are on different problems: two say no where the truth is
+    yes, one the reverse.
+  - Every wrong witness that comes with a right verdict is off by one example.
+- **Held-out:** 145/145 in both seeds, against a floor of balanced 0.5.
+- **Table 1** (38 states, all no): 22 and 24 of 38, against the floor's 26. The transfer
+  failure seen on the path holds off it too. One seed-1 answer, a list of 21 failing
+  examples, runs past line 18's 96-token budget.
+
+So S2 computes line 18 at states its search never reaches, in distribution: it trained on
+such states, but of other problems.
+
 ## Pending
 
 - Re-run all four models with probe prompts v2; promote to `experiments/04_*`
   with a MANIFEST recording the prompt version.
-- Hand-audit ≥20 rows of the new run before reporting aggregates (the rule that
-  caught both Phase-5 defects).
-- Decide the `apply_folding` scope question (item 4 above); measure how many
+- Hand-audit ≥20 rows of the probe re-run under prompts v2 before reporting
+  aggregates (the rule that caught both Phase-5 defects).
+- Decide the `apply_folding` scope question (Phase 6, item 4); measure how many
   extra legal folds appear when folding against `R ∪ learnt`.
-- Confound check on the new run: no smaller model may outrank a larger one on a
+- Confound check on that re-run: no smaller model may outrank a larger one on a
   fidelity measure without an explanation of the mechanism.
 - Re-score `introduce` without the line-41 fallback (Phase 8, item 2).
 - Check the fold-order convention against the Zenodo implementation.
-- Line 18 off the path (Phase 9): once seed 1's job ends, resubmit
-  `cluster/stepwise_sft.sbatch` for seed 0, then with `SEED=1`; each runs only `gold_extra`.
-- Ask Prof. Toni about N1 (Phase 9).
+- Settle N1 (Phase 9). When line 18's test succeeds, the printed algorithm adds ρf
+  nowhere, while the reference keeps it, following the prose (p. 3450).
+- Line 8 and backtracking. The paper (p. 3450) says the #minimize directive "will also
+  minimize the set of alternative answer sets that are computed at line 8 in case of
+  backtracking". The reference computes RoLe once, and a Gen failure ends the run. Gen
+  succeeds from the first RoLe answer on all 2,000 v1 problems and on every Table 1
+  problem, so no figure depends on it. Decide whether the reference should backtrack into
+  line 8.

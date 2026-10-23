@@ -43,7 +43,8 @@ MSc thesis project, University of Bologna.
 Endpoint and trace from [`sft/compare_sft.py`](sft/compare_sft.py), registered
 before the trace arm was scored; S2 from [`sft/compare_step.py`](sft/compare_step.py),
 registered before any S2 output existed. One seed per arm, greedy decoding; S2 also
-has a second seed, read descriptively.
+has a second seed, read descriptively. What these results answer, and what they do not,
+is in [docs/FINDINGS.md](docs/FINDINGS.md).
 
 | set | base | endpoint | trace | S2 | constant answer |
 | --- | --- | --- | --- | --- | --- |
@@ -64,7 +65,9 @@ has a second seed, read descriptively.
 - S2 meets its registered criteria (D5). Its first line-18 verdict is right on
   200/200 test problems, where a baseline that reads only the step's position
   gets 117/200, and at the reference's states every kind of step is at least 98%
-  right on test. Both of its test misses start with a RoLe answer with one or two
+  right on test. At the 448 test states its search skips, line 18 is right on 447
+  (second seed: 446), where the position rule gets 358. Both of its test misses start
+  with a RoLe answer with one or two
   facts too many. Exact on test does not separate it from the endpoint arm
   (198 vs 200); `t8_decoy` does (50/50 against 25/50).
 - S2's limits: all 50 `t9_reuse` runs first go wrong at line 38's test, with "no"
@@ -112,7 +115,7 @@ python -m src.aba_score --control corpus/v1     # every gold target scores the m
 python main.py --symbolic-only --benchmark 20   # the reference on the prompting benchmark
 python main.py --backend mock --benchmark 2 --modes direct --n-samples 1   # prompting pipeline, no GPU
 
-# on giano (usage in each script's header)
+# on the SLURM cluster, giano (cluster/README.md; usage in each script's header)
 sbatch --export=ALL,ARMS=trace cluster/train_sft.sbatch
 sbatch cluster/stepwise_sft.sbatch
 python sft/compare_sft.py     # results/sft/COMPARISON.md
