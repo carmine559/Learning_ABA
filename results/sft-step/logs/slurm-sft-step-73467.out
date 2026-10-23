@@ -1,0 +1,53 @@
+NVIDIA L40, 590.48.01, 46068 MiB
+[job 73467] arm s2, seed 1, run runs/sft_step_s1
+results/sft-step/s2_s1/chained done
+results/sft-step-permuted/s2_s1 done
+results/sft-step/s2_s1/gold done
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   0%|          | 1/339 [00:00<01:53,  2.99it/s]Loading weights:   2%|▏         | 6/339 [00:00<00:29, 11.47it/s]Loading weights:   3%|▎         | 9/339 [00:00<00:22, 14.74it/s]Loading weights:   3%|▎         | 11/339 [00:01<00:37,  8.74it/s]Loading weights:   5%|▌         | 17/339 [00:01<00:22, 14.00it/s]Loading weights:   9%|▊         | 29/339 [00:01<00:11, 27.08it/s]Loading weights:  10%|▉         | 33/339 [00:01<00:12, 24.16it/s]Loading weights:  11%|█         | 37/339 [00:02<00:13, 21.94it/s]Loading weights:  12%|█▏        | 41/339 [00:02<00:13, 21.56it/s]Loading weights:  14%|█▍        | 47/339 [00:02<00:13, 22.08it/s]Loading weights:  17%|█▋        | 59/339 [00:03<00:14, 19.48it/s]Loading weights:  22%|██▏       | 73/339 [00:03<00:09, 28.95it/s]Loading weights:  23%|██▎       | 77/339 [00:03<00:09, 27.27it/s]Loading weights:  24%|██▍       | 81/339 [00:03<00:09, 26.75it/s]Loading weights:  25%|██▍       | 84/339 [00:03<00:09, 25.79it/s]Loading weights:  28%|██▊       | 96/339 [00:04<00:06, 37.91it/s]Loading weights:  30%|███       | 102/339 [00:04<00:07, 31.86it/s]Loading weights:  32%|███▏      | 109/339 [00:04<00:06, 37.53it/s]Loading weights:  34%|███▎      | 114/339 [00:04<00:06, 33.92it/s]Loading weights:  35%|███▍      | 118/339 [00:04<00:08, 25.35it/s]Loading weights:  36%|███▌      | 122/339 [00:05<00:14, 14.66it/s]Loading weights:  37%|███▋      | 127/339 [00:05<00:12, 16.40it/s]Loading weights:  39%|███▉      | 133/339 [00:05<00:09, 21.31it/s]Loading weights:  40%|████      | 137/339 [00:06<00:10, 19.95it/s]Loading weights:  42%|████▏     | 142/339 [00:06<00:08, 24.28it/s]Loading weights:  43%|████▎     | 146/339 [00:06<00:10, 17.64it/s]Loading weights:  44%|████▍     | 149/339 [00:06<00:12, 15.62it/s]Loading weights:  45%|████▍     | 152/339 [00:07<00:12, 15.42it/s]Loading weights:  46%|████▌     | 156/339 [00:07<00:13, 13.97it/s]Loading weights:  48%|████▊     | 163/339 [00:07<00:09, 19.18it/s]Loading weights:  51%|█████     | 173/339 [00:08<00:07, 21.04it/s]Loading weights:  52%|█████▏    | 176/339 [00:08<00:11, 13.89it/s]Loading weights:  53%|█████▎    | 178/339 [00:09<00:13, 11.73it/s]Loading weights:  55%|█████▍    | 185/339 [00:09<00:12, 12.05it/s]Loading weights:  56%|█████▌    | 190/339 [00:09<00:09, 15.13it/s]Loading weights:  57%|█████▋    | 193/339 [00:09<00:09, 15.62it/s]Loading weights:  58%|█████▊    | 196/339 [00:09<00:08, 17.21it/s]Loading weights:  59%|█████▉    | 200/339 [00:10<00:06, 19.91it/s]Loading weights:  61%|██████    | 207/339 [00:10<00:05, 22.03it/s]Loading weights:  62%|██████▏   | 210/339 [00:10<00:08, 14.80it/s]Loading weights:  64%|██████▍   | 217/339 [00:11<00:06, 20.01it/s]Loading weights:  67%|██████▋   | 228/339 [00:11<00:03, 30.81it/s]Loading weights:  69%|██████▊   | 233/339 [00:11<00:03, 33.17it/s]Loading weights:  71%|███████   | 240/339 [00:11<00:03, 31.77it/s]Loading weights:  76%|███████▌  | 256/339 [00:11<00:02, 35.94it/s]Loading weights:  81%|████████  | 274/339 [00:12<00:01, 55.56it/s]Loading weights:  83%|████████▎ | 282/339 [00:12<00:01, 36.44it/s]Loading weights:  85%|████████▍ | 288/339 [00:12<00:01, 38.99it/s]Loading weights:  87%|████████▋ | 294/339 [00:12<00:01, 32.21it/s]Loading weights:  88%|████████▊ | 299/339 [00:13<00:01, 29.27it/s]Loading weights:  90%|████████▉ | 304/339 [00:13<00:01, 31.83it/s]Loading weights: 100%|██████████| 339/339 [00:13<00:00, 25.52it/s]
+[local] loaded Qwen/Qwen2.5-7B-Instruct (bfloat16) on cuda:0 + adapter runs/sft_step_s1/adapter
+gold: 316 problems (0 states already asked), budgets {'role': 512, 'subsume': 32, 'fold_candidates': 192, 'check': 96, 'reuse_scan': 32, 'contrary_facts': 256, 'reuse_check': 16}
+  10/316 problems
+  20/316 problems
+  30/316 problems
+  40/316 problems
+  50/316 problems
+  60/316 problems
+  70/316 problems
+  80/316 problems
+  90/316 problems
+  100/316 problems
+  110/316 problems
+  120/316 problems
+  130/316 problems
+  140/316 problems
+  150/316 problems
+  160/316 problems
+  170/316 problems
+  180/316 problems
+  190/316 problems
+  200/316 problems
+  210/316 problems
+  220/316 problems
+  230/316 problems
+  240/316 problems
+  250/316 problems
+  260/316 problems
+  270/316 problems
+  280/316 problems
+  290/316 problems
+  300/316 problems
+  310/316 problems
+  316/316 problems
+
+all
+  check            n=  631  acc 0.9746  balanced 0.9812  baseline 0.5561  unusable 1
+
+split:heldout
+  check            n=  145  acc 1.0  balanced 1.0  baseline 0.5  unusable 0
+
+split:test
+  check            n=  448  acc 0.9955  balanced 0.9933  baseline 0.5955  unusable 0
+
+split:table1
+  check            n=   38  acc 0.6316  unusable 1
+scored 631 asked states; 0 recorded calls outside these problems
