@@ -1,0 +1,44 @@
+{
+ "protocol": "chained",
+ "prompt_version": "v1-step",
+ "model": "Qwen/Qwen2.5-7B-Instruct",
+ "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+ "adapter": "runs/sft_step_s1/adapter",
+ "adapter_sha256": "82d173fc3f4bcad8f0fbf130f3932874281cb6f49939b403337fe1d2e1a2a403",
+ "decoding": {
+  "greedy": true,
+  "repetition_penalty": 1.0,
+  "max_new_tokens": {
+   "role": 512,
+   "subsume": 32,
+   "fold_candidates": 192,
+   "check": 96,
+   "reuse_scan": 32,
+   "contrary_facts": 256,
+   "reuse_check": 16
+  }
+ },
+ "code_rev": "4fbd8ab-dirty",
+ "versions": {
+  "python": "3.13.5",
+  "torch": "2.7.1+cu118",
+  "transformers": "5.17.0",
+  "tokenizers": "0.23.2",
+  "accelerate": "1.15.0",
+  "peft": "0.21.0",
+  "clingo": "5.8.2"
+ },
+ "sha256": {
+  "problems.jsonl": "a50b82612cf8b38a252a45fb491a70a41fcec951685a07dab86b601362f119e8",
+  "eval.jsonl": "d8c1df85b631d0f6809583f3ded8936730783e81652dd82b032d0e041032ce25",
+  "table1_problems.jsonl": "3c4f932241bf20623fe09d99856b03aaeff8fada4a5f369d49f1b5f4fb7f099b",
+  "table1_eval.jsonl": "ba2cef57b8238898b398bb20e4cfc90f9a562942a62d9ad08bf4f1a5b16f5151",
+  "traces.jsonl": "a8c802094a45bc8e1e8e648c897bbc0ed62e08103a2e062cca0b715530981398",
+  "table1_traces.jsonl": "7f76bee1407d0239ff2e1f0de8d7e74de1fbaf541be5bdd1a5eb58ddf589d22b"
+ },
+ "steps_sha256": {
+  "TOKENS.json": "44009fdc93c62017e59271226125fdadac8138a93e3c9adeb4fce60df96dbfb8"
+ },
+ "cuda": "11.8",
+ "gpu": "NVIDIA L40"
+}
