@@ -399,6 +399,49 @@ problems.
 - Which folds are skipped follows the reference's fold order, which Definition 3 leaves
   open (Phase 8).
 
+**Seed 1** ([`s2_s1/COMPARISON_STEP.md`](../results/sft-step/s2_s1/COMPARISON_STEP.md) and
+`analysis/s2_errors.py --s2 s2_s1`). This run is descriptive.
+
+- **Setup.** It uses the same code, corpus, hyperparameters and decoding as seed 0, with its
+  own problem order and LoRA initialisation (job 73305, trained and evaluated at 4fbd8ab).
+  The evaluation code is unchanged since seed 0's evaluation at 19bda3d.
+- **Checks.**
+  - The samples were read by hand first.
+  - Every number in the report was then recomputed from the raw files.
+  - The training and evaluation manifests differ from seed 0's only in the seed, the order
+    hashes, the adapter and the code revision.
+
+- D5's criteria hold again:
+  - the first line-18 verdict is right on 199/200 (balanced 0.995);
+  - R3 balanced is 1.000;
+  - exact is 198/200 against 89 (109 to 0, p = 3.1e-33).
+- Every S2 count in the README's table equals seed 0's: test 198/200, `t8_decoy` 50/50,
+  `t9_reuse` 0/50, Table 1 0/16, and original → renamed 248 → 150.
+- On v1 test, the two seeds produce the same run, call for call, on 190 of 200 problems.
+  On 17 of these, the RoLe facts are listed in another order.
+- No test problem is missed by both seeds:
+  - seed 1 misses `t3_domain_0030`, whose RoLe answer has an extra fact;
+  - it also misses `t5_twopath_0036`, whose first line-18 verdict is wrong at the
+    reference's state ("fails: none. yes." where `r1(c)` fails);
+  - seed 0 misses `t4_nested_0036` and `t5_twopath_0016`, both RoLe answers with extra
+    facts.
+- Seed 0's mechanisms recur:
+  - every `t9_reuse` run first goes wrong at line 38, with the same answer by state shape
+    (identical per problem);
+  - on test, line 38 is 128/128 for both S2 and the position baseline;
+  - renamed, the first wrong call is the fold list in 104 of 121 broken test runs (seed 0:
+    112 of 129);
+  - where background and alphabetical orders differ, the list is right on 79 of 231 calls
+    (seed 0: 68 of 251); where they agree, on 127 of 143 (135 of 147).
+- Renamed, the totals hide the differences:
+  - 40 of the 200 test problems change outcome between the seeds (21 against 19);
+  - 12 of seed 1's renamed runs stop, against none of seed 0's;
+  - 11 of them stop on a fold list whose every body has the fact's constant in place of X
+    (`c_alpha_0(X) :- r(g).`), and 1 on a malformed contrary fact.
+
+So the second seed confirms the in-distribution result and its limits. What varies between
+seeds is which renamed problems fail, and how.
+
 ## Pending
 
 - Re-run all four models with probe prompts v2; promote to `experiments/04_*`
@@ -411,9 +454,6 @@ problems.
   fidelity measure without an explanation of the mechanism.
 - Re-score `introduce` without the line-41 fallback (Phase 8, item 2).
 - Check the fold-order convention against the Zenodo implementation.
-- S2 seed 1 (`SEED=1`), a replicate with its own problem order and initialisation:
-  D5's criteria and the other figures are read on it as on seed 0 (`compare_step.py` and
-  `analysis/s2_errors.py`, both with `--s2 s2_s1`); no decision depends on it.
 - Line 18 off the path (Phase 9): once seed 1's job ends, resubmit
   `cluster/stepwise_sft.sbatch` for seed 0, then with `SEED=1`; each runs only `gold_extra`.
 - Ask Prof. Toni about N1 (Phase 9).

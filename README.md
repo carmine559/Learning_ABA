@@ -42,7 +42,8 @@ MSc thesis project, University of Bologna.
 
 Endpoint and trace from [`sft/compare_sft.py`](sft/compare_sft.py), registered
 before the trace arm was scored; S2 from [`sft/compare_step.py`](sft/compare_step.py),
-registered before any S2 output existed. One seed per arm, greedy decoding.
+registered before any S2 output existed. One seed per arm, greedy decoding; S2 also
+has a second seed, read descriptively.
 
 | set | base | endpoint | trace | S2 | constant answer |
 | --- | --- | --- | --- | --- | --- |
@@ -73,6 +74,9 @@ registered before any S2 output existed. One seed per arm, greedy decoding.
   that go wrong, while RoLe (198/200) and the first line-18 verdict (192/200)
   survive. It reads 4.5× the trace arm's tokens per epoch, but is supervised on
   0.62× its target tokens.
+- S2's second seed gives the same count in every S2 cell of the table. On v1 test it
+  produces the same run as the first seed on 190 of 200 problems, but misses two other
+  problems. Renamed, 40 of the 200 test problems change outcome between the seeds.
 - All three fine-tuned arms lose exact answers when predicates are renamed
   (McNemar p < 0.05).
 
