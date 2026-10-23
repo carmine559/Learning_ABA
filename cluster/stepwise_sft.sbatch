@@ -1,5 +1,6 @@
 #!/bin/bash
-# Arm S2: train step by step, then evaluate it chained (v1, permuted) and at gold states.
+# Arm S2: train step by step, then evaluate it chained (v1, permuted), at gold states and at
+# the line-18 states the search skips (gold --extra).
 #   sbatch cluster/stepwise_sft.sbatch
 #   sbatch --export=ALL,SEED=1 cluster/stepwise_sft.sbatch   # a replicate: runs/sft_step_s1, s2_s1/
 # Resubmitted, it skips a finished adapter or evaluation, resumes training from the last
@@ -53,3 +54,4 @@ evaluate() {                             # protocol, out, then extra arguments
 evaluate chained "results/sft-step/$NAME/chained"
 evaluate chained "results/sft-step-permuted/$NAME" --corpus corpus/v1-permuted
 evaluate gold "results/sft-step/$NAME/gold"
+evaluate gold "results/sft-step/$NAME/gold_extra" --extra    # line 18 at the folds the search skips

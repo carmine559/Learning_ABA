@@ -13,11 +13,13 @@ These are measurement scripts, not library modules. Reusable machinery belongs i
 | `null_baselines.py` | what does a probe metric score with **no reasoning at all**? |
 | `conformance.py` | how much of `gen@k` is a conformant *output*? |
 | `step_fidelity.py` | was the *algorithm* followed — R1, R2, R3, R4 separately? |
+| `s2_errors.py` | where does an arm-S2 run first leave the reference, and what in training explains it? |
 
 ```bash
 python analysis/null_baselines.py
 python analysis/conformance.py   --set experiments/05_scale_4bit_probes_v2
 python analysis/step_fidelity.py --set experiments/05_scale_4bit_probes_v2
+python analysis/s2_errors.py     --s2 s2          # s2_s1: the seed-1 replicate
 ```
 
 `--benchmark` must match the run that produced the set (default 20).

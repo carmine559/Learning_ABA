@@ -1,6 +1,7 @@
 """Arm S2 (step-wise SFT) against the registered arms, and the D5 verdict.
 
     python sft/compare_step.py          # -> results/sft-step/COMPARISON_STEP.md and .json
+    python sft/compare_step.py --s2 s2_s1     # a replicate -> results/sft-step/s2_s1/
 
 D5, on v1 test (200 problems):
   (a) chained first-check balanced accuracy >= 0.80: each problem's first line-18 test on
@@ -32,8 +33,8 @@ from src.aba_score import load_eval
 
 ARMS = ("base", "sft_endpoint", "sft_trace")
 REGISTERED = {"v1": Path("sft"), "permuted": Path("sft-permuted")}
-S2 = {"chained": (Path("sft-step/s2/chained"), "v1"), "gold": (Path("sft-step/s2/gold"), "v1"),
-      "permuted": (Path("sft-step-permuted/s2"), "permuted")}
+S2 = {"chained": ("sft-step/{}/chained", "v1"), "gold": ("sft-step/{}/gold", "v1"),
+      "permuted": ("sft-step-permuted/{}", "permuted")}    # {}: the run, s2 (seed 0) or s2_s1 ...
 TRACE_EXACT = 89                    # sft_trace's exact on v1 test
 SUPPORT, REFUTE, ALPHA = 0.80, 0.60, 0.05
 GROUPS = ("split:test", "split:heldout", "tier:t9_reuse", "split:table1")   # step tables
@@ -51,7 +52,7 @@ def _checked(d: Path, corpus: Path) -> Optional[Dict]:
     return made
 
 
-def load(results: Path) -> Tuple[Dict, Dict]:
+def load(results: Path, run: str = "s2") -> Tuple[Dict, Dict]:
     """(corpus -> registered arm -> problem_id -> score row, S2 output name -> its files)."""
     reg = {}
     for corpus, sub in REGISTERED.items():
@@ -62,7 +63,7 @@ def load(results: Path) -> Tuple[Dict, Dict]:
                 reg.setdefault(corpus, {})[arm] = {r["problem_id"]: r for r in rows}
     s2, made = {}, {}
     for name, (sub, corpus) in S2.items():
-        d = results / sub
+        d = results / sub.format(run)
         m = _checked(d, CORPORA[corpus])
         if m is not None:
             made[name] = json.dumps([m["adapter_sha256"], m["prompt_version"], m["decoding"]])
@@ -229,8 +230,8 @@ def names(reg: Dict, s2: Dict) -> Dict:
     return {arm: invariance(v1, perm, expected) for arm, (v1, perm) in arms.items()}
 
 
-def report(results: Path) -> Dict:
-    reg, s2 = load(results)
+def report(results: Path, run: str = "s2") -> Dict:
+    reg, s2 = load(results, run)
     test = sorted(row["problem_id"] for row, _, _ in load_eval(CORPORA["v1"])
                   if row["split"] == "test")
     out = {"d5": d5(s2, reg.get("v1", {}).get("sft_trace", {}), test),
@@ -363,11 +364,14 @@ def main(argv=None) -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--results", default="results",
                     help="holds sft/, sft-permuted/, sft-step/ and sft-step-permuted/")
-    ap.add_argument("--out", default=None, help="default <results>/sft-step")
+    ap.add_argument("--s2", default="s2", help="the S2 run: s2 (seed 0) or a replicate, s2_s1 ...")
+    ap.add_argument("--out", default=None, help="default <results>/sft-step; a replicate's, "
+                                                "<results>/sft-step/<run>")
     a = ap.parse_args(argv)
-    out = Path(a.out) if a.out else Path(a.results) / "sft-step"
+    default = Path(a.results) / "sft-step"
+    out = Path(a.out) if a.out else default if a.s2 == "s2" else default / a.s2
     out.mkdir(parents=True, exist_ok=True)
-    r = report(Path(a.results))
+    r = report(Path(a.results), a.s2)
     (out / "COMPARISON_STEP.json").write_text(json.dumps(r, indent=1, default=str), encoding="utf-8")
     (out / "COMPARISON_STEP.md").write_text(_md(r), encoding="utf-8")
     print(_md(r))

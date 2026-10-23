@@ -328,6 +328,77 @@ epoch on 0.62× its target tokens, its prompts carry no definitions block or ste
 history, the lines-16/18 targets name the failing examples, and it has 3,344
 extra line-18 rows. One seed.
 
+**Where the runs first go wrong** (`analysis/s2_errors.py`). Each run is replayed from its
+recorded calls, and every call is judged against the reference's answer at the same state.
+
+- **Test.**
+  - 193 of 200 runs have every call right.
+  - No yes/no decision taken at the reference's state is wrong.
+  - Three runs drop a fold candidate that the search never tests, and stay exact.
+  - Four start with a wrong RoLe answer; two of them are still exact.
+- **Renaming.** In 112 of the 129 renamed test runs with a wrong call, the first wrong call
+  is the fold-candidate list.
+  - All 2,602 training fold lists are in alphabetical order, because the anonymiser names
+    predicates by first appearance. So training cannot tell the order the prompt states
+    (background order) from alphabetical order.
+  - Renamed, the two orders differ on 251 of 398 test calls. There S2 is right on 68,
+    against 135 of the 147 calls where the orders agree. Of the other 183:
+    - only the first candidate dropped: 76;
+    - other drops: 69;
+    - the right set in alphabetical order: 23;
+    - other: 15.
+  - Names never seen as candidates in training are dropped slightly more often than seen
+    ones: 121/570 against 58/421.
+- **`t9_reuse`.** Every run first goes wrong at line 38, at the reference's state, and
+  answers as training answers that state's shape.
+  - In training, line 38 says yes exactly when a contrary fact is guarded by a background
+    assumption (150 rows). It says no for a contrary fact with a minted assumption (652)
+    and for a RoLe fact with a background one (118).
+  - `reuse_ok` needs yes on a RoLe fact and gets no (25/25).
+  - `reuse_fails` needs no on a contrary fact with a background assumption and gets yes
+    (25/25).
+  - On test, the position baseline gets all 128 line-38 states, so nothing in distribution
+    shows S2 computing line 38.
+- **Table 1.** The first wrong call is RoLe in 10 runs, line 16 in 2, line 18 in 2, and the
+  contrary facts and the fold list in 1 each.
+  - Each Table 1 problem lies outside the range of v1's training problems somewhere:
+    - assumptions: 0 or 3 (training 1–2);
+    - constants: 2, 5, 7 or 40 (training 6, 8, 10 or 12);
+    - binary predicates (none in training);
+    - |T| = 4 (training ≤ 2);
+    - rules with a body: 0 or 3 (training 1–2);
+    - facts written `p(X) :- X = t` (problems 01 and 02).
+  - In 03, 05 and 07 the reference's RoLe answer has a predicate other than the examples'.
+    No training RoLe target does (0/1,500).
+
+So line 18 is the step S2 is shown to compute: its first verdict is right on 200/200
+against the position baseline's 117, and on 192/200 renamed. Lines 17 and 38 cannot be
+judged in distribution: training separates neither the fold order from alphabetical order
+nor line 38's answer from the state's shape. Table 1 measures transfer, not a step.
+
+**Line 18 off the path, fixed before the run** (seed 0; `eval_stepwise.py --protocol
+gold --extra`, the last step of `cluster/stepwise_sft.sbatch`). S2 is asked line 18 at
+every non-dom fold its search skips, at the reference's state: 448 test states in 181
+problems (94 yes), 145 held-out (38 yes), 38 in Table 1 (all no). Their prompts are built
+as on the path, so nothing marks them. S2 trained on 3,344 such rows from the train
+problems.
+
+- Floors on test:
+  - always no is balanced 0.5 (accuracy 354/448);
+  - the position rule voting on every train line-18 row is 0.596 (358/448).
+  - The registered rule votes on visited rows only and gets 0.447: it says yes at rank 1,
+    where a visited check is yes 712 times out of 770.
+- Reading on test:
+  - balanced ≥ 0.80: S2 computes line 18 off the path;
+  - ≤ 0.60: its line-18 answers depend on where the state falls, and the first-check
+    result holds on the path only;
+  - intermediate otherwise.
+  - Expected: ≥ 0.95, with the failing examples right on ≥ 0.90 (every test state has one
+    answer set).
+- Held-out and Table 1 are descriptive, as is seed 1's run.
+- Which folds are skipped follows the reference's fold order, which Definition 3 leaves
+  open (Phase 8).
+
 ## Pending
 
 - Re-run all four models with probe prompts v2; promote to `experiments/04_*`
@@ -341,6 +412,8 @@ extra line-18 rows. One seed.
 - Re-score `introduce` without the line-41 fallback (Phase 8, item 2).
 - Check the fold-order convention against the Zenodo implementation.
 - S2 seed 1 (`SEED=1`), a replicate with its own problem order and initialisation:
-  D5's criteria and the other figures are read on it as on seed 0; no decision
-  depends on it.
+  D5's criteria and the other figures are read on it as on seed 0 (`compare_step.py` and
+  `analysis/s2_errors.py`, both with `--s2 s2_s1`); no decision depends on it.
+- Line 18 off the path (Phase 9): once seed 1's job ends, resubmit
+  `cluster/stepwise_sft.sbatch` for seed 0, then with `SEED=1`; each runs only `gold_extra`.
 - Ask Prof. Toni about N1 (Phase 9).

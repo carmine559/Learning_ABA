@@ -4,6 +4,7 @@
     python sft/eval_stepwise.py --protocol chained --adapter runs/sft_step/adapter \
         --corpus corpus/v1-permuted --out results/sft-step-permuted/s2
     python sft/eval_stepwise.py --protocol gold --adapter runs/sft_step/adapter --out results/sft-step/s2/gold
+    python sft/eval_stepwise.py --protocol gold --extra ... --out results/sft-step/s2/gold_extra
     python sft/eval_stepwise.py ... --score-only           # re-score on CPU
     python sft/eval_stepwise.py ... --dry-run              # no model: hashes, reference runs, lengths
     python sft/eval_stepwise.py ... --smoke --limit 2      # CPU, the cached tiny Qwen2
@@ -18,6 +19,7 @@ corpus/v1-step TOKENS.json `max_new_tokens`. Two protocols:
 - gold: every state the reference visits on v1 test, held-out and Table 1 is asked once.
   yes/no by equality, folds by order (and by set), scans by set, RoLe and contrary facts by
   `_optimal`, the lines-16/18 failing examples by set where the answer set is unique.
+  With --extra, only line 18 at the folds the search skips (`harvest`'s extra rows).
 
 calls.jsonl keeps every raw answer with its prompt's hash, appended as it goes, so a killed
 job resumes; every score is recomputed from it. A chained run is replayed from its calls (the
@@ -33,7 +35,8 @@ check, exact and strict exact: no illegal item in any call), calls_sample.md.
 Gold baseline: the majority train verdict (corpus/v1-step) among the steps with the same
 position facets: kind, tier, source of the fact, first fact, fold rank capped at 2, first
 check; without the tier where its votes are missing or tied (Table 1), else no. It reads
-where a step falls in the run, never the problem.
+where a step falls in the run, never the problem. With --extra the train extra rows vote
+too: their prompts are built as on the path.
 
 Before reading the summaries: read sample.md and, for chained, calls_sample.md by hand.
 """
@@ -68,7 +71,7 @@ from src.aba_validator import _norm as _norm_atom
 PROTOCOLS = ("chained", "gold")
 _TRACES = ("traces.jsonl", "table1_traces.jsonl")
 _FILES = ("problems.jsonl", "eval.jsonl", "table1_problems.jsonl", "table1_eval.jsonl") + _TRACES
-_SAME = ("protocol", "model", "adapter_sha256", "decoding", "sha256")   # a resumed run's
+_SAME = ("protocol", "extra", "model", "adapter_sha256", "decoding", "sha256")   # a resumed run's
 
 
 def _h(prompt: str) -> str:
@@ -90,12 +93,13 @@ def stored_records(corpus: Path) -> Dict[str, Dict]:
             for n in _TRACES for r in _read(corpus / n)}
 
 
-def gold_rows(problem, stored: Dict) -> List[Dict]:
-    """The states the reference visits (`harvest`); its record must be the build's."""
-    rows, record = harvest(problem, extra=False)
+def gold_rows(problem, stored: Dict, extra: bool = False) -> List[Dict]:
+    """The states the reference visits (`harvest`), or with `extra` only the line-18 states
+    its search skips; its record must be the build's."""
+    rows, record = harvest(problem, extra=extra)
     if {"role_facts": record.role_facts, "events": [e.to_dict() for e in record.events]} != stored:
         raise SystemExit(f"{problem.problem_id}: the reference changed since the build")
-    return rows
+    return [r for r in rows if r["extra"]] if extra else rows
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -136,7 +140,8 @@ def open_run(a, corpus: Path, steps: Path, out: Path, budget: Dict[str, int]):
         assert cfg.get("prompt_version") == STEP_PROMPT_VERSION, \
             f"{a.adapter} was not trained on {STEP_PROMPT_VERSION} step prompts"
     manifest = {
-        "protocol": a.protocol, "prompt_version": STEP_PROMPT_VERSION,
+        "protocol": a.protocol, **({"extra": True} if a.extra else {}),
+        "prompt_version": STEP_PROMPT_VERSION,
         "model": mid, "revision": revision(mid), "adapter": a.adapter,
         "adapter_sha256": _sha256(Path(a.adapter) / "adapter_model.safetensors")
                           if a.adapter else None,
@@ -148,7 +153,7 @@ def open_run(a, corpus: Path, steps: Path, out: Path, budget: Dict[str, int]):
     mpath = out / "EVAL_MANIFEST.json"
     if mpath.exists() and (out / "calls.jsonl").exists():
         old = json.loads(mpath.read_text(encoding="utf-8"))
-        if any(old.get(k) != manifest[k] for k in _SAME):
+        if any(old.get(k) != manifest.get(k) for k in _SAME):
             raise SystemExit(f"{out} holds calls of another run; use a new --out")
     _write(mpath, manifest)
 
@@ -193,7 +198,8 @@ def generate_chained(backend, budget: Dict[str, int], out: Path, items) -> None:
                 print(f"  {n}/{len(todo)}  last: {len(log)} calls, {error or 'ok'}", flush=True)
 
 
-def generate_gold(backend, budget: Dict[str, int], out: Path, items, corpus: Path) -> None:
+def generate_gold(backend, budget: Dict[str, int], out: Path, items, corpus: Path,
+                  extra: bool) -> None:
     cpath = out / "calls.jsonl"
     done = {(c["problem_id"], c["k"]) for c in _read(cpath)}
     stored = stored_records(corpus)
@@ -201,7 +207,7 @@ def generate_gold(backend, budget: Dict[str, int], out: Path, items, corpus: Pat
     with open(cpath, "a", encoding="utf-8") as fc:
         for n, (row, problem, _) in enumerate(items, 1):
             pid = row["problem_id"]
-            for r in gold_rows(problem, stored[pid]):
+            for r in gold_rows(problem, stored[pid], extra):
                 if (pid, r["k"]) in done:
                     continue
                 log: List[Dict] = []
@@ -335,10 +341,10 @@ def judge_gold(problem, r: Dict, raw: str) -> Dict:
 class Baseline:
     """The majority train verdict among steps with the same position facets (module doc)."""
 
-    def __init__(self, rows: List[Dict]):
+    def __init__(self, rows: List[Dict], extra: bool = False):
         self.votes = collections.defaultdict(collections.Counter)
         for r in rows:
-            if r["kind"] in DECISIONS and not r["extra"]:
+            if r["kind"] in DECISIONS and (extra or not r["extra"]):
                 for key in self.keys(r, r["tier"]):
                     self.votes[key][r["verdict"]] += 1
 
@@ -493,17 +499,17 @@ def score_chained(out: Path, items) -> int:
     return rc
 
 
-def score_gold(out: Path, items, corpus: Path, steps: Path) -> int:
+def score_gold(out: Path, items, corpus: Path, steps: Path, extra: bool) -> int:
     calls = {(c["problem_id"], c["k"]): c for c in _read(out / "calls.jsonl")}
     if not calls:
         print(f"nothing to score in {out}")
         return 1
-    base = Baseline(load_steps(steps)[2]["train"])
+    base = Baseline(load_steps(steps)[2]["train"], extra)
     stored = stored_records(corpus)
     recs, show = [], []
     for row, problem, _ in items:
         pid = row["problem_id"]
-        for r in gold_rows(problem, stored[pid]):
+        for r in gold_rows(problem, stored[pid], extra):
             c = calls.get((pid, r["k"]))
             if c is None:
                 continue
@@ -585,7 +591,7 @@ def dry_run(a, corpus: Path, items, budget: Dict[str, int]) -> int:
     for row, problem, _ in items:
         pid = row["problem_id"]
         if stored is not None:
-            rows = gold_rows(problem, stored[pid])
+            rows = gold_rows(problem, stored[pid], a.extra)
         else:
             rows, _ = harvest(problem, extra=False)
             text = chained_run(problem, ModelOracle(problem, gold_backend(rows, problem)))["text"]
@@ -595,8 +601,9 @@ def dry_run(a, corpus: Path, items, budget: Dict[str, int]) -> int:
             n = encode(tok, step_prompt(problem, r["kind"], r["state"]))[1] + budget[r["kind"]]
             longest = max(longest, (n, f"{pid}#{r['k']} {r['kind']}"))
     context = AutoConfig.from_pretrained(mid).max_position_embeddings
-    print(f"{a.protocol}: {len(items)} problems, {sum(kinds.values())} steps on the reference's "
-          f"path {dict(kinds)}\n  longest prompt + budget {longest[0]} tokens ({longest[1]}), "
+    print(f"{a.protocol}: {len(items)} problems, {sum(kinds.values())} steps "
+          f"{'off' if a.extra else 'on'} the reference's path {dict(kinds)}\n"
+          f"  longest prompt + budget {longest[0]} tokens ({longest[1]}), "
           f"context {context}")
     assert longest[0] <= context, "a step would not fit the context"
     return 0
@@ -606,6 +613,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--protocol", choices=PROTOCOLS, required=True)
+    ap.add_argument("--extra", action="store_true",
+                    help="gold: only line 18 at the folds the search skips; a new --out")
     ap.add_argument("--out", required=True)
     ap.add_argument("--adapter", default=None, help="LoRA adapter dir; none = the base model")
     ap.add_argument("--corpus", default="corpus/v1")
@@ -622,6 +631,8 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
     if a.smoke and not a.limit:
         ap.error("--smoke needs --limit")
+    if a.extra and a.protocol != "gold":
+        ap.error("--extra is for the gold protocol")
     corpus, steps, out = Path(a.corpus), Path(a.steps), Path(a.out)
     if a.protocol == "gold" and not (corpus / "traces.jsonl").exists():
         ap.error(f"the gold protocol needs the reference's records; {corpus} has none")
@@ -636,9 +647,9 @@ def main(argv=None) -> int:
         if a.protocol == "chained":
             generate_chained(backend, budget, out, items)
         else:
-            generate_gold(backend, budget, out, items, corpus)
+            generate_gold(backend, budget, out, items, corpus, a.extra)
     return score_chained(out, items) if a.protocol == "chained" else \
-        score_gold(out, items, corpus, steps)
+        score_gold(out, items, corpus, steps, a.extra)
 
 
 if __name__ == "__main__":
