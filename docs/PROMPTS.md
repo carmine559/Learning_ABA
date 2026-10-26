@@ -233,6 +233,19 @@ target's grammar is documented in [`src/aba_sft.py`](../src/aba_sft.py) and
 **Comparability.** Nothing produced under v4-sft is comparable with the
 zero-shot sets 01–05, which were run under v3.
 
+## Step-probe prompts (versioned separately)
+
+The step probes ([`src/aba_probes.py`](../src/aba_probes.py)) ask for one decision of
+Algorithm 1 at a state the reference visits. Their prompts carry their own version,
+stamped in every `probe_summary.json`; probe results are comparable only within one
+version.
+
+| Version | Set | Change |
+| --- | --- | --- |
+| v1 | `experiments/04_step_probes` | the whole system prompt as preamble, whose format block and "no ground facts" rule contradict the probes |
+| v2 | `experiments/05_scale_4bit_probes_v2` | definitions-only preamble; RoLe expects ground facts; R3 asks for the rule and the assumption, not the contrary |
+| v3 | `experiments/06_probes_v3` | RoLe: facts only for predicates in T; the check defines a failing example; R3 states Definition 4 and lines 36/41 ([METHOD_HISTORY](METHOD_HISTORY.md), Phase 10) |
+
 ## Prompt-version ↔ experiment-set matrix
 
 | Experiment set | Prompts | Metrics | Comparable with |

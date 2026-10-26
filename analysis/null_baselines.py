@@ -10,41 +10,50 @@ Policies
   check / subsume : answer YES iff the rendered state block shows an
                     "ASSUMPTIONS INTRODUCED SO FAR" section. One surface cue;
                     the rules and the examples are never read.
-  introduce       : always guard the folded rule with a brand-new assumption
-                    and a brand-new contrary. Never reuses, never inspects.
+  introduce       : reuse the last assumption that section lists, else a new
+                    one. No rule body is read.
   role            : always NONE.
   fold            : copy the rule back unchanged.
 
-Measured on the 103-problem benchmark (seed 42, `--benchmark 20`, anonymised):
+Measured on the 103-problem benchmark (seed 42, `--benchmark 20`, anonymised),
+with probe prompts v3 and the reference after METHOD_HISTORY Phase 8:
 
     kind          n   accuracy   score  balanced   fails
     role        103      0.000   0.000         -     103
-    fold        184      0.000   0.000         -     184
-    check       186      0.688   0.551     0.681     109
-    introduce   103      1.000   1.000         -       0
-    subsume     204      0.686   0.686     0.687      64
+    fold        186      0.000   0.000         -     186
+    check       186      0.651   0.546     0.633     104
+    introduce   166      0.855   0.855     0.855      24
+    subsume     204      0.662   0.662     0.663      69
 
-Two consequences, both of which change how the probe table must be reported:
+`introduce` is balanced over line 36's two branches (81 reuse, 85 new), so
+always answering a new assumption gets 0.500; the policy above gets 0.855
+because every reuse state follows an assumption introduced for the same body.
+Sets 04 and 05 were harvested from the earlier reference: their floors are in
+their MANIFESTs.
 
-  * `introduce` is satisfied BY CONSTRUCTION — this is Proposition 2 (R3 + RoLe
-    always recovers a solution), so the oracle cannot fail when the instruction
-    is followed literally. Every model scores at or below the trivial baseline.
-    Report it inverted, as an error count, not as an accuracy.
-  * `check` and `subsume` have a ~0.68 surface-cue floor, not 0.50.
+With --set, each model's probe metrics in that set are printed beside these
+floors, with 95% bootstrap intervals over problems.
 
 Usage:
     python analysis/null_baselines.py [--benchmark 20] [--out null_baselines.json]
+    python analysis/null_baselines.py --set experiments/06_probes_v3
 """
 import argparse
+import glob
 import json
 import os
+import random
 import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from main import build_dataset
-from src.aba_probes import (BINARY_KINDS, ProbeResult, balanced_accuracy,
+from src.aba_probes import (BINARY_KINDS, KINDS, ProbeResult, aggregate_probes,
                             generate_probes, score_probe)
+
+# The metric each probe is read by, as named in the probe summary.
+METRIC = {"role": "score", "fold": "accuracy", "check": "balanced_accuracy",
+          "introduce": "balanced_accuracy", "subsume": "balanced_accuracy"}
 
 ASM_MARKER = "ASSUMPTIONS INTRODUCED SO FAR"
 
@@ -55,6 +64,7 @@ def cue_answer(probe):
 
 
 def introduce_answer(probe):
+    """Reuse the last assumption the state lists as introduced, else a new one."""
     folded = probe.state.get("folded", "")
     body = folded.rstrip().rstrip(".")
     var = "X"
@@ -62,8 +72,10 @@ def introduce_answer(probe):
         if tok[:1].isupper():
             var = tok
             break
-    return (f"RULE: {body}, zzznull({var}).\n"
-            f"ASSUMPTION: zzznull({var}) defeated_by c_zzznull({var})")
+    introduced = list(probe.state.get("new_asms", {}).items())
+    asm, contrary = introduced[-1] if introduced else (f"zzznull({var})",
+                                                       f"c_zzznull({var})")
+    return f"RULE: {body}, {asm}.\nASSUMPTION: {asm} defeated_by {contrary}"
 
 
 POLICIES = {
@@ -84,15 +96,18 @@ def main():
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--out", default=None,
                     help="optional path to write the floors as JSON")
+    ap.add_argument("--set", default=None,
+                    help="a probe set (bench_*/probes.jsonl) to read against the floors")
     args = ap.parse_args()
 
     ds = build_dataset(benchmark_per_tier=args.benchmark, solve_symbolic=True,
                        anonymize=True, anonymize_scheme="letters")
-    by_kind = {}
+    by_kind, ids = {}, set()
     for entry in ds:
         problem = entry.problem
         for probe in generate_probes(problem, max_per_kind=args.probes_per_kind,
                                      seed=args.seed):
+            ids.add(probe.probe_id)
             text = POLICIES[probe.kind](probe)
             try:
                 correct, score, parsed = score_probe(probe, text, problem)
@@ -110,7 +125,7 @@ def main():
     for kind, rs in by_kind.items():
         acc = sum(r.correct for r in rs) / len(rs)
         sc = sum(r.score for r in rs) / len(rs)
-        ba = balanced_accuracy(rs) if kind in BINARY_KINDS else None
+        ba = aggregate_probes(rs)[kind].get("balanced_accuracy")
         fails = sum(r.score < 1.0 for r in rs)
         out[kind] = {"n": len(rs), "accuracy": round(acc, 3), "score": round(sc, 3),
                      "balanced_accuracy": round(ba, 3) if ba is not None else None,
@@ -128,6 +143,40 @@ def main():
         with open(args.out, "w", encoding="utf-8") as f:
             json.dump(out, f, indent=2)
         print(f"\nwrote {args.out}")
+    if args.set:
+        compare(args.set, out, ids)
+
+
+def metric(kind, rs):
+    return aggregate_probes(rs)[kind].get(METRIC[kind]) if rs else None
+
+
+def compare(set_dir, floors, ids, n_boot=2000, seed=0):
+    """Each model's metric per probe, its 95% bootstrap interval over problems,
+    and whether the interval lies above the floor."""
+    rng = random.Random(seed)
+    print(f"\n=== {set_dir}: metric [95% interval] against the floor ===")
+    for d in sorted(glob.glob(os.path.join(set_dir, "bench_*"))):
+        with open(os.path.join(d, "probes.jsonl"), encoding="utf-8") as f:
+            rows = [ProbeResult(**json.loads(line)) for line in f if line.strip()]
+        stray = sum(r.probe_id.rsplit("#", 1)[0] not in ids for r in rows)
+        print(os.path.basename(d) + (f"  ({stray} rows not in this probe set)" if stray else ""))
+        for kind in KINDS:
+            by = {}
+            for r in rows:
+                if r.kind == kind:
+                    by.setdefault(r.problem_id, []).append(r)
+            if not by:
+                continue
+            pids = list(by)
+            boots = sorted(m for m in (
+                metric(kind, [r for p in rng.choices(pids, k=len(pids)) for r in by[p]])
+                for _ in range(n_boot)) if m is not None)
+            lo, hi = boots[int(0.025 * len(boots))], boots[int(0.975 * len(boots)) - 1]
+            m = metric(kind, [r for p in pids for r in by[p]])
+            floor = floors[kind][METRIC[kind]]
+            print(f"  {kind:<11}{m:>7.3f}  [{lo:.3f}, {hi:.3f}]  floor {floor:.3f}"
+                  f"  {'above' if lo > floor else 'not above'}")
 
 
 if __name__ == "__main__":

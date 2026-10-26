@@ -20,11 +20,12 @@ judge, no alignment, no gold-path bias.
     P1 role       which ground facts?          oracle: run_rote_learning     ~0
     P2 fold       generalise this fact         oracle: apply_folding (a SET)  ~0
     P3 check      still a solution?            oracle: brave entailment       50%
-    P4 introduce  guard it and name a contrary oracle: resulting fw is Def-1  ~0
+    P4 introduce  guard it with an assumption  oracle: lines 36/41, Def. 4    50%
     P5 subsume    can this fact be dropped?    oracle: fact_subsumption       50%
 
 P2 and P4 accept ANY legal answer, not the one the solver happened to pick, so
 the nondeterminism of `applyFolding`/`applyAsmIntro` costs the model nothing.
+P4 is reported per line-36 branch and balanced over the two.
 P3 and P5 are binary: report BALANCED ACCURACY against the explicit 50% floor,
 never raw accuracy. P3 also asks which examples fail, and that half has a ~0
 chance floor, so it carries most of the probe's discriminating power.
@@ -39,7 +40,7 @@ from typing import List, Dict, Optional, Tuple, Any
 from src.aba_types import Rule, ABAFramework, LearningProblem
 from src.aba_algorithm import (
     gen_phase, apply_folding, fact_subsumption, _current_framework,
-    _is_ground_fact, _assumptions_relative_to, _new_assumption_name,
+    _is_ground_fact, _assumptions_relative_to,
 )
 from src.aba_validator import run_rote_learning, check_brave_entailment
 from src.aba_prompts import SYSTEM_PROMPT_DEFS, _format_problem, _clean_llm_output
@@ -56,8 +57,11 @@ BINARY_KINDS = ("check", "subsume")
 #   v2  definitions-only preamble; RoLe states that ground facts are expected;
 #       R3 asks for the two choices `applyAsmIntro` makes and not for the
 #       contrary, which ASP computes at line 44.
+#   v3  RoLe drops v2's contrary clause, which drew facts for contrary predicates;
+#       the check defines a failing example (models listed the negative examples);
+#       R3 states Definition 4 and lines 36/41 instead of "declared".
 # Bump this when any probe prompt changes, and record it in the set MANIFEST.
-PROBE_PROMPT_VERSION = "v2"
+PROBE_PROMPT_VERSION = "v3"
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -151,9 +155,7 @@ framework is a solution, adding a MINIMAL set of such facts.
 The expected answer is therefore NON-intensional: ground facts are correct
 here, and generalising is not. Do not fold, do not introduce assumptions.
 
-A fact may be needed for a predicate that occurs in NEITHER example list — in
-particular for the contrary of an assumption, which is how an exception to a
-rule is recorded.
+Every fact must be for a learnable predicate in T.
 
 Output one fact per line, in the form
   <predicate>(<constant>).
@@ -182,7 +184,10 @@ accepting every positive example and no negative example?
 
 Output YES or NO on the first line, and nothing else on that line.
 If NO, list on the following lines the examples that fail, one per line, as
-  <predicate>(<constant>)"""
+  <predicate>(<constant>)
+An example fails if it is a positive example that no stable extension accepts,
+or a negative example that every stable extension accepts. Being a negative
+example does not by itself make an example fail."""
 
 _P4 = """TASK — apply the Assumption Introduction transformation (R3).
 
@@ -191,15 +196,18 @@ _P4 = """TASK — apply the Assumption Introduction transformation (R3).
 Folding produced this rule:
   {folded}
 but with it the framework is NO LONGER a solution. Make the rule defeasible by
-adding an assumption to its body, so that a solution can be recovered.
+adding an assumption to its body.
 
 R3 replaces a rule  H :- Eqs, B  by  H :- Eqs, B, alpha(X), where alpha(X) is
 an assumption with contrary c_alpha(X). You choose exactly two things:
   1. which rule to guard, and
   2. which assumption to put in its body.
-REUSE FIRST: if the background already declares an assumption relative to this
-body, use that one. Its contrary is fixed by the background and must not be
-redefined. Otherwise name a new assumption and its contrary.
+An assumption alpha(X) (in the background or introduced so far) is RELATIVE to
+the body B if a rule  H' :- B, alpha(X)  is among the background rules or the
+rules learnt so far (Definition 4). If an assumption relative to B exists, use
+it: its contrary is already fixed and must not be redefined. Only if none
+exists, introduce a new assumption with a new predicate, and a new predicate
+for its contrary.
 
 Do NOT give rules for the contrary. Those facts are not part of this step: they
 are computed afterwards and added by Rote Learning.
@@ -427,16 +435,6 @@ def _pred_of(atom: str) -> str:
     return re.sub(r'\s+', '', atom).split("(")[0]
 
 
-def _declared_assumption(atom: str, background: ABAFramework) -> bool:
-    """True if `atom` is an assumption already declared in the background.
-
-    Compared on the predicate symbol: the background lists `u(X)` but a model
-    may instantiate a different variable name for the same assumption.
-    """
-    a = _pred_of(atom)
-    return any(_pred_of(x) == a for x in background.assumptions)
-
-
 _ASM_LABELLED = re.compile(
     r'ASSUMPTION\s*:\s*(.+?)\s+defeated_by\s+(.+?)\s*$',
     re.IGNORECASE | re.MULTILINE)
@@ -488,8 +486,9 @@ def _assumption_decl(lines: List[str]) -> Optional[Tuple[str, str]]:
 
 def _score_introduce(probe: Probe, text: str,
                      problem: LearningProblem) -> Tuple[bool, float, str]:
-    """Semantic oracle: does the model's own proposal yield a Definition-1
-    solution? Any correct answer passes, not only the solver's."""
+    """Lines 36-44 as printed: right iff the folded rule is guarded with an
+    assumption relative to its body (Definition 4) when one exists, and with a
+    new assumption and a new contrary only when none does."""
     rules = [r for r in (_rule_from(seg) for seg in _split_labelled(text))
              if r is not None]
     decl = _assumption_decl(text.split("\n"))
@@ -503,110 +502,62 @@ def _score_introduce(probe: Probe, text: str,
     i = next((j for j, r in enumerate(rules)
               if any(_pred_of(b) == _pred_of(asm) for b in r.body)), 0)
     defeasible = rules[i]
-    # Any further rules the model volunteered are IGNORED. R3 is only the two
-    # choices `applyAsmIntro` makes (Algorithm 1 lines 34-46): which rule to
-    # guard, and which assumption. The contrary's extension S is not chosen by
-    # the algorithm at all — it is computed by the ASP solver at line 44 and
-    # rote-learnt at lines 23-25, and Proposition 2 guarantees such an S exists.
-    # Scoring a model-supplied contrary would demand more than the reference
-    # algorithm decides.
+    # Further rules the model volunteered are ignored: the contrary's facts S
+    # are computed at line 44, not chosen.
 
-    learnt = [r for r in (_p(x) for x in probe.state.get("learnt", [])) if r]
-    idx = probe.state.get("idx", 0)
-    new_learnt = learnt[:idx] + [defeasible] + learnt[idx + 1:]
-    new_asms = dict(probe.state.get("new_asms", {}))
-    reuse = _declared_assumption(asm, problem.background)
+    folded = _p(probe.state.get("folded", ""))
+    if folded is None:
+        return False, 0.0, "<no folded rule>"
+    new_asms = probe.state.get("new_asms", {})
+    contraries = {x: problem.background.contraries.get(x, f"c_{x}")
+                  for x in problem.background.assumptions}
+    contraries.update(new_asms)                                    # A and its contraries
+    relative = _relative_assumptions(probe, problem)
+    a = _pred_of(asm)
 
-    try:
-        if reuse:
-            # Line 36-38: an assumption already in A, whose contrary is fixed by
-            # the background (Definition 1(iv)). S := empty, so the framework
-            # must already be a solution — there is nothing left to learn.
-            fw = _current_framework(problem.background, new_learnt, new_asms)
-            sat, _, _ = check_brave_entailment(
-                fw, problem.positive, problem.negative, problem.get_domain())
-            if not sat:
-                # Line 39: reuse FAILED, so the algorithm backtracks and mints a
-                # fresh assumption instead (line 41). Scoring the single forward
-                # answer marks that wrong and so penalises the model for obeying
-                # REUSE FIRST — which inverts the measured scale trend:
-                # all 24 of Qwen2.5-32B's failed reuses are rescued this way.
-                sat = _fresh_assumption_works(
-                    defeasible, asm, probe, problem, new_learnt, new_asms)
-        else:
-            # Lines 41-44: a fresh assumption, then RoLe restricted to T =
-            # {c_alpha} supplies the exceptions. Satisfiability of that ASP
-            # program IS the criterion (Theorem 2), so run it rather than
-            # asking the model for facts the algorithm never chooses.
-            new_asms[asm] = contra
-            fw = _current_framework(problem.background, new_learnt, new_asms)
-            sat = _contrary_is_learnable(fw, contra, problem)
-        # Which choice Algorithm 1 line 36 would have made here. Legality
-        # saturates above 7B, so this is the discriminating half of the probe.
-        expected = _reuse_available(probe, problem)
-    except Exception:
-        return False, 0.0, "<solver error>"
+    guarded = (_pred_of(defeasible.head) == _pred_of(folded.head)
+               and sorted(map(_compact, defeasible.body))
+               == sorted(map(_compact, folded.body + [asm])))
+    if relative:                                                    # lines 36-37
+        same = [r for r in relative if _pred_of(r) == a]
+        took = bool(same) and _pred_of(contra) == _pred_of(contraries.get(same[0], ""))
+    else:                                                           # line 41
+        used = _predicates(probe, problem)
+        took = a not in used and _pred_of(contra) not in used and a != _pred_of(contra)
+    ok = guarded and took
 
+    chose = "reuse" if any(_pred_of(x) == a for x in contraries) else "fresh"
     parsed = (f"{defeasible.to_prolog()} | {asm} defeated_by {contra} | "
-              f"chose={'reuse' if reuse else 'fresh'},"
-              f"line36={'reuse' if expected else 'fresh'}")
-    return bool(sat), 1.0 if sat else 0.0, parsed
+              f"chose={chose},line36={'reuse' if relative else 'fresh'}")
+    return ok, 1.0 if ok else 0.0, parsed
 
 
-def _reuse_available(probe: Probe, problem: LearningProblem) -> bool:
-    """Does an assumption relative to the folded rule's body exist (line 36)?
+def _compact(atom: str) -> str:
+    return re.sub(r'\s+', '', atom)
 
-    When one does, Algorithm 1 reuses it and only mints a fresh assumption on
-    backtracking; when none does, minting is the correct move. It is reported
-    as `line36_reuse_available`, beside the model's `reuse_rate`.
-    """
+
+def _relative_assumptions(probe: Probe, problem: LearningProblem) -> List[str]:
+    """Assumptions relative to the folded rule's body (line 36, Definition 4)."""
     folded = _p(probe.state.get("folded", "")) if probe.state.get("folded") else None
     if folded is None:
-        return False
+        return []
     learnt = [r for r in (_p(x) for x in probe.state.get("learnt", [])) if r]
     fw = _current_framework(problem.background, learnt,
                             probe.state.get("new_asms", {}))
-    return bool(_assumptions_relative_to(folded.body, fw))
+    return _assumptions_relative_to(folded.body, fw)
 
 
-def _fresh_assumption_works(defeasible: Rule, reused_asm: str, probe: Probe,
-                            problem: LearningProblem, new_learnt: List[Rule],
-                            new_asms: Dict[str, str]) -> bool:
-    """Algorithm 1 line 39 -> 41: retry the same guarded rule with a new alpha."""
-    body = [b for b in defeasible.body
-            if _pred_of(b) != _pred_of(reused_asm)]
-    asm, contra = _new_assumption_name(
-        list(problem.background.assumptions) + list(new_asms.keys()))
-    fresh = Rule(head=defeasible.head, body=body + [asm])
-    idx = probe.state.get("idx", 0)
-    learnt = new_learnt[:idx] + [fresh] + new_learnt[idx + 1:]
-    asms = {**new_asms, asm: contra}
-    fw = _current_framework(problem.background, learnt, asms)
-    return _contrary_is_learnable(fw, contra, problem)
-
-
-def _contrary_is_learnable(fw: ABAFramework, contrary: str,
-                           problem: LearningProblem) -> bool:
-    """Algorithm 1 line 44: can RoLe complete this R3 into a solution?
-
-    `S := getAS(ASP(F, E+, E-, {c_alpha}))` — rote learning with the contrary
-    as the ONLY learnable predicate. By Theorem 2 the program is satisfiable
-    exactly when a solution exists, so success here means the model's choice of
-    rule and assumption was one the algorithm could have made.
-    """
-    m = re.match(r'^\s*([a-z]\w*)', contrary)
-    if m is None:
-        return False
-    rote = LearningProblem(
-        background=fw,
-        positive=problem.positive,
-        negative=problem.negative,
-        learnable=[m.group(1)],
-        domain=problem.get_domain(),
-        problem_id=f"{problem.problem_id}_probe_asm_intro",
-    )
-    _, ok, _ = run_rote_learning(rote)
-    return ok
+def _predicates(probe: Probe, problem: LearningProblem) -> set:
+    """Every predicate the probe's state already uses: a new one must avoid them."""
+    learnt = [r for r in (_p(x) for x in probe.state.get("learnt", [])) if r]
+    atoms = [x for r in problem.background.rules + learnt for x in [r.head] + r.body]
+    atoms += list(problem.background.assumptions)
+    for asm, c in {**problem.background.contraries,
+                   **probe.state.get("new_asms", {})}.items():
+        atoms += [asm, c]
+    atoms += problem.positive + problem.negative
+    return ({_pred_of(x) for x in atoms if re.match(r'^\s*[a-z]\w*\s*\(', x)}
+            | set(problem.learnable) | {"dom"})
 
 
 def _split_labelled(text: str) -> List[str]:
@@ -726,19 +677,15 @@ def aggregate_probes(results: List[ProbeResult],
             ba = balanced_accuracy(rs)
             entry["balanced_accuracy"] = round(ba, 3) if ba is not None else None
         if kind == "introduce":
-            # `accuracy` credits the reuse->fresh fallback of lines 39-41 and so
-            # saturates above 3B: R3 is easy on this benchmark. What still
-            # differs is HOW the models get there, so report the process
-            # descriptively rather than scoring it.
-            #
-            # NOT an accuracy. Agreement with line 36 would be degenerate here:
-            # an assumption relative to the body (Definition 4) exists in only
-            # 2.9% of these probes, so the algorithm mints a fresh assumption
-            # almost always and "always answer fresh" would score 0.97 without
-            # reasoning — the same trap balanced accuracy guards against on the
-            # binary probes. Reusing a non-relative assumption is still a legal
-            # R3 (the rule admits "a (possibly new) assumption"); it is simply
-            # not the choice Algorithm 1's control flow would make.
+            # Recall per line-36 branch, and their mean: "always new" gets 0.5.
+            by = {b: [r for r in rs if _line36(r.parsed) == b] for b in ("reuse", "fresh")}
+            for b, xs in by.items():
+                entry[f"n_{b}"] = len(xs)
+                if xs:
+                    entry[f"accuracy_{b}"] = round(sum(r.correct for r in xs) / len(xs), 3)
+            if all(by.values()):
+                entry["balanced_accuracy"] = round(
+                    0.5 * (entry["accuracy_reuse"] + entry["accuracy_fresh"]), 3)
             scored = [r for r in rs if "chose=" in r.parsed]
             if scored:
                 entry["reuse_rate"] = round(

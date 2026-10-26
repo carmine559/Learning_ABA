@@ -2,6 +2,7 @@
 # Chain one benchmark job per model: one L40 job per user runs at a time.
 #   bash cluster/submit_benchmarks.sh                  # the four modes
 #   PROBES=1 bash cluster/submit_benchmarks.sh         # step probes
+#   OUT_ROOT=results/probes_v3 PROBES=1 ...            # outputs under another root
 #   MODELS="qwen2.5-32b" EXTRA="--load-4bit" SPLIT_MODES=1 bash cluster/submit_benchmarks.sh
 # SPLIT_MODES=1 submits one job per mode (32B in 4-bit takes 25-42 h for all four).
 set -euo pipefail

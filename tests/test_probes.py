@@ -199,8 +199,8 @@ def test_assumption_reuse_needs_no_contrary_rule():
     folded = _parse_rule_line(probes[0].state["folded"])
     answer = ("RULE: %s :- %s, %s.\nASSUMPTION: %s defeated_by %s"
               % (folded.head, ", ".join(folded.body), asm, asm, contra))
-    # Must parse and be judged on the solution criterion, never rejected as
-    # "incomplete" merely for carrying no CONTRARY line.
+    # Must parse and be judged on lines 36/41, never rejected as "incomplete"
+    # merely for carrying no CONTRARY line.
     _, _, parsed = score_probe(probes[0], answer, problem)
     assert parsed != "<incomplete>"
 

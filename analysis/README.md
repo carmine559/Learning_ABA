@@ -17,6 +17,7 @@ These are measurement scripts, not library modules. Reusable machinery belongs i
 
 ```bash
 python analysis/null_baselines.py
+python analysis/null_baselines.py --set experiments/06_probes_v3   # each model against the floors
 python analysis/conformance.py   --set experiments/05_scale_4bit_probes_v2
 python analysis/step_fidelity.py --set experiments/05_scale_4bit_probes_v2
 python analysis/s2_errors.py     --s2 s2          # s2_s1: the seed-1 replicate
@@ -49,10 +50,13 @@ and monotonic on 22. A policy that guards every rule without reasoning therefore
 scores **0.786 raw agreement** on R3. `step_fidelity.py` reports raw beside
 balanced for exactly this reason; balanced puts any constant responder at 0.500.
 
-The same trap applies to the probes, which is what `null_baselines.py` measures:
-`check` and `subsume` have a **~0.68** surface-cue floor rather than 0.50, and
-`introduce` has a floor of **1.000** because Proposition 2 makes it satisfied by
-construction — it must be reported inverted, as an error count.
+The same trap applies to the probes, which is what `null_baselines.py` measures.
+In sets 04 and 05, `check` and `subsume` have a **~0.68** surface-cue floor rather
+than 0.50, and `introduce` has a floor of **1.000** because Proposition 2 makes
+it satisfied by construction, so there it is reported as an error count. From
+probe prompts v3, `introduce` is scored against lines 36/41 and balanced over
+their two branches; its floor on the v3 set is **0.855** (METHOD_HISTORY,
+Phase 10).
 
 ## Known limitation: R4 is unmeasured — for a sample-size reason
 

@@ -476,17 +476,91 @@ hand first. Both seeds meet the reading fixed above.
 So S2 computes line 18 at states its search never reaches, in distribution: it trained on
 such states, but of other problems.
 
+## Phase 10 — Step probes v3 (Oct 2026)
+
+Written before the run. Stage 1 of [FINDINGS.md](FINDINGS.md), the prompted models, rests
+on set 05 (probe prompts v2), and three of its prompts carry a measured defect.
+
+1. **`check` (line 18): "the examples that fail" is never defined.** The models read it as
+   "the negative examples". Of the NO answers, the listed examples are exactly the negative
+   examples on 180 of 186 for 32B under v2, 181 for 7B and 157 for 3B. The same pattern is
+   already in v1 (32B: 160 of 186), so v2's shorter preamble is not its only cause. v3
+   defines a failing example as the scorer does: a positive example that no stable extension
+   accepts, or a negative example that every stable extension accepts.
+2. **`role` (line 8): v2's added clause draws facts for contrary predicates.** The clause
+   was "in particular for the contrary of an assumption". Under v2, 14B writes 195 such
+   wrong facts and 32B 143, against 1 each under v1. The gold answers hold one such fact in
+   345. v3 states line 4's restriction instead: facts only for predicates in T.
+3. **`introduce` (lines 36–44): the prompt is not Definition 4.** v2 says "if the
+   background already declares an assumption relative to this body" and never defines
+   "relative". v3 states Definition 4 (a rule H′ ← B, α(X) among the current rules) and
+   lines 36 and 41: reuse a relative assumption when one exists, and a new assumption with
+   a new predicate only when none does. It no longer says "so that a solution can be
+   recovered", because at line 36 the reuse is taken even when line 38 then fails.
+
+`fold` and `subsume` are unchanged. Their failures are mixed (a wrong predicate, an
+equality left in place, bodies of several atoms) and point to no single wording.
+
+**`introduce` scored as printed.** The scorer credited a failed reuse whenever a new
+assumption would have worked: the line-41 fallback that Phase 8 found is not in the paper.
+An answer is now right iff it guards the folded rule and takes the branch Algorithm 1
+takes:
+
+- line 36's, when an assumption relative to the body exists: that assumption, its contrary
+  unchanged;
+- line 41's, only when none exists: a new predicate for the assumption and for its contrary.
+
+Checked on the benchmark's states, outside the test suite:
+
+- the reference's own decision is right on 166/166;
+- a new assumption where line 36 reuses is right on 0/81;
+- reusing an assumption that is not relative is right on 0/166.
+
+The reference tests relativity by a subset of the body, where Definition 4 asks for the
+body itself. The two never differ on a visited state: 209 benchmark states, 412 in the
+first 300 v1 problems, 312 in Table 1.
+
+**The probe set changes with the reference.** Probes are drawn from the states the
+reference visits, and Phase 8 changed them: 335 of the 780 set-05 probes per model are not
+in the v3 set. In particular, 81 of the 166 `introduce` states now take line 36's branch
+(2.9% in set 05), because every defeasible problem now reaches line 36 on its contrary
+fact. So v3 against set 05 mixes the change of prompt with the change of states. The v3
+figures are read against floors measured on the v3 set. Sets 04 and 05 are not rescored,
+because `rescore.py` would rebuild their probes from the current reference.
+
+**Floors on the v3 set** (`analysis/null_baselines.py`): `role` 0, `fold` 0, `check`
+0.633 balanced, `subsume` 0.663, `introduce` 0.855 balanced. The `introduce` floor reuses
+the last assumption the state lists as introduced, and otherwise a new one; it reads no
+rule body. Always answering a new assumption gets 0.500.
+
+**The run** repeats set 05's probe half: Qwen2.5 3B, 7B, 14B and 32B and Mistral-7B, all
+4-bit; the same 103 problems (`--benchmark 20`, seed 42); two probes per kind and problem;
+greedy decoding, 512 tokens.
+
+**Reading, fixed before the run.**
+
+- A model performs a step above its floor iff the 95% bootstrap interval over problems of
+  its metric lies above the floor (`null_baselines.py --set`). The metrics are F1 for
+  `role`, accuracy for `fold`, and balanced accuracy for `check`, `subsume` and
+  `introduce`.
+- `check` is line 18, the step stage 1 of FINDINGS turns on. If no model's interval lies
+  above 0.633, stage 1 stands with the prompt defect removed. If one does, stage 1 is
+  rewritten: that prompted model performs line 18 above its floor.
+- Reported beside the metrics: the NO answers to `check` that list exactly the negative
+  examples, and the `role` facts for contrary predicates.
+- At least 20 rows across kinds and models are read by hand before any aggregate.
+- A smaller model that outranks a larger one on a step needs a mechanism.
+
 ## Pending
 
-- Re-run all four models with probe prompts v2; promote to `experiments/04_*`
-  with a MANIFEST recording the prompt version.
-- Hand-audit ≥20 rows of the probe re-run under prompts v2 before reporting
-  aggregates (the rule that caught both Phase-5 defects).
+- Run the five models with probe prompts v3 (Phase 10); promote to
+  `experiments/06_probes_v3` with a MANIFEST recording the prompt version.
+- Hand-audit ≥20 rows of the v3 run before reporting aggregates (the rule that
+  caught both Phase-5 defects).
 - Decide the `apply_folding` scope question (Phase 6, item 4); measure how many
   extra legal folds appear when folding against `R ∪ learnt`.
-- Confound check on that re-run: no smaller model may outrank a larger one on a
+- Confound check on the v3 run: no smaller model may outrank a larger one on a
   fidelity measure without an explanation of the mechanism.
-- Re-score `introduce` without the line-41 fallback (Phase 8, item 2).
 - Check the fold-order convention against the Zenodo implementation.
 - Settle N1 (Phase 9). When line 18's test succeeds, the printed algorithm adds ρf
   nowhere, while the reference keeps it, following the prose (p. 3450).

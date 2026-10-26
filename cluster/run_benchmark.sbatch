@@ -3,7 +3,7 @@
 #   sbatch --export=ALL,MODEL=qwen2.5-7b cluster/run_benchmark.sbatch
 #   sbatch --export=ALL,MODEL="qwen2.5-3b qwen2.5-7b" cluster/run_benchmark.sbatch
 # One job per model, chained: bash cluster/submit_benchmarks.sh.
-# Output in results/bench_<model>/. Jobs split by mode each leave a one-mode
+# Output in ${OUT_ROOT:-results}/bench_<model>/. Jobs split by mode each leave a one-mode
 # summary.json; merge them with: python3 rescore.py results/bench_<model> --benchmark 20
 #SBATCH --job-name=aba-bench
 #SBATCH --mail-type=END,FAIL
@@ -36,7 +36,7 @@ PROBES="${PROBES:-0}"                    # 1: step probes only; both: modes, the
 python3 -c "import torch; print('GPU:', torch.cuda.get_device_name(0))"
 
 for m in $MODEL; do
-    OUT="results/bench_${m}"
+    OUT="${OUT_ROOT:-results}/bench_${m}"
     echo "[job $SLURM_JOB_ID] model=$m bench_n=$BENCH_N samples=$N_SAMPLES" \
          "modes='$MODES' extra='$EXTRA' probes=$PROBES"
     if [ "$PROBES" = "1" ]; then
