@@ -14,6 +14,7 @@ These are measurement scripts, not library modules. Reusable machinery belongs i
 | `conformance.py` | how much of `gen@k` is a conformant *output*? |
 | `step_fidelity.py` | was the *algorithm* followed — R1, R2, R3, R4 separately? |
 | `s2_errors.py` | where does an arm-S2 run first leave the reference, and what in training explains it? |
+| `answer_shapes.py` | what do the arms write on a split, against the shape of v1's training answers? |
 
 ```bash
 python analysis/null_baselines.py
@@ -21,6 +22,7 @@ python analysis/null_baselines.py --set experiments/06_probes_v3   # each model 
 python analysis/conformance.py   --set experiments/05_scale_4bit_probes_v2
 python analysis/step_fidelity.py --set experiments/05_scale_4bit_probes_v2
 python analysis/s2_errors.py     --s2 s2          # s2_s1: the seed-1 replicate
+python analysis/answer_shapes.py --split table1   # or test, heldout
 ```
 
 `--benchmark` must match the run that produced the set (default 20).

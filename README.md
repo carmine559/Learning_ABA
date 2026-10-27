@@ -82,6 +82,10 @@ is in [docs/FINDINGS.md](docs/FINDINGS.md).
   problems. Renamed, 40 of the 200 test problems change outcome between the seeds.
 - All three fine-tuned arms lose exact answers when predicates are renamed
   (McNemar p < 0.05).
+- No arm solves Table 1. On each of its eight problems, the algorithm's answer has a
+  shape that no v1 training answer has: a new assumption in the rule for another's
+  contrary (five problems), or RoLe facts other than the positive examples (three). The arms write v1's
+  shapes ([`analysis/answer_shapes.py`](analysis/answer_shapes.py)).
 
 ## Installation
 

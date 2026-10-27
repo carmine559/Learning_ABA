@@ -20,12 +20,15 @@ better than it.
     gets 358.
   - All of this holds on a second seed.
 - **What it answers by shortcuts.** Line 16 is right everywhere too, but the state's shape
-  decides almost all of its test states. Line 17's order and line 38 are answered by
-  shortcuts that the training data leave open.
+  decides almost all of its test states. Line 8, line 17's order and line 38 are answered
+  by shortcuts that the training data leave open. On every v1 problem, for instance, line
+  8's answer is one fact per positive example.
 - **What it does not show.** It does not show that the model runs the algorithm on its own.
   The steps do not transfer:
   - `t9_reuse` is 0/50;
   - on the paper's Table 1, no arm is exact and no fine-tuned arm gives a valid answer.
+    On each Table 1 problem, the algorithm's answer has a shape that no v1 training answer
+    has, and the arms write v1's shapes.
 - **The other models do not get that far.** Under the revised probe prompts, every
   prompted model's line-18 test is at chance. The arm fine-tuned on whole traces gives a
   first line-18 verdict at the level of a guess.
@@ -115,7 +118,8 @@ On v1 test:
     baseline's 0.5.
   - On test it is 128/128, but so is the position rule.
 - **RoLe (line 8)** is where the in-distribution misses start: both of seed 0's test misses,
-  one of seed 1's, and 10 of the 16 Table 1 runs (seed 0).
+  one of seed 1's, and 10 of the 16 Table 1 runs (seed 0). On every v1 problem, RoLe's
+  answer is one fact per positive example.
 
 #### Line 18 at fold candidates the search never tests (reading fixed before the run; `results/sft-step/{s2,s2_s1}/gold_extra/`)
 
@@ -158,8 +162,49 @@ This holds in distribution: S2 trained on such states, but of other problems.
   p = 0.016). But 8 of the 111 rely on the controller dropping illegal items. Under strict
   exact it is 103 against 90 (p = 0.105; seed 1: p = 0.111).
 - **Out of range:** on Table 1 no arm is exact, and no fine-tuned arm gives a valid answer
-  (0/16; the untrained model 1/16). Every Table 1 problem lies outside the range of v1's
-  training problems in some respect.
+  (0/16; the untrained model 1/16). The next section explains why.
+
+#### Table 1: why no arm solves the paper's problems (`analysis/answer_shapes.py`)
+
+*Why does no arm solve the paper's own problems?* On each of them, the algorithm's answer
+has a shape that v1's training answers never have, and every arm writes v1's shapes.
+
+- **What the algorithm's answers have.** On each of the 8 problems, the algorithm's run
+  has one of two things that no v1 training run has:
+  - *An exception inside an exception* (flies, flies_birds_planes, nixon_diamond, tax_law,
+    acute). The algorithm introduces an assumption in the rule for the contrary of another
+    assumption it introduced. In the reference's answer to nixon_diamond, for instance, α0
+    and α1 defeat each other through their contraries. No v1 training answer nests a new
+    assumption past one level.
+  - *RoLe facts that are not the positive examples* (innocent, nixon_diamond_2,
+    tax_law_2). Line 8's answer has facts for another learnable predicate: guilty,
+    abnormal_quaker, exempt. On every v1 problem, line 8's answer is one fact per positive
+    example: 1,500 of 1,500 training problems, and every test and held-out problem.
+  - Every problem also lies outside the range of v1's training problems on the input side
+    (`analysis/s2_errors.py`). It differs in at least one of these: the number of
+    constants, of assumptions or of learnable predicates; binary predicates; facts written
+    X = t.
+- **What the arms write: v1's shapes.**
+  - The endpoint and trace arms never nest a new assumption on Table 1. On nixon_diamond,
+    the endpoint arm writes the one-level answer c_α0(X) ← republican(X), which is not a
+    solution.
+  - The trace arm's RoLe lines are the positive examples on 14 of 16 prompts, including
+    all 6 where the algorithm's are not.
+  - The untrained model's answers break Definition 1's syntax on 8 of 16 prompts, for
+    instance with an assumption as a rule head or a background predicate as a new head.
+    One of its 16 answers is valid.
+- **S2 at the reference's own states** (seed 0; seed 1 in brackets). Here the reference
+  supplies every state, so no earlier error carries forward.
+  - Its RoLe answer is the positive examples on all 6 problems where it should not be.
+    RoLe is right on 6 of 16 (7).
+  - Line 44's contrary facts are right on 5 of 28 (6), and the fold list on 33 of 54 (34).
+  - Line 16 is at its position baseline: balanced 0.73 (0.68) against 0.74.
+  - Only line 18 stays above its baseline: balanced 0.89 (0.79) against 0.59.
+  - In the chained runs, 10 of the 16 first go wrong at RoLe (9).
+- **What this shows and does not show.** The failure is one of transfer: where the
+  algorithm's answer has a new shape, the arms give one of v1's. It does not show what
+  training on such shapes would do; that needs a corpus that contains them. Eight problems
+  allow a per-problem account, not statistics.
 
 ## What the answer rests on, and what it does not show
 
@@ -198,7 +243,9 @@ This holds in distribution: S2 trained on such states, but of other problems.
 - **The trace arm run under the same controller, or S2's steps chained by the model
   itself.** This separates per-step supervision from the controller.
 - **A corpus whose fold orders, positions and line-38 shapes vary independently of the
-  answers.** This removes the shortcuts S2 took.
+  answers, with RoLe answers other than the positive examples and nested new
+  assumptions.** This removes the shortcuts S2 took, and tests whether Table 1's shapes
+  can be learnt.
 - **The fold order, checked against the released tool.**
 - **Reinforcement learning.** The registered rule chose the endpoint arm as its base.
   Starting from S2 would be a new decision, and would have to be registered.

@@ -551,6 +551,26 @@ greedy decoding, 512 tokens.
 - At least 20 rows across kinds and models are read by hand before any aggregate.
 - A smaller model that outranks a larger one on a step needs a mechanism.
 
+## Phase 11 — Why no arm solves Table 1 (Oct 2026)
+
+`analysis/answer_shapes.py` compares the reference's answers with the shape of v1's
+training answers, and reads what each arm writes. It found two more properties of corpus
+v1:
+
+- **RoLe's answer is the positive examples.** On every v1 problem (1,500 of 1,500 training
+  problems, and every test and held-out problem), line 8's answer is one fact per positive
+  example. So line 8, like line 17's order and line 38, is answered by a shortcut the data
+  leave open, and its in-distribution accuracy shows only copying.
+- **New assumptions never nest.** No training answer introduces an assumption in the rule
+  for the contrary of another introduced assumption.
+
+The algorithm's run on every Table 1 problem has one of the two. On five it nests a new
+assumption (flies, flies_birds_planes, nixon_diamond, tax_law, acute). On three, RoLe has
+facts for a predicate other than the examples' (innocent, nixon_diamond_2, tax_law_2). The endpoint and trace
+arms never nest. At RoLe, the trace arm and S2 (at the reference's states) write the
+positive examples on all six prompts where the algorithm does not. Written up in
+[FINDINGS.md](FINDINGS.md), "Table 1: why no arm solves the paper's problems".
+
 ## Pending
 
 - Run the five models with probe prompts v3 (Phase 10); promote to
