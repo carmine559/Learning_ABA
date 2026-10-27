@@ -1,0 +1,44 @@
+{
+  "n": 845,
+  "probe_prompt_version": "v3",
+  "role": {
+    "n": 103,
+    "accuracy": 0.495,
+    "score": 0.542,
+    "chance": 0.0
+  },
+  "fold": {
+    "n": 186,
+    "accuracy": 0.403,
+    "score": 0.403,
+    "chance": 0.0
+  },
+  "check": {
+    "n": 186,
+    "accuracy": 0.554,
+    "score": 0.554,
+    "chance": 0.5,
+    "balanced_accuracy": 0.5
+  },
+  "introduce": {
+    "n": 166,
+    "accuracy": 0.488,
+    "score": 0.488,
+    "chance": 0.0,
+    "n_reuse": 81,
+    "accuracy_reuse": 0.0,
+    "n_fresh": 85,
+    "accuracy_fresh": 0.953,
+    "balanced_accuracy": 0.476,
+    "reuse_rate": 0.0,
+    "line36_reuse_available": 0.488,
+    "n_scored": 166
+  },
+  "subsume": {
+    "n": 204,
+    "accuracy": 0.529,
+    "score": 0.529,
+    "chance": 0.5,
+    "balanced_accuracy": 0.525
+  }
+}

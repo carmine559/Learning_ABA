@@ -1,0 +1,2229 @@
+{
+  "nixon_diamond_anon": {
+    "pred_map": {
+      "quaker": "p",
+      "democrat": "q",
+      "republican": "r",
+      "person": "s",
+      "votes_dem": "t",
+      "votes_rep": "u",
+      "pacifist": "v",
+      "normal_quaker": "w",
+      "abnormal_quaker": "p1"
+    },
+    "const_map": {
+      "a": "a",
+      "b": "b",
+      "e": "c",
+      "c": "d",
+      "d": "e"
+    }
+  },
+  "flies_anon": {
+    "pred_map": {
+      "bird": "p",
+      "penguin": "q",
+      "normal_bird": "r",
+      "ab_bird": "s",
+      "flies": "t"
+    },
+    "const_map": {
+      "tweety": "a",
+      "sam": "b",
+      "opus": "c"
+    }
+  },
+  "tax_law_anon": {
+    "pred_map": {
+      "employed": "p",
+      "self_employed": "q",
+      "income": "r",
+      "normal_taxpayer": "s",
+      "exempt": "t",
+      "taxable": "u"
+    },
+    "const_map": {
+      "alice": "a",
+      "bob": "b",
+      "carol": "c"
+    }
+  },
+  "t1_mono_0000_anon": {
+    "pred_map": {
+      "swims": "p",
+      "flies": "q",
+      "sleeps": "r",
+      "ab_dangerous": "s",
+      "exc_dangerous": "t",
+      "normal_dangerous": "u",
+      "dangerous": "v"
+    },
+    "const_map": {
+      "c3": "a",
+      "c0": "b",
+      "c2": "c",
+      "c4": "d",
+      "c1": "e",
+      "c5": "f"
+    }
+  },
+  "t1_mono_0001_anon": {
+    "pred_map": {
+      "sleeps": "p",
+      "eats": "q",
+      "ab_predator": "r",
+      "exc_predator": "s",
+      "normal_predator": "t",
+      "predator": "u"
+    },
+    "const_map": {
+      "c5": "a",
+      "c3": "b",
+      "c1": "c",
+      "c4": "d",
+      "c0": "e",
+      "c2": "f"
+    }
+  },
+  "t1_mono_0002_anon": {
+    "pred_map": {
+      "eats": "p",
+      "sleeps": "q",
+      "swims": "r",
+      "ab_dangerous": "s",
+      "exc_dangerous": "t",
+      "normal_dangerous": "u",
+      "dangerous": "v"
+    },
+    "const_map": {
+      "c4": "a",
+      "c2": "b",
+      "c5": "c",
+      "c3": "d",
+      "c0": "e",
+      "c1": "f"
+    }
+  },
+  "t1_mono_0003_anon": {
+    "pred_map": {
+      "flies": "p",
+      "predator": "q",
+      "prey": "r",
+      "ab_eats": "s",
+      "exc_eats": "t",
+      "normal_eats": "u",
+      "eats": "v"
+    },
+    "const_map": {
+      "c4": "a",
+      "c3": "b",
+      "c5": "c",
+      "c1": "d",
+      "c2": "e",
+      "c0": "f"
+    }
+  },
+  "t1_mono_0004_anon": {
+    "pred_map": {
+      "flies": "p",
+      "swims": "q",
+      "runs": "r",
+      "ab_fast": "s",
+      "exc_fast": "t",
+      "normal_fast": "u",
+      "fast": "v"
+    },
+    "const_map": {
+      "c4": "a",
+      "c0": "b",
+      "c2": "c",
+      "c3": "d",
+      "c1": "e",
+      "c5": "f"
+    }
+  },
+  "t1_mono_0005_anon": {
+    "pred_map": {
+      "nocturnal": "p",
+      "sleeps": "q",
+      "wild": "r",
+      "ab_flies": "s",
+      "exc_flies": "t",
+      "normal_flies": "u",
+      "flies": "v"
+    },
+    "const_map": {
+      "c3": "a",
+      "c5": "b",
+      "c2": "c",
+      "c0": "d",
+      "c1": "e",
+      "c4": "f"
+    }
+  },
+  "t1_mono_0006_anon": {
+    "pred_map": {
+      "swims": "p",
+      "nocturnal": "q",
+      "domestic": "r",
+      "ab_friendly": "s",
+      "exc_friendly": "t",
+      "normal_friendly": "u",
+      "friendly": "v"
+    },
+    "const_map": {
+      "c2": "a",
+      "c3": "b",
+      "c5": "c",
+      "c1": "d",
+      "c0": "e",
+      "c4": "f"
+    }
+  },
+  "t1_mono_0007_anon": {
+    "pred_map": {
+      "predator": "p",
+      "flies": "q",
+      "friendly": "r",
+      "ab_swims": "s",
+      "exc_swims": "t",
+      "normal_swims": "u",
+      "swims": "v"
+    },
+    "const_map": {
+      "c3": "a",
+      "c2": "b",
+      "c0": "c",
+      "c5": "d",
+      "c4": "e",
+      "c1": "f"
+    }
+  },
+  "t1_mono_0008_anon": {
+    "pred_map": {
+      "fast": "p",
+      "dangerous": "q",
+      "ab_swims": "r",
+      "exc_swims": "s",
+      "normal_swims": "t",
+      "swims": "u"
+    },
+    "const_map": {
+      "c5": "a",
+      "c0": "b",
+      "c1": "c",
+      "c4": "d",
+      "c3": "e",
+      "c2": "f"
+    }
+  },
+  "t1_mono_0009_anon": {
+    "pred_map": {
+      "wild": "p",
+      "flies": "q",
+      "swims": "r",
+      "ab_dangerous": "s",
+      "exc_dangerous": "t",
+      "normal_dangerous": "u",
+      "dangerous": "v"
+    },
+    "const_map": {
+      "c0": "a",
+      "c2": "b",
+      "c4": "c",
+      "c3": "d",
+      "c5": "e",
+      "c1": "f"
+    }
+  },
+  "t1_mono_0010_anon": {
+    "pred_map": {
+      "flies": "p",
+      "friendly": "q",
+      "wild": "r",
+      "ab_eats": "s",
+      "exc_eats": "t",
+      "normal_eats": "u",
+      "eats": "v"
+    },
+    "const_map": {
+      "c4": "a",
+      "c1": "b",
+      "c3": "c",
+      "c5": "d",
+      "c0": "e",
+      "c2": "f"
+    }
+  },
+  "t1_mono_0011_anon": {
+    "pred_map": {
+      "friendly": "p",
+      "nocturnal": "q",
+      "wild": "r",
+      "ab_dangerous": "s",
+      "exc_dangerous": "t",
+      "normal_dangerous": "u",
+      "dangerous": "v"
+    },
+    "const_map": {
+      "c0": "a",
+      "c3": "b",
+      "c4": "c",
+      "c1": "d",
+      "c2": "e",
+      "c5": "f"
+    }
+  },
+  "t1_mono_0012_anon": {
+    "pred_map": {
+      "predator": "p",
+      "sleeps": "q",
+      "runs": "r",
+      "ab_eats": "s",
+      "exc_eats": "t",
+      "normal_eats": "u",
+      "eats": "v"
+    },
+    "const_map": {
+      "c1": "a",
+      "c0": "b",
+      "c5": "c",
+      "c2": "d",
+      "c4": "e",
+      "c3": "f"
+    }
+  },
+  "t1_mono_0013_anon": {
+    "pred_map": {
+      "swims": "p",
+      "dangerous": "q",
+      "prey": "r",
+      "ab_flies": "s",
+      "exc_flies": "t",
+      "normal_flies": "u",
+      "flies": "v"
+    },
+    "const_map": {
+      "c5": "a",
+      "c3": "b",
+      "c1": "c",
+      "c4": "d",
+      "c0": "e",
+      "c2": "f"
+    }
+  },
+  "t1_mono_0014_anon": {
+    "pred_map": {
+      "predator": "p",
+      "flies": "q",
+      "nocturnal": "r",
+      "ab_sleeps": "s",
+      "exc_sleeps": "t",
+      "normal_sleeps": "u",
+      "sleeps": "v"
+    },
+    "const_map": {
+      "c3": "a",
+      "c2": "b",
+      "c4": "c",
+      "c0": "d",
+      "c1": "e",
+      "c5": "f"
+    }
+  },
+  "t1_mono_0015_anon": {
+    "pred_map": {
+      "flies": "p",
+      "domestic": "q",
+      "eats": "r",
+      "ab_prey": "s",
+      "exc_prey": "t",
+      "normal_prey": "u",
+      "prey": "v"
+    },
+    "const_map": {
+      "c4": "a",
+      "c0": "b",
+      "c5": "c",
+      "c2": "d",
+      "c1": "e",
+      "c3": "f"
+    }
+  },
+  "t1_mono_0016_anon": {
+    "pred_map": {
+      "friendly": "p",
+      "prey": "q",
+      "predator": "r",
+      "ab_swims": "s",
+      "exc_swims": "t",
+      "normal_swims": "u",
+      "swims": "v"
+    },
+    "const_map": {
+      "c1": "a",
+      "c0": "b",
+      "c4": "c",
+      "c3": "d",
+      "c5": "e",
+      "c2": "f"
+    }
+  },
+  "t1_mono_0017_anon": {
+    "pred_map": {
+      "sleeps": "p",
+      "wild": "q",
+      "fast": "r",
+      "ab_nocturnal": "s",
+      "exc_nocturnal": "t",
+      "normal_nocturnal": "u",
+      "nocturnal": "v"
+    },
+    "const_map": {
+      "c0": "a",
+      "c4": "b",
+      "c1": "c",
+      "c2": "d",
+      "c5": "e",
+      "c3": "f"
+    }
+  },
+  "t1_mono_0018_anon": {
+    "pred_map": {
+      "eats": "p",
+      "wild": "q",
+      "domestic": "r",
+      "ab_dangerous": "s",
+      "exc_dangerous": "t",
+      "normal_dangerous": "u",
+      "dangerous": "v"
+    },
+    "const_map": {
+      "c3": "a",
+      "c2": "b",
+      "c4": "c",
+      "c0": "d",
+      "c1": "e",
+      "c5": "f"
+    }
+  },
+  "t1_mono_0019_anon": {
+    "pred_map": {
+      "eats": "p",
+      "runs": "q",
+      "flies": "r",
+      "ab_prey": "s",
+      "exc_prey": "t",
+      "normal_prey": "u",
+      "prey": "v"
+    },
+    "const_map": {
+      "c2": "a",
+      "c4": "b",
+      "c5": "c",
+      "c1": "d",
+      "c0": "e",
+      "c3": "f"
+    }
+  },
+  "t2_defeas_0000_anon": {
+    "pred_map": {
+      "runs": "p",
+      "exc_eats": "q",
+      "predator": "r",
+      "flies": "s",
+      "ab_eats": "t",
+      "normal_eats": "u",
+      "eats": "v"
+    },
+    "const_map": {
+      "c0": "a",
+      "c4": "b",
+      "c1": "c",
+      "c3": "d",
+      "c5": "e",
+      "c2": "f"
+    }
+  },
+  "t2_defeas_0001_anon": {
+    "pred_map": {
+      "swims": "p",
+      "exc_domestic": "q",
+      "runs": "r",
+      "flies": "s",
+      "ab_domestic": "t",
+      "normal_domestic": "u",
+      "domestic": "v"
+    },
+    "const_map": {
+      "c1": "a",
+      "c0": "b",
+      "c5": "c",
+      "c3": "d",
+      "c2": "e",
+      "c4": "f"
+    }
+  },
+  "t2_defeas_0002_anon": {
+    "pred_map": {
+      "eats": "p",
+      "exc_wild": "q",
+      "friendly": "r",
+      "predator": "s",
+      "ab_wild": "t",
+      "normal_wild": "u",
+      "wild": "v"
+    },
+    "const_map": {
+      "c3": "a",
+      "c5": "b",
+      "c0": "c",
+      "c1": "d",
+      "c2": "e",
+      "c4": "f"
+    }
+  },
+  "t2_defeas_0003_anon": {
+    "pred_map": {
+      "friendly": "p",
+      "exc_domestic": "q",
+      "eats": "r",
+      "dangerous": "s",
+      "ab_domestic": "t",
+      "normal_domestic": "u",
+      "domestic": "v"
+    },
+    "const_map": {
+      "c3": "a",
+      "c0": "b",
+      "c5": "c",
+      "c4": "d",
+      "c1": "e",
+      "c2": "f"
+    }
+  },
+  "t2_defeas_0004_anon": {
+    "pred_map": {
+      "swims": "p",
+      "exc_eats": "q",
+      "wild": "r",
+      "nocturnal": "s",
+      "ab_eats": "t",
+      "normal_eats": "u",
+      "eats": "v"
+    },
+    "const_map": {
+      "c0": "a",
+      "c3": "b",
+      "c5": "c",
+      "c2": "d",
+      "c1": "e",
+      "c4": "f"
+    }
+  },
+  "t2_defeas_0005_anon": {
+    "pred_map": {
+      "dangerous": "p",
+      "exc_predator": "q",
+      "eats": "r",
+      "sleeps": "s",
+      "ab_predator": "t",
+      "normal_predator": "u",
+      "predator": "v"
+    },
+    "const_map": {
+      "c0": "a",
+      "c5": "b",
+      "c1": "c",
+      "c3": "d",
+      "c4": "e",
+      "c2": "f"
+    }
+  },
+  "t2_defeas_0006_anon": {
+    "pred_map": {
+      "swims": "p",
+      "exc_sleeps": "q",
+      "dangerous": "r",
+      "predator": "s",
+      "ab_sleeps": "t",
+      "normal_sleeps": "u",
+      "sleeps": "v"
+    },
+    "const_map": {
+      "c4": "a",
+      "c0": "b",
+      "c1": "c",
+      "c2": "d",
+      "c5": "e",
+      "c3": "f"
+    }
+  },
+  "t2_defeas_0007_anon": {
+    "pred_map": {
+      "swims": "p",
+      "exc_fast": "q",
+      "nocturnal": "r",
+      "flies": "s",
+      "ab_fast": "t",
+      "normal_fast": "u",
+      "fast": "v"
+    },
+    "const_map": {
+      "c5": "a",
+      "c2": "b",
+      "c4": "c",
+      "c3": "d",
+      "c0": "e",
+      "c1": "f"
+    }
+  },
+  "t2_defeas_0008_anon": {
+    "pred_map": {
+      "flies": "p",
+      "exc_prey": "q",
+      "wild": "r",
+      "runs": "s",
+      "ab_prey": "t",
+      "normal_prey": "u",
+      "prey": "v"
+    },
+    "const_map": {
+      "c0": "a",
+      "c5": "b",
+      "c1": "c",
+      "c2": "d",
+      "c4": "e",
+      "c3": "f"
+    }
+  },
+  "t2_defeas_0009_anon": {
+    "pred_map": {
+      "domestic": "p",
+      "exc_wild": "q",
+      "eats": "r",
+      "nocturnal": "s",
+      "ab_wild": "t",
+      "normal_wild": "u",
+      "wild": "v"
+    },
+    "const_map": {
+      "c4": "a",
+      "c5": "b",
+      "c2": "c",
+      "c0": "d",
+      "c3": "e",
+      "c1": "f"
+    }
+  },
+  "t2_defeas_0010_anon": {
+    "pred_map": {
+      "predator": "p",
+      "exc_prey": "q",
+      "domestic": "r",
+      "flies": "s",
+      "ab_prey": "t",
+      "normal_prey": "u",
+      "prey": "v"
+    },
+    "const_map": {
+      "c2": "a",
+      "c3": "b",
+      "c1": "c",
+      "c0": "d",
+      "c4": "e",
+      "c5": "f"
+    }
+  },
+  "t2_defeas_0011_anon": {
+    "pred_map": {
+      "swims": "p",
+      "exc_fast": "q",
+      "prey": "r",
+      "sleeps": "s",
+      "ab_fast": "t",
+      "normal_fast": "u",
+      "fast": "v"
+    },
+    "const_map": {
+      "c0": "a",
+      "c5": "b",
+      "c3": "c",
+      "c1": "d",
+      "c2": "e",
+      "c4": "f"
+    }
+  },
+  "t2_defeas_0012_anon": {
+    "pred_map": {
+      "swims": "p",
+      "exc_runs": "q",
+      "eats": "r",
+      "wild": "s",
+      "ab_runs": "t",
+      "normal_runs": "u",
+      "runs": "v"
+    },
+    "const_map": {
+      "c0": "a",
+      "c4": "b",
+      "c1": "c",
+      "c5": "d",
+      "c2": "e",
+      "c3": "f"
+    }
+  },
+  "t2_defeas_0013_anon": {
+    "pred_map": {
+      "fast": "p",
+      "exc_swims": "q",
+      "flies": "r",
+      "predator": "s",
+      "ab_swims": "t",
+      "normal_swims": "u",
+      "swims": "v"
+    },
+    "const_map": {
+      "c1": "a",
+      "c5": "b",
+      "c0": "c",
+      "c3": "d",
+      "c4": "e",
+      "c2": "f"
+    }
+  },
+  "t2_defeas_0014_anon": {
+    "pred_map": {
+      "sleeps": "p",
+      "exc_dangerous": "q",
+      "domestic": "r",
+      "runs": "s",
+      "ab_dangerous": "t",
+      "normal_dangerous": "u",
+      "dangerous": "v"
+    },
+    "const_map": {
+      "c1": "a",
+      "c0": "b",
+      "c4": "c",
+      "c2": "d",
+      "c5": "e",
+      "c3": "f"
+    }
+  },
+  "t2_defeas_0015_anon": {
+    "pred_map": {
+      "predator": "p",
+      "exc_fast": "q",
+      "runs": "r",
+      "prey": "s",
+      "ab_fast": "t",
+      "normal_fast": "u",
+      "fast": "v"
+    },
+    "const_map": {
+      "c3": "a",
+      "c0": "b",
+      "c1": "c",
+      "c4": "d",
+      "c2": "e",
+      "c5": "f"
+    }
+  },
+  "t2_defeas_0016_anon": {
+    "pred_map": {
+      "eats": "p",
+      "exc_nocturnal": "q",
+      "wild": "r",
+      "sleeps": "s",
+      "ab_nocturnal": "t",
+      "normal_nocturnal": "u",
+      "nocturnal": "v"
+    },
+    "const_map": {
+      "c2": "a",
+      "c3": "b",
+      "c1": "c",
+      "c5": "d",
+      "c0": "e",
+      "c4": "f"
+    }
+  },
+  "t2_defeas_0017_anon": {
+    "pred_map": {
+      "wild": "p",
+      "exc_swims": "q",
+      "eats": "r",
+      "domestic": "s",
+      "ab_swims": "t",
+      "normal_swims": "u",
+      "swims": "v"
+    },
+    "const_map": {
+      "c5": "a",
+      "c4": "b",
+      "c1": "c",
+      "c0": "d",
+      "c2": "e",
+      "c3": "f"
+    }
+  },
+  "t2_defeas_0018_anon": {
+    "pred_map": {
+      "predator": "p",
+      "exc_prey": "q",
+      "sleeps": "r",
+      "nocturnal": "s",
+      "ab_prey": "t",
+      "normal_prey": "u",
+      "prey": "v"
+    },
+    "const_map": {
+      "c3": "a",
+      "c5": "b",
+      "c4": "c",
+      "c1": "d",
+      "c0": "e",
+      "c2": "f"
+    }
+  },
+  "t2_defeas_0019_anon": {
+    "pred_map": {
+      "prey": "p",
+      "exc_eats": "q",
+      "swims": "r",
+      "predator": "s",
+      "ab_eats": "t",
+      "normal_eats": "u",
+      "eats": "v"
+    },
+    "const_map": {
+      "c1": "a",
+      "c2": "b",
+      "c5": "c",
+      "c3": "d",
+      "c0": "e",
+      "c4": "f"
+    }
+  },
+  "t3_noise_0000_anon": {
+    "pred_map": {
+      "predator": "p",
+      "exc_fast": "q",
+      "friendly": "r",
+      "eats": "s",
+      "wild": "t",
+      "runs": "u",
+      "ab_fast": "v",
+      "normal_fast": "w",
+      "fast": "p1"
+    },
+    "const_map": {
+      "c1": "a",
+      "c7": "b",
+      "c2": "c",
+      "c6": "d",
+      "c3": "e",
+      "c4": "f",
+      "c0": "g",
+      "c5": "h"
+    }
+  },
+  "t3_noise_0001_anon": {
+    "pred_map": {
+      "friendly": "p",
+      "exc_sleeps": "q",
+      "swims": "r",
+      "runs": "s",
+      "predator": "t",
+      "dangerous": "u",
+      "ab_sleeps": "v",
+      "normal_sleeps": "w",
+      "sleeps": "p1"
+    },
+    "const_map": {
+      "c2": "a",
+      "c1": "b",
+      "c0": "c",
+      "c6": "d",
+      "c5": "e",
+      "c3": "f",
+      "c4": "g",
+      "c7": "h"
+    }
+  },
+  "t3_noise_0002_anon": {
+    "pred_map": {
+      "wild": "p",
+      "exc_nocturnal": "q",
+      "sleeps": "r",
+      "predator": "s",
+      "fast": "t",
+      "flies": "u",
+      "ab_nocturnal": "v",
+      "normal_nocturnal": "w",
+      "nocturnal": "p1"
+    },
+    "const_map": {
+      "c3": "a",
+      "c1": "b",
+      "c2": "c",
+      "c4": "d",
+      "c7": "e",
+      "c5": "f",
+      "c6": "g",
+      "c0": "h"
+    }
+  },
+  "t3_noise_0003_anon": {
+    "pred_map": {
+      "friendly": "p",
+      "exc_prey": "q",
+      "fast": "r",
+      "sleeps": "s",
+      "runs": "t",
+      "flies": "u",
+      "ab_prey": "v",
+      "normal_prey": "w",
+      "prey": "p1"
+    },
+    "const_map": {
+      "c4": "a",
+      "c3": "b",
+      "c7": "c",
+      "c0": "d",
+      "c1": "e",
+      "c2": "f",
+      "c6": "g",
+      "c5": "h"
+    }
+  },
+  "t3_noise_0004_anon": {
+    "pred_map": {
+      "runs": "p",
+      "exc_fast": "q",
+      "dangerous": "r",
+      "flies": "s",
+      "sleeps": "t",
+      "nocturnal": "u",
+      "ab_fast": "v",
+      "normal_fast": "w",
+      "fast": "p1"
+    },
+    "const_map": {
+      "c2": "a",
+      "c1": "b",
+      "c5": "c",
+      "c6": "d",
+      "c4": "e",
+      "c0": "f",
+      "c7": "g",
+      "c3": "h"
+    }
+  },
+  "t3_noise_0005_anon": {
+    "pred_map": {
+      "runs": "p",
+      "exc_eats": "q",
+      "flies": "r",
+      "prey": "s",
+      "fast": "t",
+      "wild": "u",
+      "ab_eats": "v",
+      "normal_eats": "w",
+      "eats": "p1"
+    },
+    "const_map": {
+      "c5": "a",
+      "c4": "b",
+      "c0": "c",
+      "c1": "d",
+      "c3": "e",
+      "c6": "f",
+      "c7": "g",
+      "c2": "h"
+    }
+  },
+  "t3_noise_0006_anon": {
+    "pred_map": {
+      "flies": "p",
+      "exc_nocturnal": "q",
+      "prey": "r",
+      "runs": "s",
+      "fast": "t",
+      "wild": "u",
+      "ab_nocturnal": "v",
+      "normal_nocturnal": "w",
+      "nocturnal": "p1"
+    },
+    "const_map": {
+      "c0": "a",
+      "c7": "b",
+      "c5": "c",
+      "c4": "d",
+      "c1": "e",
+      "c3": "f",
+      "c6": "g",
+      "c2": "h"
+    }
+  },
+  "t3_noise_0007_anon": {
+    "pred_map": {
+      "prey": "p",
+      "exc_swims": "q",
+      "domestic": "r",
+      "sleeps": "s",
+      "fast": "t",
+      "predator": "u",
+      "ab_swims": "v",
+      "normal_swims": "w",
+      "swims": "p1"
+    },
+    "const_map": {
+      "c2": "a",
+      "c7": "b",
+      "c0": "c",
+      "c4": "d",
+      "c5": "e",
+      "c1": "f",
+      "c3": "g",
+      "c6": "h"
+    }
+  },
+  "t3_noise_0008_anon": {
+    "pred_map": {
+      "flies": "p",
+      "exc_friendly": "q",
+      "fast": "r",
+      "eats": "s",
+      "swims": "t",
+      "dangerous": "u",
+      "ab_friendly": "v",
+      "normal_friendly": "w",
+      "friendly": "p1"
+    },
+    "const_map": {
+      "c7": "a",
+      "c3": "b",
+      "c0": "c",
+      "c2": "d",
+      "c6": "e",
+      "c1": "f",
+      "c5": "g",
+      "c4": "h"
+    }
+  },
+  "t3_noise_0009_anon": {
+    "pred_map": {
+      "friendly": "p",
+      "exc_domestic": "q",
+      "prey": "r",
+      "swims": "s",
+      "eats": "t",
+      "wild": "u",
+      "ab_domestic": "v",
+      "normal_domestic": "w",
+      "domestic": "p1"
+    },
+    "const_map": {
+      "c7": "a",
+      "c3": "b",
+      "c4": "c",
+      "c2": "d",
+      "c6": "e",
+      "c0": "f",
+      "c1": "g",
+      "c5": "h"
+    }
+  },
+  "t3_noise_0010_anon": {
+    "pred_map": {
+      "swims": "p",
+      "exc_friendly": "q",
+      "dangerous": "r",
+      "domestic": "s",
+      "sleeps": "t",
+      "eats": "u",
+      "ab_friendly": "v",
+      "normal_friendly": "w",
+      "friendly": "p1"
+    },
+    "const_map": {
+      "c7": "a",
+      "c1": "b",
+      "c3": "c",
+      "c2": "d",
+      "c6": "e",
+      "c0": "f",
+      "c5": "g",
+      "c4": "h"
+    }
+  },
+  "t3_noise_0011_anon": {
+    "pred_map": {
+      "dangerous": "p",
+      "exc_wild": "q",
+      "swims": "r",
+      "eats": "s",
+      "predator": "t",
+      "friendly": "u",
+      "ab_wild": "v",
+      "normal_wild": "w",
+      "wild": "p1"
+    },
+    "const_map": {
+      "c2": "a",
+      "c4": "b",
+      "c5": "c",
+      "c0": "d",
+      "c3": "e",
+      "c6": "f",
+      "c1": "g",
+      "c7": "h"
+    }
+  },
+  "t3_noise_0012_anon": {
+    "pred_map": {
+      "friendly": "p",
+      "exc_fast": "q",
+      "sleeps": "r",
+      "eats": "s",
+      "runs": "t",
+      "prey": "u",
+      "ab_fast": "v",
+      "normal_fast": "w",
+      "fast": "p1"
+    },
+    "const_map": {
+      "c4": "a",
+      "c2": "b",
+      "c3": "c",
+      "c1": "d",
+      "c0": "e",
+      "c5": "f",
+      "c7": "g",
+      "c6": "h"
+    }
+  },
+  "t3_noise_0013_anon": {
+    "pred_map": {
+      "friendly": "p",
+      "exc_wild": "q",
+      "nocturnal": "r",
+      "dangerous": "s",
+      "sleeps": "t",
+      "swims": "u",
+      "ab_wild": "v",
+      "normal_wild": "w",
+      "wild": "p1"
+    },
+    "const_map": {
+      "c3": "a",
+      "c4": "b",
+      "c2": "c",
+      "c1": "d",
+      "c6": "e",
+      "c5": "f",
+      "c7": "g",
+      "c0": "h"
+    }
+  },
+  "t3_noise_0014_anon": {
+    "pred_map": {
+      "prey": "p",
+      "exc_swims": "q",
+      "predator": "r",
+      "dangerous": "s",
+      "wild": "t",
+      "runs": "u",
+      "ab_swims": "v",
+      "normal_swims": "w",
+      "swims": "p1"
+    },
+    "const_map": {
+      "c2": "a",
+      "c6": "b",
+      "c3": "c",
+      "c7": "d",
+      "c1": "e",
+      "c0": "f",
+      "c4": "g",
+      "c5": "h"
+    }
+  },
+  "t3_noise_0015_anon": {
+    "pred_map": {
+      "swims": "p",
+      "exc_wild": "q",
+      "friendly": "r",
+      "fast": "s",
+      "dangerous": "t",
+      "eats": "u",
+      "ab_wild": "v",
+      "normal_wild": "w",
+      "wild": "p1"
+    },
+    "const_map": {
+      "c7": "a",
+      "c2": "b",
+      "c6": "c",
+      "c5": "d",
+      "c0": "e",
+      "c4": "f",
+      "c1": "g",
+      "c3": "h"
+    }
+  },
+  "t3_noise_0016_anon": {
+    "pred_map": {
+      "fast": "p",
+      "exc_sleeps": "q",
+      "dangerous": "r",
+      "prey": "s",
+      "nocturnal": "t",
+      "eats": "u",
+      "ab_sleeps": "v",
+      "normal_sleeps": "w",
+      "sleeps": "p1"
+    },
+    "const_map": {
+      "c3": "a",
+      "c0": "b",
+      "c4": "c",
+      "c1": "d",
+      "c5": "e",
+      "c6": "f",
+      "c2": "g",
+      "c7": "h"
+    }
+  },
+  "t3_noise_0017_anon": {
+    "pred_map": {
+      "swims": "p",
+      "exc_nocturnal": "q",
+      "predator": "r",
+      "runs": "s",
+      "eats": "t",
+      "dangerous": "u",
+      "ab_nocturnal": "v",
+      "normal_nocturnal": "w",
+      "nocturnal": "p1"
+    },
+    "const_map": {
+      "c7": "a",
+      "c6": "b",
+      "c3": "c",
+      "c5": "d",
+      "c1": "e",
+      "c0": "f",
+      "c4": "g",
+      "c2": "h"
+    }
+  },
+  "t3_noise_0018_anon": {
+    "pred_map": {
+      "wild": "p",
+      "exc_nocturnal": "q",
+      "flies": "r",
+      "dangerous": "s",
+      "domestic": "t",
+      "swims": "u",
+      "ab_nocturnal": "v",
+      "normal_nocturnal": "w",
+      "nocturnal": "p1"
+    },
+    "const_map": {
+      "c1": "a",
+      "c0": "b",
+      "c6": "c",
+      "c3": "d",
+      "c7": "e",
+      "c2": "f",
+      "c4": "g",
+      "c5": "h"
+    }
+  },
+  "t3_noise_0019_anon": {
+    "pred_map": {
+      "wild": "p",
+      "exc_predator": "q",
+      "eats": "r",
+      "swims": "s",
+      "friendly": "t",
+      "domestic": "u",
+      "ab_predator": "v",
+      "normal_predator": "w",
+      "predator": "p1"
+    },
+    "const_map": {
+      "c7": "a",
+      "c1": "b",
+      "c0": "c",
+      "c6": "d",
+      "c2": "e",
+      "c3": "f",
+      "c4": "g",
+      "c5": "h"
+    }
+  },
+  "t4_domain_0000_anon": {
+    "pred_map": {
+      "eats": "p",
+      "exc_domestic": "q",
+      "fast": "r",
+      "predator": "s",
+      "ab_domestic": "t",
+      "normal_domestic": "u",
+      "domestic": "v"
+    },
+    "const_map": {
+      "c6": "a",
+      "c5": "b",
+      "c2": "c",
+      "c1": "d",
+      "c3": "e",
+      "c4": "f",
+      "c0": "g",
+      "c7": "h",
+      "c8": "i",
+      "c11": "j",
+      "c9": "k",
+      "c10": "l"
+    }
+  },
+  "t4_domain_0001_anon": {
+    "pred_map": {
+      "domestic": "p",
+      "exc_prey": "q",
+      "sleeps": "r",
+      "swims": "s",
+      "ab_prey": "t",
+      "normal_prey": "u",
+      "prey": "v"
+    },
+    "const_map": {
+      "c10": "a",
+      "c8": "b",
+      "c11": "c",
+      "c9": "d",
+      "c5": "e",
+      "c0": "f",
+      "c1": "g",
+      "c2": "h",
+      "c4": "i",
+      "c6": "j",
+      "c7": "k",
+      "c3": "l"
+    }
+  },
+  "t4_domain_0002_anon": {
+    "pred_map": {
+      "fast": "p",
+      "exc_dangerous": "q",
+      "friendly": "r",
+      "sleeps": "s",
+      "ab_dangerous": "t",
+      "normal_dangerous": "u",
+      "dangerous": "v"
+    },
+    "const_map": {
+      "c1": "a",
+      "c7": "b",
+      "c8": "c",
+      "c10": "d",
+      "c0": "e",
+      "c4": "f",
+      "c11": "g",
+      "c2": "h",
+      "c5": "i",
+      "c3": "j",
+      "c6": "k",
+      "c9": "l"
+    }
+  },
+  "t4_domain_0003_anon": {
+    "pred_map": {
+      "friendly": "p",
+      "exc_domestic": "q",
+      "swims": "r",
+      "nocturnal": "s",
+      "ab_domestic": "t",
+      "normal_domestic": "u",
+      "domestic": "v"
+    },
+    "const_map": {
+      "c2": "a",
+      "c6": "b",
+      "c3": "c",
+      "c10": "d",
+      "c8": "e",
+      "c4": "f",
+      "c9": "g",
+      "c0": "h",
+      "c1": "i",
+      "c11": "j",
+      "c5": "k",
+      "c7": "l"
+    }
+  },
+  "t4_domain_0004_anon": {
+    "pred_map": {
+      "swims": "p",
+      "exc_dangerous": "q",
+      "sleeps": "r",
+      "fast": "s",
+      "ab_dangerous": "t",
+      "normal_dangerous": "u",
+      "dangerous": "v"
+    },
+    "const_map": {
+      "c0": "a",
+      "c10": "b",
+      "c8": "c",
+      "c5": "d",
+      "c9": "e",
+      "c1": "f",
+      "c2": "g",
+      "c4": "h",
+      "c6": "i",
+      "c7": "j",
+      "c3": "k",
+      "c11": "l"
+    }
+  },
+  "t4_domain_0005_anon": {
+    "pred_map": {
+      "flies": "p",
+      "exc_prey": "q",
+      "fast": "r",
+      "wild": "s",
+      "ab_prey": "t",
+      "normal_prey": "u",
+      "prey": "v"
+    },
+    "const_map": {
+      "c1": "a",
+      "c4": "b",
+      "c6": "c",
+      "c7": "d",
+      "c3": "e",
+      "c2": "f",
+      "c11": "g",
+      "c5": "h",
+      "c0": "i",
+      "c10": "j",
+      "c9": "k",
+      "c8": "l"
+    }
+  },
+  "t4_domain_0006_anon": {
+    "pred_map": {
+      "friendly": "p",
+      "exc_runs": "q",
+      "eats": "r",
+      "nocturnal": "s",
+      "ab_runs": "t",
+      "normal_runs": "u",
+      "runs": "v"
+    },
+    "const_map": {
+      "c5": "a",
+      "c7": "b",
+      "c8": "c",
+      "c6": "d",
+      "c11": "e",
+      "c9": "f",
+      "c10": "g",
+      "c0": "h",
+      "c2": "i",
+      "c3": "j",
+      "c4": "k",
+      "c1": "l"
+    }
+  },
+  "t4_domain_0007_anon": {
+    "pred_map": {
+      "dangerous": "p",
+      "exc_friendly": "q",
+      "sleeps": "r",
+      "runs": "s",
+      "ab_friendly": "t",
+      "normal_friendly": "u",
+      "friendly": "v"
+    },
+    "const_map": {
+      "c1": "a",
+      "c4": "b",
+      "c2": "c",
+      "c3": "d",
+      "c8": "e",
+      "c7": "f",
+      "c10": "g",
+      "c0": "h",
+      "c5": "i",
+      "c6": "j",
+      "c9": "k",
+      "c11": "l"
+    }
+  },
+  "t4_domain_0008_anon": {
+    "pred_map": {
+      "nocturnal": "p",
+      "exc_sleeps": "q",
+      "prey": "r",
+      "flies": "s",
+      "ab_sleeps": "t",
+      "normal_sleeps": "u",
+      "sleeps": "v"
+    },
+    "const_map": {
+      "c8": "a",
+      "c4": "b",
+      "c11": "c",
+      "c5": "d",
+      "c1": "e",
+      "c7": "f",
+      "c2": "g",
+      "c0": "h",
+      "c3": "i",
+      "c6": "j",
+      "c9": "k",
+      "c10": "l"
+    }
+  },
+  "t4_domain_0009_anon": {
+    "pred_map": {
+      "wild": "p",
+      "exc_prey": "q",
+      "eats": "r",
+      "flies": "s",
+      "ab_prey": "t",
+      "normal_prey": "u",
+      "prey": "v"
+    },
+    "const_map": {
+      "c2": "a",
+      "c0": "b",
+      "c8": "c",
+      "c5": "d",
+      "c9": "e",
+      "c10": "f",
+      "c1": "g",
+      "c11": "h",
+      "c6": "i",
+      "c7": "j",
+      "c3": "k",
+      "c4": "l"
+    }
+  },
+  "t4_domain_0010_anon": {
+    "pred_map": {
+      "domestic": "p",
+      "exc_prey": "q",
+      "sleeps": "r",
+      "nocturnal": "s",
+      "ab_prey": "t",
+      "normal_prey": "u",
+      "prey": "v"
+    },
+    "const_map": {
+      "c7": "a",
+      "c0": "b",
+      "c3": "c",
+      "c8": "d",
+      "c10": "e",
+      "c6": "f",
+      "c11": "g",
+      "c1": "h",
+      "c2": "i",
+      "c4": "j",
+      "c5": "k",
+      "c9": "l"
+    }
+  },
+  "t4_domain_0011_anon": {
+    "pred_map": {
+      "eats": "p",
+      "exc_dangerous": "q",
+      "swims": "r",
+      "sleeps": "s",
+      "ab_dangerous": "t",
+      "normal_dangerous": "u",
+      "dangerous": "v"
+    },
+    "const_map": {
+      "c11": "a",
+      "c7": "b",
+      "c3": "c",
+      "c10": "d",
+      "c1": "e",
+      "c4": "f",
+      "c9": "g",
+      "c0": "h",
+      "c2": "i",
+      "c6": "j",
+      "c8": "k",
+      "c5": "l"
+    }
+  },
+  "t4_domain_0012_anon": {
+    "pred_map": {
+      "eats": "p",
+      "exc_wild": "q",
+      "prey": "r",
+      "sleeps": "s",
+      "ab_wild": "t",
+      "normal_wild": "u",
+      "wild": "v"
+    },
+    "const_map": {
+      "c1": "a",
+      "c2": "b",
+      "c6": "c",
+      "c7": "d",
+      "c8": "e",
+      "c4": "f",
+      "c10": "g",
+      "c5": "h",
+      "c11": "i",
+      "c9": "j",
+      "c3": "k",
+      "c0": "l"
+    }
+  },
+  "t4_domain_0013_anon": {
+    "pred_map": {
+      "nocturnal": "p",
+      "exc_runs": "q",
+      "swims": "r",
+      "fast": "s",
+      "ab_runs": "t",
+      "normal_runs": "u",
+      "runs": "v"
+    },
+    "const_map": {
+      "c9": "a",
+      "c11": "b",
+      "c2": "c",
+      "c7": "d",
+      "c4": "e",
+      "c5": "f",
+      "c8": "g",
+      "c0": "h",
+      "c1": "i",
+      "c3": "j",
+      "c6": "k",
+      "c10": "l"
+    }
+  },
+  "t4_domain_0014_anon": {
+    "pred_map": {
+      "runs": "p",
+      "exc_fast": "q",
+      "wild": "r",
+      "dangerous": "s",
+      "ab_fast": "t",
+      "normal_fast": "u",
+      "fast": "v"
+    },
+    "const_map": {
+      "c1": "a",
+      "c9": "b",
+      "c0": "c",
+      "c10": "d",
+      "c7": "e",
+      "c8": "f",
+      "c5": "g",
+      "c2": "h",
+      "c4": "i",
+      "c11": "j",
+      "c3": "k",
+      "c6": "l"
+    }
+  },
+  "t4_domain_0015_anon": {
+    "pred_map": {
+      "domestic": "p",
+      "exc_wild": "q",
+      "friendly": "r",
+      "flies": "s",
+      "ab_wild": "t",
+      "normal_wild": "u",
+      "wild": "v"
+    },
+    "const_map": {
+      "c4": "a",
+      "c5": "b",
+      "c7": "c",
+      "c8": "d",
+      "c11": "e",
+      "c0": "f",
+      "c9": "g",
+      "c1": "h",
+      "c2": "i",
+      "c6": "j",
+      "c10": "k",
+      "c3": "l"
+    }
+  },
+  "t4_domain_0016_anon": {
+    "pred_map": {
+      "wild": "p",
+      "exc_friendly": "q",
+      "domestic": "r",
+      "fast": "s",
+      "ab_friendly": "t",
+      "normal_friendly": "u",
+      "friendly": "v"
+    },
+    "const_map": {
+      "c8": "a",
+      "c10": "b",
+      "c6": "c",
+      "c3": "d",
+      "c1": "e",
+      "c5": "f",
+      "c9": "g",
+      "c0": "h",
+      "c7": "i",
+      "c11": "j",
+      "c4": "k",
+      "c2": "l"
+    }
+  },
+  "t4_domain_0017_anon": {
+    "pred_map": {
+      "flies": "p",
+      "exc_prey": "q",
+      "sleeps": "r",
+      "eats": "s",
+      "ab_prey": "t",
+      "normal_prey": "u",
+      "prey": "v"
+    },
+    "const_map": {
+      "c11": "a",
+      "c1": "b",
+      "c3": "c",
+      "c9": "d",
+      "c6": "e",
+      "c7": "f",
+      "c0": "g",
+      "c2": "h",
+      "c5": "i",
+      "c8": "j",
+      "c10": "k",
+      "c4": "l"
+    }
+  },
+  "t4_domain_0018_anon": {
+    "pred_map": {
+      "wild": "p",
+      "exc_predator": "q",
+      "sleeps": "r",
+      "swims": "s",
+      "ab_predator": "t",
+      "normal_predator": "u",
+      "predator": "v"
+    },
+    "const_map": {
+      "c4": "a",
+      "c0": "b",
+      "c7": "c",
+      "c8": "d",
+      "c10": "e",
+      "c11": "f",
+      "c2": "g",
+      "c1": "h",
+      "c9": "i",
+      "c3": "j",
+      "c6": "k",
+      "c5": "l"
+    }
+  },
+  "t4_domain_0019_anon": {
+    "pred_map": {
+      "sleeps": "p",
+      "exc_prey": "q",
+      "runs": "r",
+      "dangerous": "s",
+      "ab_prey": "t",
+      "normal_prey": "u",
+      "prey": "v"
+    },
+    "const_map": {
+      "c10": "a",
+      "c5": "b",
+      "c11": "c",
+      "c4": "d",
+      "c2": "e",
+      "c8": "f",
+      "c0": "g",
+      "c6": "h",
+      "c9": "i",
+      "c1": "j",
+      "c3": "k",
+      "c7": "l"
+    }
+  },
+  "t5_twopath_0000_anon": {
+    "pred_map": {
+      "flies": "p",
+      "wild": "q",
+      "exc_a_frie": "r",
+      "exc_b_frie": "s",
+      "ab_a_friendly": "t",
+      "ab_b_friendly": "u",
+      "normal_a_friendly": "v",
+      "normal_b_friendly": "w",
+      "friendly": "p1"
+    },
+    "const_map": {
+      "c2": "a",
+      "c6": "b",
+      "c3": "c",
+      "c4": "d",
+      "c7": "e",
+      "c1": "f",
+      "c5": "g",
+      "c0": "h"
+    }
+  },
+  "t5_twopath_0001_anon": {
+    "pred_map": {
+      "wild": "p",
+      "friendly": "q",
+      "exc_a_dang": "r",
+      "exc_b_dang": "s",
+      "ab_a_dangerous": "t",
+      "ab_b_dangerous": "u",
+      "normal_a_dangerous": "v",
+      "normal_b_dangerous": "w",
+      "dangerous": "p1"
+    },
+    "const_map": {
+      "c0": "a",
+      "c7": "b",
+      "c5": "c",
+      "c6": "d",
+      "c3": "e",
+      "c2": "f",
+      "c4": "g",
+      "c1": "h"
+    }
+  },
+  "t5_twopath_0002_anon": {
+    "pred_map": {
+      "fast": "p",
+      "domestic": "q",
+      "exc_a_wild": "r",
+      "exc_b_wild": "s",
+      "ab_a_wild": "t",
+      "ab_b_wild": "u",
+      "normal_a_wild": "v",
+      "normal_b_wild": "w",
+      "wild": "p1"
+    },
+    "const_map": {
+      "c0": "a",
+      "c7": "b",
+      "c2": "c",
+      "c5": "d",
+      "c3": "e",
+      "c4": "f",
+      "c1": "g",
+      "c6": "h"
+    }
+  },
+  "t5_twopath_0003_anon": {
+    "pred_map": {
+      "runs": "p",
+      "prey": "q",
+      "exc_a_wild": "r",
+      "exc_b_wild": "s",
+      "ab_a_wild": "t",
+      "ab_b_wild": "u",
+      "normal_a_wild": "v",
+      "normal_b_wild": "w",
+      "wild": "p1"
+    },
+    "const_map": {
+      "c3": "a",
+      "c1": "b",
+      "c6": "c",
+      "c0": "d",
+      "c7": "e",
+      "c5": "f",
+      "c2": "g",
+      "c4": "h"
+    }
+  },
+  "t5_twopath_0004_anon": {
+    "pred_map": {
+      "fast": "p",
+      "flies": "q",
+      "exc_a_slee": "r",
+      "exc_b_slee": "s",
+      "ab_a_sleeps": "t",
+      "ab_b_sleeps": "u",
+      "normal_a_sleeps": "v",
+      "normal_b_sleeps": "w",
+      "sleeps": "p1"
+    },
+    "const_map": {
+      "c4": "a",
+      "c6": "b",
+      "c1": "c",
+      "c7": "d",
+      "c0": "e",
+      "c3": "f",
+      "c2": "g",
+      "c5": "h"
+    }
+  },
+  "t5_twopath_0005_anon": {
+    "pred_map": {
+      "swims": "p",
+      "sleeps": "q",
+      "exc_a_noct": "r",
+      "exc_b_noct": "s",
+      "ab_a_nocturnal": "t",
+      "ab_b_nocturnal": "u",
+      "normal_a_nocturnal": "v",
+      "normal_b_nocturnal": "w",
+      "nocturnal": "p1"
+    },
+    "const_map": {
+      "c5": "a",
+      "c7": "b",
+      "c2": "c",
+      "c6": "d",
+      "c3": "e",
+      "c4": "f",
+      "c1": "g",
+      "c0": "h"
+    }
+  },
+  "t5_twopath_0006_anon": {
+    "pred_map": {
+      "domestic": "p",
+      "fast": "q",
+      "exc_a_dang": "r",
+      "exc_b_dang": "s",
+      "ab_a_dangerous": "t",
+      "ab_b_dangerous": "u",
+      "normal_a_dangerous": "v",
+      "normal_b_dangerous": "w",
+      "dangerous": "p1"
+    },
+    "const_map": {
+      "c4": "a",
+      "c6": "b",
+      "c5": "c",
+      "c3": "d",
+      "c2": "e",
+      "c1": "f",
+      "c0": "g",
+      "c7": "h"
+    }
+  },
+  "t5_twopath_0007_anon": {
+    "pred_map": {
+      "sleeps": "p",
+      "eats": "q",
+      "exc_a_dome": "r",
+      "exc_b_dome": "s",
+      "ab_a_domestic": "t",
+      "ab_b_domestic": "u",
+      "normal_a_domestic": "v",
+      "normal_b_domestic": "w",
+      "domestic": "p1"
+    },
+    "const_map": {
+      "c7": "a",
+      "c5": "b",
+      "c0": "c",
+      "c1": "d",
+      "c2": "e",
+      "c4": "f",
+      "c3": "g",
+      "c6": "h"
+    }
+  },
+  "t5_twopath_0008_anon": {
+    "pred_map": {
+      "runs": "p",
+      "flies": "q",
+      "exc_a_prey": "r",
+      "exc_b_prey": "s",
+      "ab_a_prey": "t",
+      "ab_b_prey": "u",
+      "normal_a_prey": "v",
+      "normal_b_prey": "w",
+      "prey": "p1"
+    },
+    "const_map": {
+      "c0": "a",
+      "c2": "b",
+      "c7": "c",
+      "c6": "d",
+      "c1": "e",
+      "c5": "f",
+      "c4": "g",
+      "c3": "h"
+    }
+  },
+  "t5_twopath_0009_anon": {
+    "pred_map": {
+      "sleeps": "p",
+      "prey": "q",
+      "exc_a_wild": "r",
+      "exc_b_wild": "s",
+      "ab_a_wild": "t",
+      "ab_b_wild": "u",
+      "normal_a_wild": "v",
+      "normal_b_wild": "w",
+      "wild": "p1"
+    },
+    "const_map": {
+      "c7": "a",
+      "c2": "b",
+      "c6": "c",
+      "c3": "d",
+      "c0": "e",
+      "c5": "f",
+      "c1": "g",
+      "c4": "h"
+    }
+  },
+  "t5_twopath_0010_anon": {
+    "pred_map": {
+      "dangerous": "p",
+      "domestic": "q",
+      "exc_a_eats": "r",
+      "exc_b_eats": "s",
+      "ab_a_eats": "t",
+      "ab_b_eats": "u",
+      "normal_a_eats": "v",
+      "normal_b_eats": "w",
+      "eats": "p1"
+    },
+    "const_map": {
+      "c1": "a",
+      "c3": "b",
+      "c7": "c",
+      "c0": "d",
+      "c4": "e",
+      "c6": "f",
+      "c2": "g",
+      "c5": "h"
+    }
+  },
+  "t5_twopath_0011_anon": {
+    "pred_map": {
+      "predator": "p",
+      "sleeps": "q",
+      "exc_a_eats": "r",
+      "exc_b_eats": "s",
+      "ab_a_eats": "t",
+      "ab_b_eats": "u",
+      "normal_a_eats": "v",
+      "normal_b_eats": "w",
+      "eats": "p1"
+    },
+    "const_map": {
+      "c6": "a",
+      "c1": "b",
+      "c0": "c",
+      "c4": "d",
+      "c2": "e",
+      "c7": "f",
+      "c3": "g",
+      "c5": "h"
+    }
+  },
+  "t5_twopath_0012_anon": {
+    "pred_map": {
+      "wild": "p",
+      "dangerous": "q",
+      "exc_a_frie": "r",
+      "exc_b_frie": "s",
+      "ab_a_friendly": "t",
+      "ab_b_friendly": "u",
+      "normal_a_friendly": "v",
+      "normal_b_friendly": "w",
+      "friendly": "p1"
+    },
+    "const_map": {
+      "c5": "a",
+      "c7": "b",
+      "c0": "c",
+      "c4": "d",
+      "c3": "e",
+      "c6": "f",
+      "c1": "g",
+      "c2": "h"
+    }
+  },
+  "t5_twopath_0013_anon": {
+    "pred_map": {
+      "nocturnal": "p",
+      "predator": "q",
+      "exc_a_dang": "r",
+      "exc_b_dang": "s",
+      "ab_a_dangerous": "t",
+      "ab_b_dangerous": "u",
+      "normal_a_dangerous": "v",
+      "normal_b_dangerous": "w",
+      "dangerous": "p1"
+    },
+    "const_map": {
+      "c7": "a",
+      "c0": "b",
+      "c6": "c",
+      "c4": "d",
+      "c2": "e",
+      "c1": "f",
+      "c5": "g",
+      "c3": "h"
+    }
+  },
+  "t5_twopath_0014_anon": {
+    "pred_map": {
+      "swims": "p",
+      "flies": "q",
+      "exc_a_dang": "r",
+      "exc_b_dang": "s",
+      "ab_a_dangerous": "t",
+      "ab_b_dangerous": "u",
+      "normal_a_dangerous": "v",
+      "normal_b_dangerous": "w",
+      "dangerous": "p1"
+    },
+    "const_map": {
+      "c6": "a",
+      "c4": "b",
+      "c5": "c",
+      "c2": "d",
+      "c1": "e",
+      "c3": "f",
+      "c7": "g",
+      "c0": "h"
+    }
+  },
+  "t5_twopath_0015_anon": {
+    "pred_map": {
+      "flies": "p",
+      "friendly": "q",
+      "exc_a_slee": "r",
+      "exc_b_slee": "s",
+      "ab_a_sleeps": "t",
+      "ab_b_sleeps": "u",
+      "normal_a_sleeps": "v",
+      "normal_b_sleeps": "w",
+      "sleeps": "p1"
+    },
+    "const_map": {
+      "c1": "a",
+      "c7": "b",
+      "c4": "c",
+      "c0": "d",
+      "c3": "e",
+      "c2": "f",
+      "c6": "g",
+      "c5": "h"
+    }
+  },
+  "t5_twopath_0016_anon": {
+    "pred_map": {
+      "sleeps": "p",
+      "domestic": "q",
+      "exc_a_noct": "r",
+      "exc_b_noct": "s",
+      "ab_a_nocturnal": "t",
+      "ab_b_nocturnal": "u",
+      "normal_a_nocturnal": "v",
+      "normal_b_nocturnal": "w",
+      "nocturnal": "p1"
+    },
+    "const_map": {
+      "c5": "a",
+      "c1": "b",
+      "c4": "c",
+      "c7": "d",
+      "c3": "e",
+      "c0": "f",
+      "c6": "g",
+      "c2": "h"
+    }
+  },
+  "t5_twopath_0017_anon": {
+    "pred_map": {
+      "eats": "p",
+      "dangerous": "q",
+      "exc_a_pred": "r",
+      "exc_b_pred": "s",
+      "ab_a_predator": "t",
+      "ab_b_predator": "u",
+      "normal_a_predator": "v",
+      "normal_b_predator": "w",
+      "predator": "p1"
+    },
+    "const_map": {
+      "c7": "a",
+      "c1": "b",
+      "c3": "c",
+      "c4": "d",
+      "c5": "e",
+      "c0": "f",
+      "c6": "g",
+      "c2": "h"
+    }
+  },
+  "t5_twopath_0018_anon": {
+    "pred_map": {
+      "nocturnal": "p",
+      "sleeps": "q",
+      "exc_a_frie": "r",
+      "exc_b_frie": "s",
+      "ab_a_friendly": "t",
+      "ab_b_friendly": "u",
+      "normal_a_friendly": "v",
+      "normal_b_friendly": "w",
+      "friendly": "p1"
+    },
+    "const_map": {
+      "c7": "a",
+      "c5": "b",
+      "c2": "c",
+      "c6": "d",
+      "c0": "e",
+      "c4": "f",
+      "c3": "g",
+      "c1": "h"
+    }
+  },
+  "t5_twopath_0019_anon": {
+    "pred_map": {
+      "flies": "p",
+      "nocturnal": "q",
+      "exc_a_runs": "r",
+      "exc_b_runs": "s",
+      "ab_a_runs": "t",
+      "ab_b_runs": "u",
+      "normal_a_runs": "v",
+      "normal_b_runs": "w",
+      "runs": "p1"
+    },
+    "const_map": {
+      "c0": "a",
+      "c5": "b",
+      "c1": "c",
+      "c7": "d",
+      "c6": "e",
+      "c4": "f",
+      "c2": "g",
+      "c3": "h"
+    }
+  }
+}

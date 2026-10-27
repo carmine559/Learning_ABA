@@ -1,0 +1,7 @@
+GPU: NVIDIA L40
+[job 73936] model=qwen2.5-7b bench_n=20 samples=3 modes='direct cot guided algorithm' extra='--load-4bit' probes=1
+Traceback (most recent call last):
+  File "/scratch.hpc/carmine.santella/Learning_aba/main.py", line 36, in <module>
+    from extras.aba_visualization import save_all_plots
+ModuleNotFoundError: No module named 'extras.aba_visualization'
+FAILED qwen2.5-7b (exit 1) - continuing with the next model
