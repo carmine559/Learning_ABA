@@ -29,16 +29,20 @@ class ModelResponse:
     prompt_tokens:     int   = 0
     completion_tokens: int   = 0
     latency_s:         float = 0.0
+    finish_reason: Optional[str] = None     # "stop" / "length" where known
     raw: Any = None
 
 
 class LLMBackend(ABC):
+    # `seed` fixes the sampling draw where the backend supports it; 4-bit kernels
+    # and remote providers do not promise bitwise-identical outputs.
     @abstractmethod
     def generate(
         self,
         prompt: str,
         temperature: float = 0.3,
         max_tokens: int = 1024,
+        seed: Optional[int] = None,
     ) -> ModelResponse: ...
 
     def batch_generate(
@@ -144,9 +148,11 @@ class GroqBackend(LLMBackend):
         prompt: str,
         temperature: float = 0.3,
         max_tokens: int = 1024,
+        seed: Optional[int] = None,
     ) -> ModelResponse:
         from groq import RateLimitError
 
+        extra = {} if seed is None else {"seed": seed}
         attempt = 0
         while True:
             self._throttle()
@@ -157,6 +163,7 @@ class GroqBackend(LLMBackend):
                     messages=[{"role": "user", "content": prompt}],
                     temperature=temperature,
                     max_tokens=max_tokens,
+                    **extra,
                 )
                 self._last_call_t = time.time()
                 return ModelResponse(
@@ -165,6 +172,7 @@ class GroqBackend(LLMBackend):
                     prompt_tokens=resp.usage.prompt_tokens,
                     completion_tokens=resp.usage.completion_tokens,
                     latency_s=time.time() - t0,
+                    finish_reason=resp.choices[0].finish_reason,
                     raw=resp,
                 )
             except RateLimitError as exc:
@@ -233,6 +241,7 @@ class HFInferenceBackend(LLMBackend):
         prompt: str,
         temperature: float = 0.3,
         max_tokens: int = 1024,
+        seed: Optional[int] = None,
     ) -> ModelResponse:
         t0 = time.time()
         # Use chat_completion for instruct models
@@ -240,6 +249,7 @@ class HFInferenceBackend(LLMBackend):
             messages=[{"role": "user", "content": prompt}],
             max_tokens=max_tokens,
             temperature=max(temperature, 0.01),  # HF requires > 0
+            seed=seed,
         )
         return ModelResponse(
             text=resp.choices[0].message.content,
@@ -247,6 +257,7 @@ class HFInferenceBackend(LLMBackend):
             prompt_tokens=resp.usage.prompt_tokens,
             completion_tokens=resp.usage.completion_tokens,
             latency_s=time.time() - t0,
+            finish_reason=resp.choices[0].finish_reason,
             raw=resp,
         )
 
@@ -335,6 +346,7 @@ class GoogleAIBackend(LLMBackend):
         prompt: str,
         temperature: float = 0.3,
         max_tokens: int = 1024,
+        seed: Optional[int] = None,
     ) -> ModelResponse:
         from google import genai as _genai
         from google.genai import types as _types
@@ -343,6 +355,8 @@ class GoogleAIBackend(LLMBackend):
             "temperature":      temperature,
             "max_output_tokens": max_tokens,
         }
+        if seed is not None:
+            config_kwargs["seed"] = seed
         if self.thinking:
             config_kwargs["thinking_config"] = _types.ThinkingConfig(
                 thinking_budget=8192,   # up to 8 K thinking tokens
@@ -365,12 +379,15 @@ class GoogleAIBackend(LLMBackend):
                 # Extract text. Used to ignore any embedded <think> blocks
                 text = resp.text or ""
                 usage = resp.usage_metadata
+                cands = getattr(resp, "candidates", None) or []
+                finish = getattr(cands[0], "finish_reason", None) if cands else None
                 return ModelResponse(
                     text=text,
                     model=self.model,
                     prompt_tokens=getattr(usage, "prompt_token_count", 0) or 0,
                     completion_tokens=getattr(usage, "candidates_token_count", 0) or 0,
                     latency_s=time.time() - t0,
+                    finish_reason=None if finish is None else str(getattr(finish, "name", finish)).lower(),
                     raw=resp,
                 )
             except Exception as exc:
@@ -516,6 +533,7 @@ class LocalHFBackend(LLMBackend):
         temperature: float = 0.3,
         max_tokens: int = 1024,
         repetition_penalty: Optional[float] = None,   # None: the model's own config
+        seed: Optional[int] = None,
     ) -> ModelResponse:
         torch = self._torch
         device = self._model.device
@@ -548,18 +566,22 @@ class LocalHFBackend(LLMBackend):
             gen_kwargs["repetition_penalty"] = repetition_penalty
         if do_sample:
             gen_kwargs.update(temperature=temperature, top_p=0.95)
+            if seed is not None:
+                torch.manual_seed(seed)           # every device
 
         t0 = time.time()
         with torch.inference_mode():
             out = self._model.generate(input_ids=input_ids, **gen_kwargs)
         completion = out[0][input_ids.shape[-1]:]
         text = self.tok.decode(completion, skip_special_tokens=True)
+        n = int(completion.shape[-1])
         return ModelResponse(
             text=text,
             model=self.model_id,
             prompt_tokens=int(input_ids.shape[-1]),
-            completion_tokens=int(completion.shape[-1]),
+            completion_tokens=n,
             latency_s=time.time() - t0,
+            finish_reason="length" if n >= max_tokens else "stop",
         )
 
 
@@ -606,11 +628,10 @@ NONE
         prompt: str,
         temperature: float = 0.3,
         max_tokens: int = 1024,
+        seed: Optional[int] = None,
     ) -> ModelResponse:
         time.sleep(self.delay)
-        # Match on distinctive predicate names that appear in each problem,
-        # so the mock works even after train/test splitting (which strips the
-        # problem_id but keeps the predicates).
+        # Match on distinctive predicate names: the prompt carries no problem id.
         lower = prompt.lower()
         if "pacifist" in lower or "quaker" in lower:
             text = self.RESPONSES["nixon_diamond"]
@@ -620,7 +641,8 @@ NONE
             text = self.RESPONSES["tax_law"]
         else:
             text = self.RESPONSES["default"]
-        return ModelResponse(text=text.strip(), model="mock", latency_s=self.delay)
+        return ModelResponse(text=text.strip(), model="mock", latency_s=self.delay,
+                             finish_reason="stop")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
