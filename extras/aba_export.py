@@ -3,7 +3,7 @@ aba_export.py
 Persist the actual learned ABA frameworks — symbolic ground truth AND every
 LLM-generated candidate — so they can be inspected directly.
 
-This is the evidentiary layer: rather than trusting aggregate gen@k numbers,
+This is the evidentiary layer: rather than trusting aggregate numbers,
 anyone can open the exported files and read the literal rules the LLM wrote,
 see whether each rule is defeasible (uses an assumption) or monotonic, and
 compare it side by side with the symbolic reference.
@@ -12,7 +12,7 @@ Three outputs per run:
   * frameworks.jsonl  — one machine-readable record per framework (re-loadable)
   * frameworks.md     — a human-readable catalogue for reading / appendices
   * defeasibility.csv — a flat table: per (problem, source, sample) whether the
-                        solution is defeasible, intensional, degenerate, valid
+                        solution is defeasible, intensional, valid, clean, exact
 """
 from __future__ import annotations
 import json
@@ -79,8 +79,9 @@ class FrameworkRecord:
     new_assumptions: List[str]
     contraries:   Dict[str, str]
     structure:    Dict[str, Any]
-    valid:        Optional[bool] = None
-    generalises:  Optional[bool] = None
+    valid:        Optional[bool] = None    # the score card of src/aba_score.py
+    clean:        Optional[bool] = None
+    exact:        Optional[bool] = None
 
     # Explainability extensions (populated by enrich_record / from_framework)
     natural_language_rules: List[str] = field(default_factory=list)
@@ -99,7 +100,8 @@ class FrameworkRecord:
         mode: str = "",
         sample_idx: int = -1,
         valid: Optional[bool] = None,
-        generalises: Optional[bool] = None,
+        clean: Optional[bool] = None,
+        exact: Optional[bool] = None,
     ) -> "FrameworkRecord":
         new_rules = fw.new_rules if fw.new_rules else fw.rules
         nlr: List[str] = []
@@ -118,7 +120,8 @@ class FrameworkRecord:
             contraries=dict(fw.contraries),
             structure=classify_framework(fw),
             valid=valid,
-            generalises=generalises,
+            clean=clean,
+            exact=exact,
             natural_language_rules=nlr,
         )
 
@@ -198,8 +201,10 @@ def _framework_md(rec: FrameworkRecord) -> str:
     flags = []
     if rec.valid is not None:
         flags.append("valid" if rec.valid else "invalid")
-    if rec.generalises is not None:
-        flags.append("generalises" if rec.generalises else "overfits")
+    if rec.clean is not None:
+        flags.append("clean" if rec.clean else "not clean")
+    if rec.exact is not None:
+        flags.append("the algorithm's answer" if rec.exact else "not the algorithm's answer")
     flag_str = f"  ({', '.join(flags)})" if flags else ""
     lines.append(f"{head} — `{kind}`{flag_str}")
 
@@ -294,14 +299,14 @@ def export_frameworks(
     with open(csv_path, "w", encoding="utf-8") as f:
         f.write("problem_id,source,mode,sample_idx,is_defeasible,is_monotonic,"
                 "is_intensional,n_new_rules,n_defeasible_rules,n_contrary_rules,"
-                "valid,generalises\n")
+                "valid,clean,exact\n")
         for rec in records:
             st = rec.structure
             f.write(",".join(str(x) for x in [
                 rec.problem_id, rec.source, rec.mode, rec.sample_idx,
                 st["is_defeasible"], st["is_monotonic"], st["is_intensional"],
                 st["n_new_rules"], st["n_defeasible_rules"], st["n_contrary_rules"],
-                rec.valid, rec.generalises,
+                rec.valid, rec.clean, rec.exact,
             ]) + "\n")
     paths["csv"] = csv_path
 

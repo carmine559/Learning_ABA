@@ -175,30 +175,6 @@ def _norm(atom: str) -> str:
     return re.sub(r'\s+', '', atom)
 
 
-def witness_extension(
-    framework: ABAFramework,
-    positive: List[str],
-    negative: List[str],
-    domain: Optional[List[str]] = None,
-    timeout: int = 30,
-) -> Optional[set]:
-    """One stable extension Δ satisfying the given examples, as a set of atoms.
-
-    Definition 1 asks for a SINGLE Δ accepting all of E+ and none of E-. This
-    returns a witness for that Δ so held-out examples can be read off inside
-    it, instead of being probed one at a time (which asks a different, much
-    weaker question on multi-extension frameworks).
-
-    Returns None when no such extension exists.
-    """
-    dom = domain or framework.get_domain()
-    prog = _build_asp(framework, positive, negative, dom)
-    sat, models, _ = _solve(prog, n_models=1, timeout=timeout)
-    if not sat or not models:
-        return None
-    return {_norm(a) for a in models[-1]}
-
-
 def conditioned_status(
     framework: ABAFramework,
     condition_positive: List[str],

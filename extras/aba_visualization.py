@@ -29,14 +29,17 @@ PALETTE = {
     "brown":  "#8c564b",
 }
 
+# The score card's labels (src/aba_score.py), plus the generation failures.
 ERROR_COLORS = {
-    "none":               PALETTE["green"],
-    "parse_error":        PALETTE["orange"],
-    "completeness_error": PALETTE["blue"],
-    "soundness_error":    PALETTE["red"],
-    "stability_error":    PALETTE["purple"],
-    "overgeneralisation": PALETTE["brown"],
-    "unknown_error":      PALETTE["grey"],
+    "ok":                     PALETTE["green"],
+    "parse_error":            PALETTE["orange"],
+    "illformed":              PALETTE["purple"],
+    "not_a_solution":         PALETTE["red"],
+    "valid_but_degenerate":   PALETTE["brown"],
+    "self_defeating":         PALETTE["blue"],
+    "illegal_transformation": PALETTE["teal"],
+    "llm_error":              PALETTE["grey"],
+    "unscorable":             PALETTE["grey"],
 }
 
 MODE_ORDER   = ["direct", "cot", "guided", "algorithm"]
@@ -69,26 +72,27 @@ def _apply_thesis_style() -> None:
 
 def plot_validity_by_mode(
     results_by_mode: Dict[str, List[ProblemResult]],
-    title: str = "Generalisation by prompting mode",
+    title: str = "Valid, clean and exact by prompting mode",
     figsize: Tuple = (7, 4),
 ) -> plt.Figure:
     """
-    Grouped bar chart: parse rate + validity rate per mode.
+    Grouped bar chart per mode: valid@1, clean@k, exact@k.
     """
     _apply_thesis_style()
     modes   = [m for m in MODE_ORDER if m in results_by_mode]
     labels  = [MODE_LABELS.get(m, m) for m in modes]
-    fit_v  = [aggregate_results(results_by_mode[m])["fit_at_1"]  for m in modes]
-    gen_v  = [aggregate_results(results_by_mode[m])["gen_at_1"]  for m in modes]
-    genk_v = [aggregate_results(results_by_mode[m])["gen_at_k"]  for m in modes]
+    aggs    = [aggregate_results(results_by_mode[m]) for m in modes]
+    valid_v = [a["valid_at_1"] for a in aggs]
+    clean_v = [a["clean_at_k"] for a in aggs]
+    exact_v = [a["exact_at_k"] for a in aggs]
 
     x   = np.arange(len(modes))
     w   = 0.25
     fig, ax = plt.subplots(figsize=figsize)
 
-    b1 = ax.bar(x - w,  fit_v,  w, label="Fit@1 (train)",     color=PALETTE["grey"],   alpha=0.85)
-    b2 = ax.bar(x,       gen_v,  w, label="Gen@1 (held-out)",   color=PALETTE["green"],  alpha=0.85)
-    b3 = ax.bar(x + w,   genk_v, w, label="Gen@k (any of k)",   color=PALETTE["blue"],   alpha=0.85)
+    b1 = ax.bar(x - w, valid_v, w, label="Valid@1 (Definition 1)", color=PALETTE["grey"],  alpha=0.85)
+    b2 = ax.bar(x,     clean_v, w, label="Clean@k (any of k)",     color=PALETTE["green"], alpha=0.85)
+    b3 = ax.bar(x + w, exact_v, w, label="Exact@k (the algorithm's answer)", color=PALETTE["blue"], alpha=0.85)
 
     for bars in (b1, b2, b3):
         for bar in bars:
@@ -116,7 +120,7 @@ def plot_error_breakdown(
     figsize: Tuple = (8, 4),
 ) -> plt.Figure:
     """
-    Stacked bar chart showing distribution of error types per mode.
+    Stacked bar chart: the share of samples under each score-card label, per mode.
     """
     _apply_thesis_style()
     modes       = [m for m in MODE_ORDER if m in results_by_mode]
@@ -127,8 +131,11 @@ def plot_error_breakdown(
     data = np.zeros((len(modes), len(error_types)))
     for i, mode in enumerate(modes):
         agg = aggregate_results(results_by_mode[mode])
-        bd  = agg.get("error_breakdown", {})
-        n   = max(agg["n_problems"], 1)
+        bd: Dict[str, int] = {}
+        for label, c in agg.get("errors", {}).items():
+            key = label.split(":")[0]               # unscorable:<type>
+            bd[key] = bd.get(key, 0) + c
+        n   = max(agg["n_samples"], 1)
         for j, et in enumerate(error_types):
             data[i, j] = bd.get(et, 0) / n
 
@@ -148,7 +155,7 @@ def plot_error_breakdown(
     ax.set_xticklabels(labels)
     ax.yaxis.set_major_formatter(mticker.PercentFormatter(xmax=1))
     ax.set_ylim(0, 1.05)
-    ax.set_ylabel("Fraction of problems")
+    ax.set_ylabel("Fraction of samples")
     ax.set_title(title)
     handles, labels_ = ax.get_legend_handles_labels()
     if handles:
@@ -162,11 +169,12 @@ def plot_error_breakdown(
 def plot_complexity_vs_validity(
     complexity_rows: List[Dict],
     x_key: str = "n_background_rules",
-    title: str = "Validity rate vs. problem complexity",
+    y_key: str = "clean_at_k",
+    title: str = "Clean@k vs. problem complexity",
     figsize: Tuple = (6, 4),
 ) -> plt.Figure:
     """
-    Scatter plot: each point = one problem, colour = valid/invalid.
+    Scatter plot: each point = one problem, colour = `y_key` true/false.
     An optional regression curve is overlaid if there are enough points.
     """
     _apply_thesis_style()
@@ -176,16 +184,16 @@ def plot_complexity_vs_validity(
 
     for row in complexity_rows:
         x = row[x_key] + jitter.uniform(-0.15, 0.15)
-        y = 1 if row["valid"] else 0
+        y = 1 if row[y_key] else 0
         y += jitter.uniform(-0.03, 0.03)
-        if row["valid"]:
+        if row[y_key]:
             xs_v.append(x); ys_v.append(y)
         else:
             xs_i.append(x); ys_i.append(y)
 
     fig, ax = plt.subplots(figsize=figsize)
-    ax.scatter(xs_v, ys_v, c=PALETTE["green"],  alpha=0.6, s=30, label="Valid",   zorder=3)
-    ax.scatter(xs_i, ys_i, c=PALETTE["red"],    alpha=0.6, s=30, label="Invalid", zorder=3)
+    ax.scatter(xs_v, ys_v, c=PALETTE["green"],  alpha=0.6, s=30, label="Clean",     zorder=3)
+    ax.scatter(xs_i, ys_i, c=PALETTE["red"],    alpha=0.6, s=30, label="Not clean", zorder=3)
 
     # Logistic regression overlay if sklearn available
     try:
@@ -203,9 +211,9 @@ def plot_complexity_vs_validity(
 
     x_label = x_key.replace("_", " ").title()
     ax.set_xlabel(x_label)
-    ax.set_ylabel("Valid (jittered)")
+    ax.set_ylabel(f"{y_key} (jittered)")
     ax.set_yticks([0, 1])
-    ax.set_yticklabels(["Invalid", "Valid"])
+    ax.set_yticklabels(["no", "yes"])
     ax.set_title(title)
     ax.legend(framealpha=0.8)
     fig.tight_layout()
@@ -222,26 +230,25 @@ def plot_comparison_table(
 ) -> plt.Figure:
     """
     Render a formatted table as a matplotlib figure.
-    `summary` maps config_name → aggregated metrics dict.
+    `summary` is summary.json: mode -> aggregated metrics, plus `run` and `by_tier`.
     """
     _apply_thesis_style()
     if metrics is None:
-        metrics = ["gen_at_1", "gen_at_k", "fit_at_1",
-                   "intensional_rate", "degenerate_rate",
-                   "mean_overfit_gap", "parse_rate"]
+        metrics = ["valid_at_1", "clean_at_k", "exact_at_k", "agreement",
+                   "r3_balanced", "parse_rate", "truncated_rate"]
 
     col_labels = [m.replace("_", "\n") for m in metrics]
-    row_labels  = list(summary.keys())
+    row_labels  = [k for k in summary if k not in ("run", "by_tier")]
     cell_data   = []
     for name in row_labels:
         agg  = summary[name]
         row  = []
         for m in metrics:
-            v = agg.get(m, "—")
+            v = agg.get(m)
             if isinstance(v, float):
-                row.append(f"{v:.1%}" if "rate" in m else f"{v:.2f}")
+                row.append(f"{v:.1%}" if ("rate" in m or "_at_" in m) else f"{v:.2f}")
             else:
-                row.append(str(v))
+                row.append("—" if v is None else str(v))
         cell_data.append(row)
 
     n_rows = len(row_labels)
@@ -262,7 +269,7 @@ def plot_comparison_table(
 
     # Highlight best per column (validity, intensionality)
     highlight_cols = {metrics.index(m) for m in metrics
-                      if "rate" in m and m in metrics}
+                      if "_at_" in m and m in metrics}
     for col_idx in highlight_cols:
         values = []
         for row_idx, row in enumerate(cell_data):
@@ -403,11 +410,11 @@ def plot_qbaf(
 
 def plot_results_heatmap(
     results_by_mode: Dict[str, List[ProblemResult]],
-    title: str = "Generalisation (gen@k) per problem × mode",
+    title: str = "Clean@k per problem × mode",
     figsize: Tuple = (10, 5),
 ) -> plt.Figure:
     """
-    Heatmap: rows = problems, columns = modes, cell = valid (green) / invalid (red).
+    Heatmap: rows = problems, columns = modes, cell = clean@k (green) or not (red).
     """
     _apply_thesis_style()
     modes    = [m for m in MODE_ORDER if m in results_by_mode]
@@ -422,7 +429,7 @@ def plot_results_heatmap(
         rid_map = {r.problem_id: r for r in results_by_mode[mode]}
         for i, pid in enumerate(all_pids):
             if pid in rid_map:
-                mat[i, j] = 1.0 if rid_map[pid].gen_at_k else 0.0
+                mat[i, j] = 1.0 if rid_map[pid].at_k("clean") else 0.0
 
     from matplotlib.colors import ListedColormap
     cmap = ListedColormap(["#d9534f", "#5cb85c"])
@@ -438,8 +445,8 @@ def plot_results_heatmap(
 
     from matplotlib.patches import Patch
     legend_elements = [
-        Patch(facecolor="#5cb85c", label="Valid"),
-        Patch(facecolor="#d9534f", label="Invalid"),
+        Patch(facecolor="#5cb85c", label="Clean"),
+        Patch(facecolor="#d9534f", label="Not clean"),
     ]
     ax.legend(handles=legend_elements, loc="upper right",
               bbox_to_anchor=(1.12, 1), fontsize=8)

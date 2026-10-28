@@ -1,34 +1,30 @@
 """
 aba_explain.py
-Explainability layer: turn raw evaluation results into a structured account of
-HOW and WHY an LLM generalised (or failed to) on each problem.
+Explainability layer: a structured account of one answer beside the algorithm's,
+on the problem as posed.
 
 Three complementary views:
-  1. Rule-level diff      — what the LLM wrote vs. the symbolic ground truth,
-                            aligned by the predicate they define.
-  2. Generalisation trace — per held-out example, did the learned framework get
-                            it right, and which rule was responsible.
-  3. Mechanism tags       — a categorical label for the *kind* of generalisation
-                            the model performed (folding, assumption-introduction,
-                            condition-copying, memorisation, ...).
+  1. Rule-level diff   — what the LLM wrote vs. the algorithm's answer, aligned
+                         by the predicate they define.
+  2. Example outcomes  — which posed examples the answer gets right, one at a time.
+  3. Mechanism tags    — a categorical label for the *kind* of rule the model
+                         wrote (folding, assumption-introduction, condition-copying,
+                         memorisation, ...).
 
-This is descriptive, not normative: it explains the behaviour that the
-Clingo-verified metrics already established, so claims about "how" the model
-generalised are grounded in the actual learned rules, not speculation.
+This is descriptive, not normative: the score card (src/aba_score.py) decides
+success, and this explains it, grounded in the rules the model actually wrote.
 """
 from __future__ import annotations
 import re
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional
 
 from src.aba_types import Rule, ABAFramework, LearningProblem
 from src.aba_dataset import DatasetEntry
-from src.aba_generalization import (
-    SplitProblem, split_problem_examples, rule_contains_constant,
-    evaluate_generalization, wellformed_violations,
-)
+from src.aba_generalization import rule_contains_constant
 from src.aba_validator import check_brave_entailment
 from src.aba_prompts import parse_llm_output
+from src.aba_score import Reference, ScoreCard
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -129,39 +125,33 @@ def compare_rules(
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Per-example generalisation trace
+# Per-example outcomes on the posed examples
 # ──────────────────────────────────────────────────────────────────────────────
 
 @dataclass
 class ExampleOutcome:
     example:     str
     is_positive: bool
-    held_out:    bool
     correct:     bool
 
 
-def generalisation_trace(
+def example_outcomes(
     llm_framework: ABAFramework,
-    split: SplitProblem,
-    domain: List[str],
+    problem: LearningProblem,
 ) -> List[ExampleOutcome]:
     """
-    For every example (train and held-out), record whether the learned
-    framework classified it correctly.
+    Each posed example checked on its own. Weaker than Definition 1, which asks
+    for ONE extension accepting every positive and no negative: this says which
+    examples an invalid answer gets wrong.
     """
+    domain = problem.get_domain()
     outcomes: List[ExampleOutcome] = []
-
-    def _check(example: str, positive: bool, held: bool):
-        if positive:
-            ok, _, _ = check_brave_entailment(llm_framework, [example], [], domain)
-        else:
-            ok, _, _ = check_brave_entailment(llm_framework, [], [example], domain)
-        outcomes.append(ExampleOutcome(example, positive, held, ok))
-
-    for e in split.train.positive:   _check(e, True,  False)
-    for e in split.train.negative:   _check(e, False, False)
-    for e in split.test_positive:    _check(e, True,  True)
-    for e in split.test_negative:    _check(e, False, True)
+    for e in problem.positive:
+        ok, _, _ = check_brave_entailment(llm_framework, [e], [], domain)
+        outcomes.append(ExampleOutcome(e, True, ok))
+    for e in problem.negative:
+        ok, _, _ = check_brave_entailment(llm_framework, [], [e], domain)
+        outcomes.append(ExampleOutcome(e, False, ok))
     return outcomes
 
 
@@ -171,79 +161,46 @@ def generalisation_trace(
 
 @dataclass
 class ProblemExplanation:
-    problem_id:        str
-    mode:              str
-    fit:               bool
-    generalises:       bool
-    generalization_score: float
-    is_degenerate:     bool
-    semantic_match:    bool
-    comparisons:       List[RuleComparison]
-    outcomes:          List[ExampleOutcome]
-    narrative:         str = ""
-    # Definition-1 side conditions the candidate violates, if any. A violating
-    # candidate is not a legal solution however well it scores on entailment.
-    violations:        List[str] = field(default_factory=list)
-    gen_determined:    bool = False
+    problem_id:     str
+    mode:           str
+    # From the score card (src/aba_score.py), so explanations.md and summary.json
+    # cannot disagree about which answers succeeded.
+    valid:          bool
+    clean:          bool
+    exact:          bool
+    intensional:    bool
+    agreement:      Optional[float]
+    comparisons:    List[RuleComparison]
+    outcomes:       List[ExampleOutcome]
+    narrative:      str = ""
+    violations:     List[str] = field(default_factory=list)
+    self_defeating: List[str] = field(default_factory=list)
 
 
 def explain_sample(
     entry: DatasetEntry,
+    ref: Reference,
     raw_output: str,
+    card: ScoreCard,
     mode: str = "direct",
-    test_ratio: float = 0.34,
-    split_seed: int = 42,
 ) -> Optional[ProblemExplanation]:
-    """
-    Reconstruct the full explanation for one LLM attempt from its raw output.
-    Requires the dataset entry to carry the symbolic reference solution.
-    """
+    """One answer beside the algorithm's, from its raw output and its score card."""
     background = entry.problem.background
     candidate = parse_llm_output(raw_output, background)
     if candidate is None:
         return None
-
-    split = split_problem_examples(entry.problem, test_ratio=test_ratio,
-                                   seed=split_seed)
-    domain = entry.problem.get_domain()
-
-    # Rule diff (only if a reference exists)
-    comparisons = []
-    if entry.solution is not None:
-        comparisons = compare_rules(candidate, entry.solution, background)
-
-    outcomes = generalisation_trace(candidate, split, domain)
-
-    # Derived flags — taken from the SAME function that produces summary.json.
-    # Recomputing them here with per-example checks would make explanations.md and
-    # summary.json disagree about which samples succeeded.
-    gen = evaluate_generalization(candidate, split, domain=domain)
-    fit          = gen.fit_valid
-    generalises  = gen.gen_valid
-    gen_score    = gen.generalization_score
-    is_degen     = gen.is_degenerate
-    violations   = wellformed_violations(
-        candidate, background, entry.problem.learnable
-    )
-    semantic = False
-    if entry.solution is not None and entry.problem.learnable:
-        from src.aba_generalization import semantic_equivalence
-        semantic, _ = semantic_equivalence(
-            candidate, entry.solution, entry.problem.learnable[0], domain
-        )
-
     expl = ProblemExplanation(
         problem_id=entry.problem.problem_id,
         mode=mode,
-        fit=fit,
-        generalises=generalises,
-        generalization_score=gen_score,
-        is_degenerate=is_degen,
-        semantic_match=semantic,
-        comparisons=comparisons,
-        outcomes=outcomes,
-        violations=violations,
-        gen_determined=gen.gen_determined,
+        valid=card.valid,
+        clean=card.clean,
+        exact=card.exact,
+        intensional=card.intensional,
+        agreement=card.agreement,
+        comparisons=compare_rules(candidate, ref.solution, background),
+        outcomes=example_outcomes(candidate, entry.problem),
+        violations=list(card.illformed),
+        self_defeating=list(card.self_defeating),
     )
     expl.narrative = build_narrative(expl, candidate, entry)
     return expl
@@ -259,8 +216,8 @@ def build_narrative(
     entry: DatasetEntry,
 ) -> str:
     """
-    Produce a short human-readable explanation of how the model generalised.
-    Grounded entirely in the learned rules and the verified outcomes.
+    A short account of the answer, grounded in the rules it wrote and the
+    verified outcomes.
     """
     lines: List[str] = []
     pid = expl.problem_id
@@ -275,25 +232,29 @@ def build_narrative(
         )
 
     # 1. Outcome summary
-    if expl.generalises:
+    if expl.clean:
         lines.append(
-            f"On '{pid}', the model produced a framework that fits the training "
-            f"examples and solves the full problem in one stable extension."
-            + ("" if expl.gen_determined else
-               " Note that the held-out labels are NOT forced: some other "
-               "extension consistent with the training examples labels them "
-               "differently, so this is a legal solution rather than evidence "
-               "of a learnt generalisation.")
+            f"On '{pid}', the answer is an intensional solution (Definition 1): one "
+            f"stable extension accepts every positive example and no negative one."
         )
-    elif expl.fit:
-        lines.append(
-            f"On '{pid}', the model fits the training examples but only "
-            f"classifies {expl.generalization_score:.0%} of held-out examples "
-            f"correctly — partial generalisation."
-        )
+    elif expl.valid:
+        why = []
+        if not expl.intensional:
+            why.append("it keeps ground facts")
+        if expl.self_defeating:
+            why.append(f"it is self-defeating on {', '.join(expl.self_defeating)}")
+        if expl.violations:
+            why.append("it is ill-formed")
+        lines.append(f"On '{pid}', the answer is a solution but not a clean one: "
+                     f"{'; '.join(why)}.")
     else:
+        wrong = [o.example for o in expl.outcomes if not o.correct]
         lines.append(
-            f"On '{pid}', the model failed to fit the training examples."
+            f"On '{pid}', the answer is not a solution: no stable extension accepts "
+            f"every positive example and no negative one."
+            + (f" Taken one at a time, it gets {len(wrong)} of {len(expl.outcomes)} "
+               f"posed examples wrong ({', '.join(wrong[:4])}"
+               f"{', ...' if len(wrong) > 4 else ''})." if wrong else "")
         )
 
     # 2. Mechanism account
@@ -306,11 +267,10 @@ def build_narrative(
                               for k, v in mech_counts.items())
         lines.append(f"It introduced {len(candidate.new_rules)} new rule(s): {mech_desc}.")
 
-        if expl.is_degenerate:
+        if all(rule_contains_constant(r) for r in candidate.new_rules):
             lines.append(
-                "These are all ground facts — the model MEMORISED the training "
-                "positives rather than learning a general rule, which is why it "
-                "fails on held-out examples."
+                "These are all ground facts: the answer restates examples instead "
+                "of learning a general rule."
             )
         elif any("intensional_copy" in classify_rule_mechanism(r, entry.problem.background)
                  for r in candidate.new_rules):
@@ -324,7 +284,7 @@ def build_narrative(
                         f"The rule '{r.to_prolog()}' generalises by conditioning "
                         f"the target on the background predicate(s) "
                         f"{', '.join(bps)}, so it applies to any constant "
-                        f"satisfying them — including unseen ones."
+                        f"satisfying them."
                     )
         if candidate.new_assumptions:
             lines.append(
@@ -333,25 +293,23 @@ def build_narrative(
                 f"defeasible, capturing exceptions."
             )
 
-    # 3. Comparison with the symbolic reference
-    if expl.comparisons:
-        identical = [c for c in expl.comparisons if c.identical]
+    # 3. Comparison with the algorithm's answer
+    if expl.exact:
+        lines.append("It is the algorithm's answer, up to assumption names and body order.")
+    else:
         different = [c for c in expl.comparisons if not c.identical]
-        if expl.semantic_match:
-            lines.append(
-                "Semantically, the learned framework is equivalent to the "
-                "symbolic reference (same entailments over the whole domain), "
-                + ("via identical rules."
-                   if not different else
-                   "even though some rules are written differently.")
-            )
-        elif different:
+        if different:
             diffs = "; ".join(
                 f"{c.predicate}: model wrote {c.llm_rules or ['nothing']}, "
-                f"reference has {c.reference_rules or ['nothing']}"
+                f"the algorithm has {c.reference_rules or ['nothing']}"
                 for c in different[:3]
             )
-            lines.append(f"It differs from the symbolic reference on: {diffs}.")
+            lines.append(f"It differs from the algorithm's answer on: {diffs}.")
+    if expl.agreement is not None and expl.agreement < 1:
+        lines.append(
+            f"Off the posed examples, it decides {expl.agreement:.0%} of the example "
+            f"predicate's atoms as the algorithm's answer does."
+        )
 
     return " ".join(lines)
 
@@ -364,12 +322,12 @@ def mechanism_statistics(
     explanations: List[ProblemExplanation],
 ) -> Dict[str, float]:
     """
-    Aggregate: across all explained samples, how often did each mechanism
-    co-occur with successful generalisation?
+    Across all explained answers: how often did each mechanism co-occur with a
+    clean answer?
     """
     from collections import defaultdict
     mech_total: Dict[str, int] = defaultdict(int)
-    mech_gen:   Dict[str, int] = defaultdict(int)
+    mech_clean: Dict[str, int] = defaultdict(int)
 
     for expl in explanations:
         seen = set()
@@ -378,10 +336,10 @@ def mechanism_statistics(
                 seen.add(m)
         for m in seen:
             mech_total[m] += 1
-            if expl.generalises:
-                mech_gen[m] += 1
+            if expl.clean:
+                mech_clean[m] += 1
 
     return {
-        m: round(mech_gen[m] / mech_total[m], 3)
+        m: round(mech_clean[m] / mech_total[m], 3)
         for m in mech_total if mech_total[m] > 0
     }
