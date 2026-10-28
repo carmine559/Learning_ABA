@@ -31,9 +31,11 @@ MSc thesis project, University of Bologna.
   Definition 1, exact agreement with the reference (up to assumption names and
   body order), the held-out choice, and an audit of written steps.
 - **The earlier prompting study** (`main.py`, [`experiments/`](experiments/)
-  00–05): four prompting modes and step probes, Qwen2.5 3B–32B and Mistral-7B. Corrections found
-  after its figures were produced (a parser defect, missing chance floors) are not
-  yet applied, so they are not quoted here.
+  00–06): four prompting modes and step probes, Qwen2.5 3B–32B and Mistral-7B. Corrections found
+  after the end-to-end figures were produced (a parser defect, missing chance floors) are not
+  yet applied, so they are not quoted here. The step probes were re-run under probe
+  prompts v3 (set 06): no prompted model performs any probed step above a policy that
+  does no reasoning.
 - **Task 2** ([`gradual/`](gradual/), [docs/GRADED.md](docs/GRADED.md)): BSAF
   gradual semantics for ABA (Rapberger, Russo, Rago & Toni, KR 2025) against an
   argument-tree DF-QuAD baseline.
@@ -135,7 +137,7 @@ python sft/compare_step.py    # results/sft-step/COMPARISON_STEP.md, the D5 verd
 | [`corpus/`](corpus/) | `v1`, `v1-permuted`, `v1-step`, each with a MANIFEST |
 | `runs/` | one `TRAINING_MANIFEST.json` per run; adapters stay on the cluster |
 | `results/` | evaluation outputs, tracked so cluster runs come back with `git push` |
-| [`experiments/`](experiments/) | the prompting study's result sets 00–05, one `MANIFEST.md` each |
+| [`experiments/`](experiments/) | the prompting study's result sets 00–06, one `MANIFEST.md` each |
 | `rescored/`, `rescored_v2/` | offline re-scorings of set 04's probe answers |
 | [`analysis/`](analysis/) | offline studies of the prompting runs: step fidelity, conformance, null floors |
 | [`tests/`](tests/) | golden traces, corpus, scorer, steps, oracle hook |

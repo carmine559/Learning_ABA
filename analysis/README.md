@@ -57,8 +57,10 @@ In sets 04 and 05, `check` and `subsume` have a **~0.68** surface-cue floor rath
 than 0.50, and `introduce` has a floor of **1.000** because Proposition 2 makes
 it satisfied by construction, so there it is reported as an error count. From
 probe prompts v3, `introduce` is scored against lines 36/41 and balanced over
-their two branches; its floor on the v3 set is **0.855** (METHOD_HISTORY,
-Phase 10).
+their two branches. Each probe's floor is the best of several no-reasoning
+policies; on the v3 set they are `role` **0.994** (one fact per positive example),
+`fold` **1.000** (fold onto dom(X)), `check` **0.633**, `introduce` **0.855** and
+`subsume` **0.762** (METHOD_HISTORY, Phase 10).
 
 ## Known limitation: R4 is unmeasured — for a sample-size reason
 

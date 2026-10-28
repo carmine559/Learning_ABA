@@ -29,27 +29,44 @@ better than it.
   - on the paper's Table 1, no arm is exact and no fine-tuned arm gives a valid answer.
     On each Table 1 problem, the algorithm's answer has a shape that no v1 training answer
     has, and the arms write v1's shapes.
-- **The other models do not get that far.** Under the revised probe prompts, every
-  prompted model's line-18 test is at chance. The arm fine-tuned on whole traces gives a
-  first line-18 verdict at the level of a guess.
+- **The other models do not get that far.** Prompted one step at a time (Qwen2.5 3B–32B,
+  Mistral-7B), no model performs any of the five probed steps above a policy that does no
+  reasoning. Four of the five answer line 18's test with a constant. The arm fine-tuned
+  on whole traces gives a first line-18 verdict at the level of a guess.
 
 ## The evidence, in order
 
-### 1. Prompted models (step probes, Qwen2.5 3B–32B)
+### 1. Prompted models (step probes v3, Qwen2.5 3B–32B and Mistral-7B)
 
-Sources: METHOD_HISTORY "Current state" and
-[`experiments/05_scale_4bit_probes_v2/MANIFEST.md`](../experiments/05_scale_4bit_probes_v2/MANIFEST.md).
+Source: [`experiments/06_probes_v3/MANIFEST.md`](../experiments/06_probes_v3/MANIFEST.md).
+The reading was fixed before the run (METHOD_HISTORY, Phase 10).
 
-- **Lines 16 and 18** (`subsume`, `check`) have surface-cue floors of 0.687 and 0.681.
-  - Only one model ever beat them: 14B on line 18, at 0.780, under probe prompts v1.
-  - Under v2 that falls to 0.501. Every model's line 18 is then at 0.50, and line 16 is at
-    0.50–0.65, below its floor.
-- **RoLe and folding** clear their trivial floors only at 14B and 32B. Under v2, 32B gets
-  F1 0.688 on RoLe and 0.359 on folding.
-- **Caveats.** These probes were scored against the reference as it was before its second
-  audit against the paper (METHOD_HISTORY, Phase 8);
-  12 problems now visit different states. The end-to-end prompting figures wait for the
-  corrections noted in the README and are not quoted here.
+Each probe asks for one decision of Algorithm 1 at a state the reference visits, on 103
+problems, with all models at 4-bit. Each is read against the best of the no-reasoning
+policies measured on the same probes.
+
+- **No model performs any of the five steps above a policy that does no reasoning.**
+  - *Line 18* (`check`): the floor is 0.633 balanced. 3B, 7B, 32B and Mistral answer one
+    constant (0.500). 14B reaches 0.582 [0.527, 0.636].
+  - *Line 16* (`subsume`): the floor is 0.762, and every model is between 0.500 and 0.647.
+  - *Lines 36 and 41* (`introduce`, scored as printed): the floor is 0.855. Every model is
+    below 0.500, the score of always introducing a new assumption, because each follows
+    one habit instead of Definition 4.
+  - *Line 8* (`role`) and *line 17* (`fold`) do not discriminate on these problems.
+    Copying the positive examples scores F1 0.994, and folding onto dom(X), legal at
+    every state, scores 1.000. 14B and 32B reach F1 0.74 on `role`, and every one of their
+    right answers is that copy. The best `fold` score is 0.403.
+- **The failure is not the prompt's.** Probe prompts v3 removed three defects measured in
+  v2's answers. Line 18 still fails the same way: 3B, 7B and 32B answer NO to every
+  `check` probe, and list exactly the negative examples on 172, 177 and 168 of 186. They
+  do so although the prompt now says that being a negative example does not make an
+  example fail; 32B did the same under v1.
+- **One earlier exception.** Under probe prompts v1 (set 04), 14B reached 0.780 on line
+  18, above that set's floor of 0.681. v1's prompt carried two defects (METHOD_HISTORY,
+  Phase 5), and neither v2 nor v3 reproduces the result.
+- **Caveats.** The intervals treat the 103 problems as independent; 20 of them are one
+  structure in 20 surface forms. The end-to-end prompting figures wait for the corrections
+  noted in the README and are not quoted here.
 
 ### 2. Fine-tuning on the answer or on the whole trace ([`results/sft/COMPARISON.md`](../results/sft/COMPARISON.md))
 

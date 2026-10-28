@@ -169,7 +169,9 @@ which is the thesis's own question in miniature.
 > mints an assumption for a body that already has a relative one. The oracle
 > change above credited an illegal step.
 
-## Current state
+## State after Phase 7 (probe prompts v1)
+
+Superseded by Phase 10's outcome (probe prompts v3, set 06).
 
 | | chance | 3B | 7B | 14B | 32B |
 | --- | --- | --- | --- | --- | --- |
@@ -551,6 +553,47 @@ greedy decoding, 512 tokens.
 - At least 20 rows across kinds and models are read by hand before any aggregate.
 - A smaller model that outranks a larger one on a step needs a mechanism.
 
+**Outcome** ([`experiments/06_probes_v3`](../experiments/06_probes_v3/MANIFEST.md), jobs
+73946–73950). 25 rows, one per model and probe, were read by hand first, and every verdict
+matched the raw answer. All 845 probes per model were answered, with no error and no
+answer at the token cap.
+
+- **As registered.** No model's interval lies above its floor on `check` (0.633),
+  `subsume` (0.663) or `introduce` (0.855). On `role` and `fold`, whose registered floors
+  were 0, 14B, 32B and Mistral lie above on `role`, and every model on `fold`.
+- **Stronger floors, found after the run.** Three registered policies were not the best
+  no-reasoning ones:
+  - `role`: writing one fact per positive example scores F1 0.994. RoLe's answer is the
+    positive examples on 102 of the 103 problems, as on every v1 problem (Phase 11).
+    Every right `role` answer of every model is that copy.
+  - `fold`: folding onto dom(X) scores 1.000. Since Phase 8, dom(X) is a legal fold at
+    every state (Definition 3), and the probe accepts any legal fold.
+  - `subsume`: YES iff the state lists a learnt rule with no equality scores 0.762.
+
+  Against these, no model performs any of the five steps above a policy that does no
+  reasoning. `null_baselines.py` now takes the best of its policies as the floor, and
+  still prints the registered ones.
+- **Line 18.** The defined failing example changed nothing for 3B, 7B and 32B. They answer
+  NO to all 186 probes and list exactly the negative examples on 172, 177 and 168 (32B:
+  160 under v1, 180 under v2). Mistral answers YES to all 186. 14B answers NO on 131,
+  lists the negative examples on 28 (v2: 114), and reaches 0.582 [0.527, 0.636]: above a
+  constant answer, below the floor.
+- **Lines 36 and 41.** Every model is below 0.500, the score of always introducing a new
+  assumption. Each follows one habit (the set's MANIFEST): Mistral always introduces a new
+  assumption; 3B reuses what the state lists; 32B reuses a background assumption that is
+  not relative where line 41 introduces one, and introduces a new one where line 36 reuses.
+- **Line 8.** On the same 103 probes as set 05, dropping v2's clause raised F1 from 0.321
+  to 0.736 (14B), from 0.688 to 0.744 (32B) and from 0.260 to 0.542 (Mistral). Facts for
+  contrary predicates fell from 195 to 83 (14B) and from 143 to 92 (32B), without
+  vanishing: T itself contains those predicates.
+- **Confound rule.** Smaller models outrank larger ones in three cases: 14B above 32B on `check`;
+  3B above 7B, 14B and 32B on `subsume`; Mistral and 3B above 7B, 14B and 32B on
+  `introduce`. Each time the larger models give a constant answer, or follow a habit that
+  is wrong on both of line 36's branches; none is a smaller model computing the step.
+
+So stage 1 of FINDINGS stands. It now rests on prompts without the measured defects, and on
+the corrected reference's states.
+
 ## Phase 11 — Why no arm solves Table 1 (Oct 2026)
 
 `analysis/answer_shapes.py` compares the reference's answers with the shape of v1's
@@ -573,14 +616,11 @@ positive examples on all six prompts where the algorithm does not. Written up in
 
 ## Pending
 
-- Run the five models with probe prompts v3 (Phase 10); promote to
-  `experiments/06_probes_v3` with a MANIFEST recording the prompt version.
-- Hand-audit ≥20 rows of the v3 run before reporting aggregates (the rule that
-  caught both Phase-5 defects).
 - Decide the `apply_folding` scope question (Phase 6, item 4); measure how many
   extra legal folds appear when folding against `R ∪ learnt`.
-- Confound check on the v3 run: no smaller model may outrank a larger one on a
-  fidelity measure without an explanation of the mechanism.
+- Make the `role` and `fold` probes discriminate (Phase 10): problems whose RoLe answer
+  is not the positive examples, and a fold probe that folding onto dom(X) does not pass
+  trivially.
 - Check the fold-order convention against the Zenodo implementation.
 - Settle N1 (Phase 9). When line 18's test succeeds, the printed algorithm adds ρf
   nowhere, while the reference keeps it, following the prose (p. 3450).
