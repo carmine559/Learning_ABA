@@ -4,7 +4,7 @@
 #   sbatch --export=ALL,MODEL="qwen2.5-3b qwen2.5-7b" cluster/run_benchmark.sbatch
 # One job per model, chained: bash cluster/submit_benchmarks.sh.
 # Output in ${OUT_ROOT:-results}/bench_<model>/. Jobs split by mode each leave a one-mode
-# summary.json; merge them with: python3 rescore.py results/bench_<model> --benchmark 20
+# summary.json; merge them with: python3 rescore.py ${OUT_ROOT:-results}/bench_<model>
 #SBATCH --job-name=aba-bench
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=carmine.santella@studio.unibo.it

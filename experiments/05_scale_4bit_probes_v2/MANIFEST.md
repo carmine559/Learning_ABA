@@ -1,7 +1,15 @@
-# Set 05 — Scale series at 4-bit, probe prompts v2 + end-to-end modes v3
+# Set 05 — Scale series at 4-bit, probe prompts v2 + end-to-end modes v4
+
+> **The end-to-end half is superseded.** It hid part of each problem's examples from
+> the prompt (`split_problem_examples`, test ratio 0.34) and scored the answers on the
+> hidden ones (gen@k). Definition 1 poses a problem whole, so those figures measure
+> neither correctness by Definition 1 nor fidelity to Algorithm 1
+> ([METHOD_HISTORY.md](../../docs/METHOD_HISTORY.md), Phase 13). They are kept as the
+> as-run record, and `rescore.py` refuses them. The probe half stands, read against
+> the floors below; probe prompts v3 (set 06) supersede it.
 
 One run per model covering **both** halves of the evaluation on a single load of
-the weights: the four end-to-end modes (mode prompts **v3**, as in set 03) and
+the weights: the four end-to-end modes (mode prompts **v4**; set 03 ran v3) and
 the five step probes (probe prompts **v2**, superseding set 04's v1).
 
 | Field | Value |
@@ -13,11 +21,11 @@ the five step probes (probe prompts **v2**, superseding set 04's v1).
 | Modes | `direct cot guided algorithm`, 309 rows each (`--n-samples 3`, `--max-tokens 1536`) |
 | Probes | 780 per model (`--probes-per-kind 2`, k=1, `temperature=0.0`, `--max-tokens 512`) |
 | **Probe-prompt version** | **v2** (stamped in every `probe_summary.json`) |
-| Mode-prompt version | **v3** (byte-identical to set 03) |
+| Mode-prompt version | **v4** (set 03 ran v3; see [docs/PROMPTS.md](../../docs/PROMPTS.md)) |
 | Status | done; **three instrument defects found after scoring** — see below |
 
 Quantisation is constant across all five models, so they are comparable with each
-other. They are **not** comparable with the bf16 rows of set 03.
+other. They are **not** comparable with set 03, which ran bf16 and mode prompts v3.
 
 ## Command
 
@@ -27,7 +35,7 @@ PROBES=both MODELS="qwen2.5-3b qwen2.5-7b qwen2.5-14b qwen2.5-32b mistral-7b" \
 ```
 
 `PROBES=both` appends the probes to the same process as the modes
-(`--with-probes`, `main.py:996-1003`), so 32B's weights load once instead of
+(`--with-probes` in `main.py`), so 32B's weights load once instead of
 twice. `run_probe_experiment` sets `temperature=0.0` and caps probe answers at
 `min(--max-tokens, 512)` explicitly, so the modes run cannot leak sampling state
 or a longer budget into the probes.
@@ -136,8 +144,9 @@ for `fold`, copy the rule back unchanged.
 
 ## End-to-end results
 
-`gen@k`, k=3, 103 problems per cell. This half is solid and is the part of set 05
-that stands without correction.
+`gen@k`, k=3, 103 problems per cell. **Superseded** (see the note at the top): the
+figures below were scored on examples the prompt did not show, and are kept only as
+the as-run record.
 
 | mode | 3B | mistral-7b | 7B | 14B | 32B |
 | --- | --- | --- | --- | --- | --- |
@@ -178,7 +187,8 @@ conservative direction.
    `apply_folding` folds against the background only, while Algorithm 1 line 17
    passes `R`, which grows at line 20 with each learnt defeasible rule. Solver and
    oracle share the restriction, so the agreement test cannot detect it.
-4. **4-bit everywhere** — comparable within this set, not with set 03's bf16 rows.
+4. **4-bit everywhere, mode prompts v4** — comparable within this set, not with set
+   03 (bf16, mode prompts v3).
 5. **`t5_twopath` is one problem, not 20** (found 2026-09-24). Its 20 problems
    have a single structure under the structural signature of
    `src/aba_corpus.py`, a Weisfeiler–Lehman hash invariant to renaming and
@@ -230,5 +240,6 @@ Probe prompts **v3** would drop the contrary clause (`src/aba_probes.py:154-156`
 restore the solution criterion into `_PROBE_TASK` (`:132-143`), and keep v2's echo
 suppression, bumping `PROBE_PROMPT_VERSION` (`:60`). Defects 1 and 2 are
 *reporting* fixes and need no GPU. The probe half of this run cost ~52 minutes
-across all five models, so a probes-only re-run is under an hour; the end-to-end
-half does not need re-running.
+across all five models, so a probes-only re-run is under an hour. The probe re-run
+is set 06. The end-to-end half is re-run with every problem posed whole, under the
+reading registered in METHOD_HISTORY Phase 13.

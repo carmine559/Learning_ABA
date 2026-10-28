@@ -15,6 +15,7 @@ python main.py [dataset flags] [LLM flags] [task flags] [output flags]
 | Argument | Default | Description |
 | --- | --- | --- |
 | `--benchmark N` | `0` | **The main flag for a real run.** Adds the stratified benchmark suite with N problems per tier (`t1_mono`, `t2_defeas`, `t3_noise`, `t4_domain`, `t5_twopath`), so `--benchmark 20` gives 5×20 + 3 built-ins = 103 problems. The per-tier breakdown in the report shows *which* part of the algorithm the model can replicate. |
+| `--dataset-seed N` | `42` | Seed of the benchmark and synthetic generators. Every committed set used 42. |
 | `--n-synthetic N` | `0` | N extra single-path synthetic problems. |
 | `--n-complex N` | `0` | N extra two-path synthetic problems (richer QBAFs → intermediate σ under Task 2). |
 | `--anonymize` / `--no-anonymize` | **on** | Rename every predicate and constant to an abstract symbol before the model sees the problem. On by default; `--no-anonymize` keeps real names (human inspection, or Task 3 / RAG where retrieval needs them). |
@@ -32,9 +33,10 @@ a byte-identical problem set.
 | --- | --- | --- |
 | `--backend {mock,groq,hf_api,google_ai,local}` | `mock` | See the table below. |
 | `--model NAME` | per backend | Model id or alias. |
-| `--n-samples N` | `5` | Samples per problem — this is the `k` in pass@k. The committed benchmark runs used `3`. |
-| `--temperature F` | `0.7` | Set `0` for greedy decoding when you want pass@1 without sampling noise. |
-| `--max-tokens N` | `1024` | Cap on the answer. `algorithm` mode emits a long trace before the answer — the cluster runs use `1536`. A sample that hits the cap is flagged in `parse_repairs`. |
+| `--n-samples N` | `5` | Samples per problem: the `k` in @k (any of k samples). The committed benchmark runs used `3`. |
+| `--temperature F` | `0.7` | Set `0` for greedy decoding. The `local` backend samples with top-p 0.95. |
+| `--max-tokens N` | `1024` | Cap on the answer. `algorithm` mode emits a long trace before the answer — the cluster runs use `1536`. A sample that hits the cap has `finish: length` and is scored `truncated`. |
+| `--sampling-seed N` | `0` | Run seed. Each sample's seed is derived from it, the problem, the mode and the sample index, so a resumed run draws the same samples. 4-bit kernels are not bitwise deterministic: the seed fixes the draw, not the output. |
 | `--thinking` | off | Gemini thinking mode (`google_ai`, `gemini-2.5-*`). Thinking tokens do not count against `--max-tokens`. |
 | `--load-4bit` | off | **`local` only.** Load in 4-bit nf4 — needed to fit a 32B model on an L40, or any 7B on an 11 GB RTX 2080 Ti. |
 | `--min-interval F` | `0.0` | Minimum seconds between API requests. Try `2`–`4` on free tiers, `6`–`12` for a 10 RPM Gemini model. |
@@ -70,6 +72,14 @@ GPU fit, single card: L40 (48 GB) takes 7B–14B in bf16 and up to ~32B with
 | `--modes MODE …` | all four | `direct`, `cot`, `guided`, `algorithm` — increasing guidance. |
 | `--symbolic-only` | off | Run only the ASP-ABAlearnB reference; no LLM calls. Also writes `symbolic_traces.jsonl`. |
 
+Every problem is **posed whole**: the prompt shows every example, and the answer is
+scored on every example by `score_output` in [`src/aba_score.py`](../src/aba_score.py),
+against the algorithm's run on the same problem (valid, clean, exact, agreement; see
+[EXPERIMENTS.md](EXPERIMENTS.md#metrics--precise-definitions)). Before any model call
+the run builds that reference for every problem and checks the instrument: the
+algorithm's answer must score clean and exact, and RoLe's facts valid but not clean;
+otherwise it stops. `guided` mode hands the model the RoLe facts of that same run.
+
 ---
 
 ## Task 1b — step probes
@@ -80,18 +90,21 @@ See [EXPERIMENTS.md](EXPERIMENTS.md#step-probes--measuring-the-algorithm-not-jus
 
 | Argument | Default | Description |
 | --- | --- | --- |
-| `--probes` | off | Run step probes *instead of* the end-to-end modes. Five kinds: `role` (R1), `fold` (R2), `check` (the solution test), `introduce` (R3), `subsume` (R4). |
-| `--probes-per-kind N` | `2` | Max probes of each kind per problem. The default gives ~7–8 per problem, 780 over the 103-problem suite. |
-| `--probe-samples K` | `1` | Samples per probe. Power comes from the ~780 items, not from repeated draws of one item; probes run greedy (temperature 0). |
+| `--probes` | off | Run step probes *instead of* the end-to-end modes. Five kinds: `role` (RoLe), `fold` (R2), `check` (the solution test), `introduce` (R3), `subsume` (R4). |
+| `--with-probes` | off | Run the probes *after* the end-to-end modes, in the same process and on the same loaded model. |
+| `--probes-per-kind N` | `2` | Max probes of each kind per problem. The default gives 845 over the 103-problem suite under probe prompts v3. |
+| `--probe-samples K` | `1` | Samples per probe. Power comes from the number of items, not from repeated draws of one item; probes run greedy (temperature 0). |
 
 Outputs `probes.jsonl` (one row per probe, with the model's answer, the oracle's
 answer and the verdict) and `probe_summary.json`.
 
-Read `check` and `subsume` as **`balanced_accuracy` against 0.50** — they are
-binary, and a constant YES lands exactly on that floor.
+Read every probe against its measured no-reasoning floor
+(`python analysis/null_baselines.py`). `check` and `subsume` are binary and read as
+`balanced_accuracy`: a constant YES scores 0.50, but a single surface cue scores
+more (v3: `check` 0.633, `subsume` 0.762).
 
 ```bash
-# ~780 probes, short answers; roughly a third of one mode's GPU time
+# 845 probes, short answers; roughly a third of one mode's GPU time
 python main.py --backend local --model qwen2.5-14b --benchmark 20 \
     --probes --output results/bench_qwen2.5-14b
 ```
@@ -121,14 +134,21 @@ python main.py --backend local --model qwen2.5-14b --benchmark 20 \
 
 ```text
 <output>/
-├── summary.json           metrics per mode, per tier (by_tier), and both symbolic rows
-├── results_<mode>.jsonl   one record per sample: raw output, repairs, error class, metrics
-├── explanations.md        per-problem narrative of how the model generalised
+├── summary.json           the run block (provenance), metrics per mode and per tier (by_tier)
+├── results_<mode>.jsonl   one row per sample: seed, prompt and problem hashes, finish,
+│                          raw output and the score card; appended as scored, so a rerun
+│                          into the same --output resumes
+├── references.jsonl       the algorithm's answer, RoLe facts and atom statuses per problem
+├── sample.md              20 seeded rows (5 per mode), each beside the algorithm's answer:
+│                          read by hand before any aggregate
+├── explanations.md        per-problem narrative of one answer beside the algorithm's
+├── symbolic_traces.jsonl  the algorithm's trace on every problem
 ├── name_maps.json         anonymisation maps, for reading results back
 ├── frameworks.{jsonl,md}  every learned framework, mechanism-tagged        (--export)
 ├── defeasibility.csv      flat per-sample table                            (--export)
 ├── graded_results.json    BSAF vs BAF                                      (--graded)
-└── figures/               validity, error breakdown, heatmap, complexity (PDF)
+└── figures/               valid/clean/exact by mode, error labels, clean@k heatmap,
+                           complexity (PDF)
 ```
 
 `results/` is a scratch directory. Runs worth keeping are promoted into
@@ -145,20 +165,24 @@ well-formedness check or a metric definition changes.
 
 ```bash
 # rescore one run in place
-python rescore.py results/bench_qwen2.5-7b --benchmark 20
+python rescore.py results/bench_qwen2.5-7b
 
 # rescore several, writing to a separate tree
-python rescore.py "results/bench_*" --benchmark 20 --out rescored/
+python rescore.py "results/bench_*" --out rescored/
 ```
 
-The dataset flags must match the ones the run used (`--benchmark`, `--seed`,
-`--anonymize`), otherwise the rebuilt problems will not line up and the script
-reports how many samples it had to skip.
+An end-to-end run is rebuilt from the `run` block of its `summary.json`: the dataset
+is regenerated from it, and the references are recomputed. A row whose problem no
+longer matches its stored hash stops the rescore. A changed prompt or changed
+references are reported, and the new `run.rescored` records them. Runs that hid
+examples (sets 00–03 and set 05's end-to-end half) have no `run` block and are
+refused as superseded.
 
 `--probes` rescores `probes.jsonl` instead of the end-to-end modes. Probe
 generation is deterministic, so the regenerated probes are the exact items the
-run was given and each stored answer can be scored again offline — add
-`--probes-per-kind N` if the run did not use the default 2.
+run was given and each stored answer can be scored again offline. Probe runs record
+no dataset, so the dataset flags (`--benchmark`, `--seed`, `--anonymize`) must match
+the run's; add `--probes-per-kind N` if the run did not use the default 2.
 
 ```bash
 python rescore.py "results/bench_qwen2.5-*" --benchmark 20 --probes --out rescored/
@@ -176,13 +200,16 @@ python main.py --backend mock --benchmark 2 --modes direct --n-samples 1
 python main.py --symbolic-only --benchmark 20 --verbose
 
 # the full benchmark for one model on a GPU (what the cluster jobs run)
-python main.py --backend local --model qwen2.5-7b \
+python main.py --backend local --model qwen2.5-7b --load-4bit \
     --benchmark 20 --modes direct cot guided algorithm \
     --n-samples 3 --max-tokens 1536 --export --output results/bench_qwen2.5-7b
 
 # free API, spaced out to stay under the rate limit
 python main.py --backend groq --model llama3-70b --min-interval 3 \
     --benchmark 5 --modes guided --n-samples 3
+
+# the end-to-end floors, and a set read against them
+python analysis/null_baselines.py --end-to-end --set experiments/07_e2e_whole_v4
 
 # Task 1 + Task 2 in one pass
 python main.py --backend local --model qwen2.5-7b --benchmark 10 \

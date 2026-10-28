@@ -8,4 +8,4 @@ clean; `main.py` imports them lazily during the report/export steps.
 | --- | --- | --- |
 | `aba_visualization.py` | Publication figures (PDF) | always, in the report step |
 | `aba_export.py` | Dump learned frameworks to JSONL / Markdown / CSV | `--export` |
-| `aba_explain.py` | Mechanism tags + natural-language narratives per sample | `--export` |
+| `aba_explain.py` | One answer beside the algorithm's: rule diff, mechanism tags, narrative | always (`explanations.md`); per sample with `--export` |

@@ -1,5 +1,12 @@
 # Experiment set 02 — Stratified benchmark, prompts v2 (4 models)
 
+> **Superseded.** This set's end-to-end figures hid part of each problem's examples
+> from the prompt (`split_problem_examples`, test ratio 0.34) and scored the answers
+> on the hidden ones: gen@k, det@k, fit and the overfit gap. Definition 1 poses a
+> problem whole, so these figures measure neither correctness by Definition 1 nor
+> fidelity to Algorithm 1 ([METHOD_HISTORY.md](../../docs/METHOD_HISTORY.md), Phase 13).
+> The set is kept as the as-run record, and `rescore.py` refuses it.
+
 | | |
 | --- | --- |
 | **Date** | July 2026 |

@@ -27,15 +27,19 @@ MSc thesis project, University of Bologna.
   differ only in the target: **endpoint** (the learnt framework), **trace** (the
   algorithm's decisions, then the framework) and **S2** (one row per step; at
   inference the reference runs the control flow and the model answers each step).
-- **One scorer**, [`src/aba_score.py`](src/aba_score.py): validity by
-  Definition 1, exact agreement with the reference (up to assumption names and
-  body order), the held-out choice, and an audit of written steps.
-- **The earlier prompting study** (`main.py`, [`experiments/`](experiments/)
-  00–06): four prompting modes and step probes, Qwen2.5 3B–32B and Mistral-7B. Corrections found
-  after the end-to-end figures were produced (a parser defect, missing chance floors) are not
-  yet applied, so they are not quoted here. The step probes were re-run under probe
-  prompts v3 (set 06): no prompted model performs any probed step above a policy that
-  does no reasoning.
+- **One scorer**, [`src/aba_score.py`](src/aba_score.py), for every arm and for the
+  prompting study: validity by Definition 1, exact agreement with the reference (up
+  to assumption names and body order), the held-out choice, and an audit of written
+  steps.
+- **The prompting study** (`main.py`, [`experiments/`](experiments/)): four
+  prompting modes and step probes, Qwen2.5 3B–32B and Mistral-7B.
+  - Its end-to-end sets (00–03, and half of 05) hid part of each problem's examples
+    and scored the answers on them. They are superseded and not quoted here.
+  - The re-run poses every problem whole and uses the scorer above. It is set 07,
+    read by rules registered before the run
+    ([docs/METHOD_HISTORY.md](docs/METHOD_HISTORY.md), Phase 13).
+  - The step probes were re-run under probe prompts v3 (set 06): no prompted model
+    performs any probed step above a policy that does no reasoning.
 - **Task 2** ([`gradual/`](gradual/), [docs/GRADED.md](docs/GRADED.md)): BSAF
   gradual semantics for ABA (Rapberger, Russo, Rago & Toni, KR 2025) against an
   argument-tree DF-QuAD baseline.
@@ -137,9 +141,9 @@ python sft/compare_step.py    # results/sft-step/COMPARISON_STEP.md, the D5 verd
 | [`corpus/`](corpus/) | `v1`, `v1-permuted`, `v1-step`, each with a MANIFEST |
 | `runs/` | one `TRAINING_MANIFEST.json` per run; adapters stay on the cluster |
 | `results/` | evaluation outputs, tracked so cluster runs come back with `git push` |
-| [`experiments/`](experiments/) | the prompting study's result sets 00–06, one `MANIFEST.md` each |
+| [`experiments/`](experiments/) | the prompting study's result sets, one `MANIFEST.md` each; 00–03 and 05's end-to-end half are superseded |
 | `rescored/`, `rescored_v2/` | offline re-scorings of set 04's probe answers |
-| [`analysis/`](analysis/) | offline studies of the prompting runs: step fidelity, conformance, null floors |
+| [`analysis/`](analysis/) | offline studies: no-reasoning floors (probes and end to end), answer shapes on Table 1, S2's errors |
 | [`tests/`](tests/) | golden traces, corpus, scorer, steps, oracle hook |
 | [`cluster/`](cluster/) | SLURM scripts for the DISI L40 nodes |
 | [`gradual/`](gradual/) | Task 2: gradual semantics |

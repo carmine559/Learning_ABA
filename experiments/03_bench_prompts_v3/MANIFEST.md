@@ -1,5 +1,12 @@
 # Experiment set 03 — Stratified benchmark, prompts v3 + metrics rev. 4
 
+> **Superseded.** This set's end-to-end figures hid part of each problem's examples
+> from the prompt (`split_problem_examples`, test ratio 0.34) and scored the answers
+> on the hidden ones: gen@k, det@k, fit and the overfit gap. Definition 1 poses a
+> problem whole, so these figures measure neither correctness by Definition 1 nor
+> fidelity to Algorithm 1 ([METHOD_HISTORY.md](../../docs/METHOD_HISTORY.md), Phase 13).
+> The set is kept as the as-run record, and `rescore.py` refuses it.
+
 | | |
 | --- | --- |
 | **Models** | qwen2.5-3b, qwen2.5-7b, mistral-7b, qwen2.5-14b (local, one L40, chained jobs) |

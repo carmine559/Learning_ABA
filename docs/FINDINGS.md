@@ -65,8 +65,10 @@ policies measured on the same probes.
   18, above that set's floor of 0.681. v1's prompt carried two defects (METHOD_HISTORY,
   Phase 5), and neither v2 nor v3 reproduces the result.
 - **Caveats.** The intervals treat the 103 problems as independent; 20 of them are one
-  structure in 20 surface forms. The end-to-end prompting figures wait for the corrections
-  noted in the README and are not quoted here.
+  structure in 20 surface forms. The earlier end-to-end prompting figures (sets 00–03,
+  half of 05) hid part of each problem's examples and are superseded. The re-run with
+  every problem posed whole (set 07) is read by rules registered before it ran
+  (METHOD_HISTORY, Phase 13).
 
 ### 2. Fine-tuning on the answer or on the whole trace ([`results/sft/COMPARISON.md`](../results/sft/COMPARISON.md))
 

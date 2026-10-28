@@ -8,13 +8,16 @@ are the part a methodology chapter needs and a results table hides.
 
 **Framing held throughout.** ASP-ABAlearnB (De Angelis, Proietti & Toni, ECAI
 2024) is the reference of the field. The LLM is scored on how faithfully it
-**replicates** the algorithm. There is no "beating" in either direction, and
-the symbolic `train_only` figure is not a ceiling on the algorithm: it solves
-every training split by construction (103/103), and the figure is only how often
-the solution it happened to pick *also* generalises to held-out examples —
-our added criterion, not Definition 1's. That is 76/103 in set 05's summaries,
-run before the Phase 8 fixes, and 88/103 with the current reference. The 53.8%
-quoted here before has no data file behind it, and is not k/103 for any k.
+**replicates** the algorithm. There is no "beating" in either direction.
+
+**Problems are posed whole, as Definition 1 poses them.** The end-to-end prompting
+study did not do this until Phase 13. Sets 00–03 and the end-to-end half of set 05
+hid part of each problem's examples and scored the answers on the hidden ones, so
+their figures are superseded. That includes the symbolic `train_only` row (the
+algorithm run on the shown examples, scored on the hidden ones): 76/103 in set
+05's summaries and 88/103 with the current reference. The 53.8% once quoted for it
+has no data file behind it. The step probes and the fine-tuning arms always posed
+problems whole.
 
 ---
 
@@ -780,6 +783,10 @@ answer.
 
 ## Pending
 
+- Run set 07 (Phase 13) and record its outcome under the registered reading.
+- A benchmark whose answers vary within a tier. On the 103-problem benchmark, the
+  algorithm has 9 distinct answers and t2–t4 one each (Phase 13), so exact@k there
+  asks whether the model writes its tier's one answer.
 - Decide the `apply_folding` scope question (Phase 6, item 4); measure how many
   extra legal folds appear when folding against `R ∪ learnt`.
 - Make the `role` and `fold` probes discriminate (Phase 10): problems whose RoLe answer

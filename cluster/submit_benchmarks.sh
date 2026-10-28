@@ -4,7 +4,7 @@
 #   PROBES=1 bash cluster/submit_benchmarks.sh         # step probes
 #   OUT_ROOT=results/probes_v3 PROBES=1 ...            # outputs under another root
 #   MODELS="qwen2.5-32b" EXTRA="--load-4bit" SPLIT_MODES=1 bash cluster/submit_benchmarks.sh
-# SPLIT_MODES=1 submits one job per mode (32B in 4-bit takes 25-42 h for all four).
+# SPLIT_MODES=1 submits one job per mode (set 05: 32B in 4-bit generated all four in 2.1 h).
 set -euo pipefail
 
 read -r -a MODELS <<< "${MODELS:-qwen2.5-3b qwen2.5-7b mistral-7b qwen2.5-14b}"
@@ -51,6 +51,6 @@ echo "Monitor with: squeue -u \$USER   (PENDING/Dependency = waiting its turn)"
 if [ "$SPLIT_MODES" = "1" ]; then
     echo "When the chain ends, merge each model's summary (CPU, seconds):"
     for m in "${MODELS[@]}"; do
-        echo "    python3 rescore.py results/bench_${m} --benchmark 20"
+        echo "    python3 rescore.py ${OUT_ROOT:-results}/bench_${m}"
     done
 fi

@@ -48,7 +48,8 @@ This one job runs **Task 1** (LLM learning, all four modes, anonymised) +
 > another, either as a *chain of jobs* (preferred) or as a *loop inside one job*.
 
 **(a) Chained jobs** — one job per model, linked with `--dependency=afterany`
-so each starts when the previous ends and gets its **own full 24 h** budget:
+so each starts when the previous ends and gets its **own full 48 h** budget
+(`--time` in `cluster/run_benchmark.sbatch`):
 
 ```bash
 bash cluster/submit_benchmarks.sh   # qwen2.5-3b -> 7b -> mistral-7b -> 14b
@@ -82,17 +83,26 @@ algorithm (all anonymised, so the LLM cannot use world knowledge):
 | `t4_domain` | Domain-size scaling | 12 constants |
 | `t5_twopath` | Multiple derivation paths | two defeasible rules needed |
 
-`summary.json` then contains a **per-tier gen@k breakdown** (also printed as a
-table), so the result is not "the LLM scores 40%" but "*it can fold but fails
-at assumption introduction*" — the explainable answer to whether it replicates
-the algorithm. Per-problem narratives are in `explanations.md`, every learned
+Every problem is posed whole and scored against the algorithm's run on it (valid,
+clean, exact; [docs/EXPERIMENTS.md](../docs/EXPERIMENTS.md)). Before the model
+is called, the job writes `references.jsonl` and stops unless the algorithm's own
+answers score clean and exact. `summary.json` contains a **per-tier clean@k /
+exact@k breakdown** (also printed as a table), so the result says *which* tier
+the model handles, not only an average. Per-problem narratives are in `explanations.md`, every learned
 framework (mechanism-tagged, de-anonymisable via `name_maps.json`) in
 `frameworks.md`. Every generated problem is validated at generation time:
 symbolically solvable, ≥2 examples per side, no E+/E− overlap, no duplicates.
 
 Runtime scales as `5·N + 3` problems × modes × samples; with `BENCH_N=20`,
-`--n-samples 3`, 4 modes → ~1236 calls ≈ 6–10 h per model on an L40 (7B). Trim
-`BENCH_N` or the mode list for a faster pass.
+`--n-samples 3` and 4 modes that is 1236 calls per model. In set 05 (4-bit,
+`--max-tokens 1536`, one L40), generation took 0.6 h for 3B, 4.0 h for 7B, 5.6 h
+for Mistral-7B, 6.7 h for 14B and 2.1 h for 32B, whose answers are short. These
+are summed from the rows' `llm_latency_s`; model loading and scoring come on
+top. Trim `BENCH_N` or the mode list for a faster pass.
+
+Rows are appended as they are scored. A job that dies can be resubmitted into the
+same output directory (same `OUT_ROOT`): it resumes, and each sample keeps the
+seed derived from `--sampling-seed`. A row from a different run stops it.
 
 ## 4. Monitor
 
@@ -146,7 +156,7 @@ Qwen, Mistral and Phi are ungated — easiest to start with `--model qwen2.5-3b`
 
 | Experiment | Flags (added to `--backend local --model …`) |
 | --- | --- |
-| Task 1 — LLM learning | `--modes direct cot guided algorithm --n-samples 5` (anonymised by default) |
+| Task 1 — LLM learning | `--modes direct cot guided algorithm --n-samples 3 --max-tokens 1536` (anonymised by default; add `--load-4bit` as the committed sets do) |
 | Task 2 — gradual semantics | add `--graded --graded-source llm_elicited` |
 | Reporting | add `--export` (frameworks + figures + narratives) |
 

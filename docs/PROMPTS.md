@@ -25,7 +25,7 @@ sets**, and one prompt bug turned out to be a finding in its own right).
 | --- | --- | --- |
 | `direct` | just "extend the background knowledge" | raw zero-shot ability |
 | `cot` | step-by-step reasoning: RoLe → Folding → Assumption Introduction (+ multiple-paths check) → Subsumption | algorithm mimicry from a described recipe |
-| `guided` | the precomputed **RoLe ground facts** (computed on the TRAIN split only) + instructions to generalise them | the Gen phase in isolation |
+| `guided` | the **RoLe ground facts** of the algorithm's own run on the problem (line 8) + instructions to generalise them | the Gen phase in isolation |
 | `algorithm` | the **full ASP-ABAlearnB algorithm** (De Angelis et al. 2024): both phases and the four transformation rules R1–R4, to *execute* | can the LLM replicate the published algorithm end-to-end? |
 
 A `fewshot` mode (two worked examples) existed early on and was removed: it
@@ -103,7 +103,7 @@ are either confined to the reasoning text or rejected loudly by the parser
 (angle brackets never parse into rules), instead of silently producing
 plausible-looking frameworks with invented predicates as in v1.
 
-### v3 — terminologically exact (current; supervisor feedback)
+### v3 — terminologically exact (supervisor feedback; set 03)
 
 After review, the prompts were found *terminologically imprecise* with respect
 to the source paper (De Angelis, Proietti & Toni, ECAI 2024). v3 rewrites the
@@ -146,7 +146,7 @@ brave consequence, and "intensional" per the paper (non-ground rule schemata).
 The problem-serialisation headers now read "all accepted in ONE common stable
 extension" / "none accepted in that same extension".
 
-### v4 — one notation (current)
+### v4 — one notation (current: set 05's end-to-end half, set 07)
 
 v3 fixed the *terminology* but left a structural problem: the problem itself was
 still serialised as English prose by `ABAFramework.to_natural_language()` —
@@ -181,9 +181,14 @@ Also in v4, R3 in `algorithm` mode is split into its two cases, matching
 Algorithm 1 lines 36–44: **(a)** reusing an existing assumption, whose contrary
 is fixed and must not be redefined (and rules for it are legal only if that
 contrary is itself in `T`), and **(b)** introducing a new assumption, the only
-case in which contrary facts are rote-learned. v3 described only case (b) while
-every benchmark tier's intended solution is case (a). The system prompt gained a
-matching `REUSE FIRST` line.
+case in which contrary facts are rote-learned. v3 described only case (b). The
+benchmark's tiers were generated with a background assumption to be reused, but
+Algorithm 1 reuses an assumption only when it is relative to the rule's body
+(Definition 4), and on t2–t5 it is not: the algorithm introduces a new one. The
+system prompt gained a matching `REUSE FIRST` line.
+
+The code stamps this version as `MODE_PROMPT_VERSION = "v4"`, and every
+end-to-end run records it, with each mode's prompt hash, in its `summary.json`.
 
 `to_natural_language()` is retained, but only for reports
 (`explanations.md`, `frameworks.md`).
@@ -231,7 +236,7 @@ target's grammar is documented in [`src/aba_sft.py`](../src/aba_sft.py) and
 [CORPUS.md](CORPUS.md).
 
 **Comparability.** Nothing produced under v4-sft is comparable with the
-zero-shot sets 01–05, which were run under v3.
+zero-shot end-to-end sets (00–03 under v0–v3, set 05 and set 07 under v4).
 
 ## Step-probe prompts (versioned separately)
 
@@ -250,12 +255,14 @@ version.
 
 | Experiment set | Prompts | Metrics | Comparable with |
 | --- | --- | --- | --- |
-| `experiments/00_preliminary_api` | v0 (evolving) | rev 1 | nothing (exploratory) |
-| `experiments/01_bench_prompts_v1` | v1 | rev 2 | — |
-| `experiments/02_bench_prompts_v2` | v2 | rev 2 | — |
-| `experiments/03_bench_prompts_v3` | v3 | rev 4 | — |
-| *(next benchmark run)* | **v4** | rev 4 | future v4 runs |
+| `experiments/00_preliminary_api` | v0 (evolving) | rev 1 | nothing (superseded: examples held out) |
+| `experiments/01_bench_prompts_v1` | v1 | rev 2 | nothing (superseded: examples held out) |
+| `experiments/02_bench_prompts_v2` | v2 | rev 2 | nothing (superseded: examples held out) |
+| `experiments/03_bench_prompts_v3` | v3 | rev 4 | nothing (superseded: examples held out) |
+| `experiments/05_scale_4bit_probes_v2`, end-to-end half | **v4** | rev 4 | nothing (superseded: examples held out) |
+| `07_e2e_whole_v4` (registered, [METHOD_HISTORY](METHOD_HISTORY.md) Phase 13) | **v4** | score card, posed whole | later v4 runs posed whole |
 | [`corpus/v1`](../corpus/v1/MANIFEST.md) (SFT training and evaluation) | **v4-sft** | trace fidelity + rev 4 | runs trained or evaluated on it |
 
-A prompt change and a metric change are independent axes: a metric change can be
-applied retroactively with `rescore.py`, a prompt change cannot.
+A prompt change and a scoring change are independent axes. A scoring change can be
+applied retroactively with `rescore.py` to any run that records its `run` block
+(set 07 on); a prompt change cannot.
