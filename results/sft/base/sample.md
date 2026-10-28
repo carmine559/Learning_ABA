@@ -1,4 +1,4 @@
-# Hand audit: 20 rows of results\sft\base
+# Hand audit: 20 rows of results/sft/base
 
 ## t1_base_0017 (test, monotonic)
 
@@ -622,7 +622,7 @@ u(X) defeated_by p1(X)
 
 ## t4_nested_0017 (test, monotonic)
 
-error `illformed`, finish `stop`, valid False, clean False, exact False
+error `not_a_solution`, finish `stop`, valid False, clean False, exact False
 
 ```
 NEW RULES:
@@ -1418,7 +1418,7 @@ q1(X) defeated_by p1(X)
 
 ## table1_05_named (table1, named)
 
-error `illformed`, finish `stop`, valid False, clean False, exact False
+error `not_a_solution`, finish `stop`, valid False, clean False, exact False
 
 ```
 To solve the given ABA learning problem, we need to construct a framework that satisfies the given positive and negative examples while adhering to the constraints of the problem. We will start by analyzing the given background knowledge and examples, and then derive the necessary new rules and assumptions.

@@ -193,7 +193,7 @@ def score(out: Path, items) -> int:
     print(f"missing: {len(items) - len(scored)} rows without a generation")
 
     with open(out / "sample.md", "w", encoding="utf-8") as f:
-        f.write(f"# Hand audit: 20 rows of {out}\n\n")
+        f.write(f"# Hand audit: 20 rows of {out.as_posix()}\n\n")
         for r in sorted(random.Random(0).sample(scored, min(20, len(scored))),
                         key=lambda r: r["problem_id"]):
             f.write(f"## {r['problem_id']} ({r['split']}, {r['class']})\n\n"

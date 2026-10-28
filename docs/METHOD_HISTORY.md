@@ -614,6 +614,60 @@ arms never nest. At RoLe, the trace arm and S2 (at the reference's states) write
 positive examples on all six prompts where the algorithm does not. Written up in
 [FINDINGS.md](FINDINGS.md), "Table 1: why no arm solves the paper's problems".
 
+## Phase 12 — Rule grammar (Oct 2026)
+
+The answer parser (`_parse_rule_line` in `src/aba_prompts.py`) read any line containing
+`:-` as a rule, and any other line of the NEW RULES block as a fact. So explanation prose
+became rules, and a contrary written under NEW RULES (`u(X) defeated_by t(X)`) became a
+fact whose head is an assumption. Both made the answer ill-formed. In set 05, 1,361 of
+the 6,180 end-to-end answers have explanation lines containing `:-`.
+
+- **Fix.** A rule's head must be an atom, and each body element an atom, a `not` atom or
+  a comparison; a trailing `% comment` is stripped. Any other line is not a rule. It is
+  skipped, and a repair note counts the skipped lines that contain `:-`. A contrary
+  written under NEW RULES is dropped, not recovered. Every rule the code generates
+  (benchmark, corpus v1 and v1-permuted, Table 1, the step targets) parses as before, and
+  the gold-target control (`python -m src.aba_score --control`) still passes on v1 and
+  v1-permuted.
+- **Rescored.** Every registered fine-tuning result was rescored: the three SFT arms on
+  v1 and permuted, S2 (seeds 0 and 1) under all four protocols, and the untrained model at
+  the reference's states.
+  - **What moved: only the untrained model's two endpoint runs.**
+    - 38 of its 616 answers lose rules: 65 prose lines with `:-`, 26 contraries and 18
+      prose lines read as facts. The new grammar adds no rule anywhere.
+    - 45 score rows change, 29 of them in label, all from `illformed`: 22 become
+      `not_a_solution`, 3 `ok`, 3 `valid_but_degenerate` and 1 `parse_error`.
+    - Valid becomes true on 6 rows and clean on 3. Exact moves on none.
+  - **What did not move:**
+    - No fine-tuned arm's answer parses differently.
+    - No S2 step parses differently: the replays and `analysis/s2_errors.py` are
+      unchanged.
+    - No probe row of sets 04–06 scores differently.
+    - The floors, the registered decisions, the McNemar tests and the invariance
+      verdicts are unchanged.
+  - **Trace fidelity.** The frozen trace-fidelity score moves on 21 of the untrained
+    model's rows, because it reads the parsed answer.
+- **Moved figures** (the untrained model, endpoint scoring; Table 1 valid stays 1/16):
+
+  | set | figure | before | after |
+  | --- | --- | --- | --- |
+  | v1 test | parsed | 200/200 | 199/200 |
+  | v1 test | valid | 26/200 | 27/200 |
+  | v1 test | clean | 15/200 | 16/200 |
+  | v1 test | agreement | 0.11 | 0.12 |
+  | v1 test | R3 balanced | 0.51 | 0.50 |
+  | v1 `t9_reuse` reuse_ok | valid, clean | 4/25, 3/25 | 5/25, 4/25 |
+  | permuted test | valid | 8/200 | 10/200 |
+  | permuted test | agreement | 0.02 | 0.03 |
+  | permuted test | R3 balanced | 0.48 | 0.49 |
+  | permuted `t8_decoy` key_first | valid | 2/25 | 3/25 |
+  | permuted `t8_decoy`, both halves | R3 balanced | 0.44 | 0.46 |
+  | permuted `t9_reuse` reuse_ok | valid, clean | 7/25, 3/25 | 8/25, 4/25 |
+  | Table 1 | ill-formed | 8/16 | 7/16 |
+
+The end-to-end prompting sets 00–05 were scored under the old grammar and are not
+rescored here.
+
 ## Pending
 
 - Decide the `apply_folding` scope question (Phase 6, item 4); measure how many

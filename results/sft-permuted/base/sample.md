@@ -447,7 +447,7 @@ q(X) defeated_by v(X)
 
 ## t3_domain_0015 (test, monotonic)
 
-error `illformed`, finish `stop`, valid False, clean False, exact False
+error `not_a_solution`, finish `stop`, valid False, clean False, exact False
 
 ```
 To solve this problem, we need to construct a framework that satisfies the given conditions. We will start by analyzing the positive and negative examples and the learnable predicates. The goal is to derive new rules and assumptions that ensure the positive examples are accepted and the negative examples are rejected in a single stable extension.

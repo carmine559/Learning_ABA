@@ -207,7 +207,7 @@ has a shape that v1's training answers never have, and every arm writes v1's sha
     solution.
   - The trace arm's RoLe lines are the positive examples on 14 of 16 prompts, including
     all 6 where the algorithm's are not.
-  - The untrained model's answers break Definition 1's syntax on 8 of 16 prompts, for
+  - The untrained model's answers break Definition 1's syntax on 7 of 16 prompts, for
     instance with an assumption as a rule head or a background predicate as a new head.
     One of its 16 answers is valid.
 - **S2 at the reference's own states** (seed 0; seed 1 in brackets). Here the reference
