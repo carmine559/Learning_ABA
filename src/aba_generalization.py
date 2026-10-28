@@ -97,7 +97,11 @@ def wellformed_violations(
       freshness: a NEW assumption's predicate must not REPURPOSE a background
             NON-assumption predicate. Re-listing an EXISTING background
             assumption is legal reuse (Definition 4) and is NOT a violation,
-            even though the parser files it under "NEW ASSUMPTIONS".
+            even though the parser files it under "NEW ASSUMPTIONS";
+      learnability: nor may it be learnable. Definition 1 requires
+            T ∩ pred(A) = ∅, and examples are non-assumptions (p. 3447); the
+            learnt framework keeps both, or declaring the positive examples
+            assumptions would be a solution with no rule learnt.
       safety: every variable of a NEW rule occurs in a positive body atom or
             an equality to a constant; Clingo cannot ground the ASP encoding
             (Definition 2(a)) of a rule that breaks this.
@@ -150,5 +154,8 @@ def wellformed_violations(
         if p and p in bg_nonasm:
             viol.append(f"new assumption predicate '{p}' repurposes background "
                         f"non-assumption predicate '{p}'")
+        elif p and p in learn:
+            viol.append(f"new assumption predicate '{p}' is learnable "
+                        f"(Definition 1: T and the assumptions are disjoint)")
 
     return viol

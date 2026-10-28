@@ -88,7 +88,7 @@ example. The fields of its score card:
 | Field | Definition |
 | --- | --- |
 | `parse_ok` | the output yields a framework. An explicit `NONE` / `NONE` answer is an empty framework, not a parse failure. A rule's head must be an atom and each body element an atom, a `not` atom or a comparison; anything else is not a rule ([METHOD_HISTORY.md](METHOD_HISTORY.md), Phase 12). Every repair the parser applied is listed in `repairs` |
-| `illformed` | the Definition-1 side conditions it violates: (ii) every new-rule head with a background predicate is learnable; (iv) contraries of existing assumptions unchanged; flatness (no assumption as a rule head); new-assumption predicates fresh |
+| `illformed` | the Definition-1 side conditions it violates: (ii) every new-rule head with a background predicate is learnable; (iv) contraries of existing assumptions unchanged; flatness (no assumption as a rule head); new-assumption predicates fresh, and never learnable, since Definition 1 keeps T and the assumptions disjoint ([METHOD_HISTORY.md](METHOD_HISTORY.md), Phase 14) |
 | `valid` | the answer **is a solution**: one stable extension accepts every posed positive and no posed negative (one joint check) |
 | `clean` | valid, intensional (no constant in any new rule), not ill-formed, and not self-defeating |
 | `exact` | the algorithm's answer, up to assumption names and body order |
@@ -236,7 +236,8 @@ On the DISI SLURM cluster see [`cluster/README.md`](../cluster/README.md)
 
 Before any model call, `main.py` builds the algorithm's answer for every problem
 (`references.jsonl`) and checks the instrument: the algorithm's answer must score
-clean and exact, and RoLe's facts valid but not clean. Each sample's seed is derived
+clean and exact, RoLe's facts valid but not clean, and the positive examples declared
+assumptions not clean. Each sample's seed is derived
 from `--sampling-seed`, the problem, the mode and the sample index, and rows are
 appended as they are scored, so a run killed and restarted into the same `--output`
 resumes with the same samples. 4-bit kernels are not bitwise deterministic: the

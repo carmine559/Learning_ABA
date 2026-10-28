@@ -987,6 +987,13 @@ def degenerate_answer(ref: Reference) -> str:
     return solution_to_output_format(_current_framework(bg, facts, {}), bg)
 
 
+def positives_as_assumptions(ref: Reference) -> str:
+    """Every positive example declared an assumption, no rule learnt: valid, and
+    ill-formed, since Definition 1 keeps T and the assumptions disjoint."""
+    asms = [f"{a} defeated_by c_{a}" for a in (re.sub(r"\s+", "", e) for e in ref.problem.positive)]
+    return "NEW RULES:\nNONE\n\nNEW ASSUMPTIONS:\n" + "\n".join(asms)
+
+
 def gold_failures(card: ScoreCard, arm: str, meta: Dict) -> List[str]:
     """Every field a gold target must max out; empty when it does."""
     want = {"parse_ok": True, "illformed": [], "valid": True, "intensional": True,

@@ -37,7 +37,8 @@ from src.aba_probes import (
     run_probes, aggregate_probes, KINDS as PROBE_KINDS,
 )
 from src.aba_prompts import MODE_PROMPT_VERSION, mode_prompt_sha256
-from src.aba_score import Reference, degenerate_answer, reference, score_output
+from src.aba_score import (Reference, degenerate_answer, positives_as_assumptions,
+                           reference, score_output)
 from src.aba_sft import Untrainable
 
 SEED_DERIVATION = "int(sha256(f'{sampling_seed}:{problem_id}:{mode}:{sample_idx}')[:8], 16) % 2**31"
@@ -145,16 +146,20 @@ def build_references(ds: ABADataset) -> Tuple[Dict[str, Reference], Dict[str, st
 
 
 def instrument_control(refs: Dict[str, Reference]) -> List[str]:
-    """Before any model call: the algorithm's answer must score clean and exact, and
-    RoLe's facts valid but not clean, or the scorer does not measure what it claims."""
+    """Before any model call: the algorithm's answer must score clean and exact, RoLe's
+    facts valid but not clean, and the positives declared assumptions not clean, or
+    the scorer does not measure what it claims."""
     bad = []
     for pid, ref in refs.items():
         gold = score_output(ref.endpoint_target, ref, audit=False)
         deg = score_output(degenerate_answer(ref), ref, audit=False)
+        trick = score_output(positives_as_assumptions(ref), ref, audit=False)
         if not (gold.clean and gold.exact):
             bad.append(f"{pid}: the algorithm's answer scores {gold.error}, exact {gold.exact}")
         if not deg.valid or deg.clean:
             bad.append(f"{pid}: RoLe's facts score valid {deg.valid}, clean {deg.clean}")
+        if trick.clean:
+            bad.append(f"{pid}: the positives declared assumptions score clean")
     return bad
 
 

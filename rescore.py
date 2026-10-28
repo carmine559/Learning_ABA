@@ -273,6 +273,12 @@ def main() -> None:
                            anonymize_scheme=args.anonymize_scheme)
         entries = {e.problem.problem_id: e for e in ds}
 
+    if args.out:
+        names = [os.path.basename(d.rstrip("/\\")) for d in run_dirs]
+        if len(set(names)) < len(names):
+            raise SystemExit("two runs share a folder name and would overwrite each other "
+                             "under --out; rescore them separately")
+
     for run_dir in run_dirs:
         if not os.path.isdir(run_dir):
             print(f"[skip] not a directory: {run_dir}")

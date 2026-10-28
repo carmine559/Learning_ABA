@@ -44,16 +44,21 @@ from src.aba_algorithm import solve_aba_learning
 
 
 def _git_rev() -> str:
-    """Short HEAD, with a dirty flag. Provenance for a generated corpus."""
+    """Short HEAD, dirty if a tracked file or an untracked .py file differs from it.
+
+    Untracked outputs do not count: every run writes its own into tracked results/.
+    """
     try:
         rev = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
                              capture_output=True, text=True, timeout=10)
         if rev.returncode != 0:
             return "unknown"
         head = rev.stdout.strip()
-        st = subprocess.run(["git", "status", "--porcelain"],
+        st = subprocess.run(["git", "status", "--porcelain", "--untracked-files=all"],
                             capture_output=True, text=True, timeout=10)
-        return head + ("-dirty" if st.stdout.strip() else "")
+        dirty = [ln for ln in st.stdout.splitlines()
+                 if not ln.startswith("??") or ln.rstrip().rstrip('"').endswith(".py")]
+        return head + ("-dirty" if dirty else "")
     except Exception:
         return "unknown"
 

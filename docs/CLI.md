@@ -77,8 +77,8 @@ scored on every example by `score_output` in [`src/aba_score.py`](../src/aba_sco
 against the algorithm's run on the same problem (valid, clean, exact, agreement; see
 [EXPERIMENTS.md](EXPERIMENTS.md#metrics--precise-definitions)). Before any model call
 the run builds that reference for every problem and checks the instrument: the
-algorithm's answer must score clean and exact, and RoLe's facts valid but not clean;
-otherwise it stops. `guided` mode hands the model the RoLe facts of that same run.
+algorithm's answer must score clean and exact, RoLe's facts valid but not clean, and
+the positive examples declared assumptions not clean; otherwise it stops. `guided` mode hands the model the RoLe facts of that same run.
 
 ---
 

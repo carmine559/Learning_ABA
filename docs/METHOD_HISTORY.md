@@ -699,7 +699,8 @@ The answers were then scored on the hidden examples: gen@k, det@k and the overfi
 
   The step audit is off: it misfires on free prose.
 - **Instrument control.** Before any model call, the algorithm's answer must score
-  clean and exact, and RoLe's facts valid but not clean. Both hold on all 103 problems.
+  clean and exact, and RoLe's facts valid but not clean; from Phase 14, the positives
+  declared assumptions must not score clean. All three hold on all 103 problems.
 - **Provenance.** Each sample's seed is derived from the run seed, the problem, the mode
   and the index, so a resumed run draws the same samples. 4-bit kernels are not bitwise
   deterministic: the seed fixes the draw, not the output.
@@ -731,6 +732,7 @@ with identical results.
 | RoLe's facts | 1.000 | 0.000 | 0.000 | 0.333 | 0.500 |
 | positional rule | 0.777 | **0.777** | 0.000 | **1.000** | 0.500 |
 | one answer for all (leave one out) | 0.417 | 0.417 | **0.388** | 0.350 | 0.500 |
+| positives as assumptions (Phase 14) | 0.990 | 0.000 | 0.000 | 0.333 | 0.500 |
 | tier constant (leave one out), not a floor | 0.951 | 0.951 | 0.951 | 0.967 | 1.000 |
 
 The policies:
@@ -742,6 +744,10 @@ The policies:
   rule reuses the background one.
 - **One answer for all:** the commonest algorithm's answer among the other 102
   problems.
+- **Positives as assumptions:** every positive example declared an assumption,
+  with no rule. It was clean on 102 of the 103 problems until Phase 14 made a
+  learnable predicate as an assumption ill-formed. Added after the smoke run,
+  before set 07; the floors did not move.
 - **Without t5,** the clean@k floor is 0.964 and the exact@k floor 0.482.
 
 **The benchmark has 9 distinct answers.** Anonymisation names by first appearance, so:
@@ -780,6 +786,45 @@ answer.
 9. **No comparison with sets 00–05.** They posed a different problem.
 10. **The finding if nothing is above.** If no cell is above on either primary metric,
     that is the finding.
+
+## Phase 14 — A learnable predicate is not an assumption (Oct 2026)
+
+Found by reading the rows of set 07's smoke run (Qwen2.5-3B, `--benchmark 1`, k = 2)
+by hand, before set 07 ran.
+
+- **The hole.** The two answers scored clean wrote no rule and declared the positive
+  examples assumptions: `NEW RULES: NONE`, then `u(a) defeated_by t(a)` and
+  `u(c) defeated_by t(c)`.
+  - An assumption is an argument for itself, so the framework bravely entails each
+    positive.
+  - With no new rule, the answer is vacuously intensional: Definition 1 defines
+    intensionality on R′ \ R only.
+  - A policy doing this on every problem was valid and clean on 102 of the 103
+    benchmark problems. The registered clean@k floor would have been 0.990, not 0.777.
+- **Decision.** Such an answer is ill-formed. Definition 1 requires T ∩ pred(A) = ∅,
+  and examples are non-assumptions, "derived from the flatness restriction" (p. 3447).
+  The learnt framework must keep both. Algorithm 1 never breaks this: the
+  assumptions it introduces are fresh.
+  - `wellformed_violations` gains the check, for the ground and the schematic form
+    (`u(a)`, `u(X)`), with a regression test.
+  - The instrument control now also requires that the positives declared assumptions
+    do not score clean, on every problem of a run.
+- **Rescored.** Every registered fine-tuning result was rescored, as in Phase 12.
+  - **What changed:** the new message appears in 5 answers of the untrained model (2
+    of 316 on v1, 3 of 300 permuted), all already ill-formed for other reasons. No
+    label, valid, clean or exact value moves, and no figure in any report.
+  - **What was already caught:** the untrained model declares a learnable predicate an
+    assumption in 12 answers on v1 and 9 permuted. The freshness check already caught
+    the rest, because their predicate occurs in the background.
+  - **The fine-tuned arms:** no fine-tuned arm writes such an answer.
+- **Floors.** "Positives as assumptions" joins the floor table: valid 0.990, clean
+  0.000. The registered floors do not move (clean@k 0.777, exact@k 0.388), and the
+  registered reading stands as written.
+- **In the smoke run,** 9 of the 64 answers are ill-formed for this reason, including
+  both that had scored clean.
+- **Provenance.** Every run's code revision read `-dirty`, because the run's own
+  untracked outputs counted. Untracked files other than Python sources no longer
+  count, so `-dirty` now means the code differs from the revision.
 
 ## Pending
 

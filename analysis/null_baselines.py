@@ -50,6 +50,9 @@ sees only the problem as posed, or answers every problem alike:
   RoLe's facts      : line 8's answer as the whole answer; a solution by Theorem 2.
   positional rule   : t(X) :- p(X), a. (`positional_answer`); no rule body is read.
   one answer for all: the commonest algorithm's answer among the other problems.
+  positives as assumptions: every positive example declared an assumption, no rule.
+                      Valid, and clean until a learnable predicate as an assumption
+                      was made ill-formed (METHOD_HISTORY, Phase 14).
 The tier constant (the commonest answer among the other problems of the same
 tier) is reported but is not a floor: no model is given the tier or the other
 answers. Measured on the same benchmark (METHOD_HISTORY, Phase 13):
@@ -59,6 +62,7 @@ answers. Measured on the same benchmark (METHOD_HISTORY, Phase 13):
     RoLe's facts                1.000    0.000    0.000      0.333        0.500
     positional rule             0.777    0.777    0.000      1.000        0.500
     one answer for all          0.417    0.417    0.388      0.350        0.500
+    positives as assumptions    0.990    0.000    0.000      0.333        0.500
     tier constant (not floor)   0.951    0.951    0.951      0.967        1.000
 
 The benchmark has 9 distinct answers, one per tier on t2-t4. With --set,
@@ -87,7 +91,7 @@ from src.aba_evaluation import (ProblemResult, SampleResult, aggregate_results,
 from src.aba_generalization import _pred_of
 from src.aba_probes import (BINARY_KINDS, KINDS, ProbeResult, aggregate_probes,
                             generate_probes, score_probe)
-from src.aba_score import degenerate_answer
+from src.aba_score import degenerate_answer, positives_as_assumptions
 
 # The metric each probe is read by, as named in the probe summary.
 METRIC = {"role": "score", "fold": "accuracy", "check": "balanced_accuracy",
@@ -328,6 +332,7 @@ E2E_POLICIES = {
     "RoLe's facts": lambda pid, ref, const: degenerate_answer(ref),
     "positional rule": lambda pid, ref, const: positional_answer(ref),
     "one answer for all (leave one out)": lambda pid, ref, const: const["all"][pid],
+    "positives as assumptions": lambda pid, ref, const: positives_as_assumptions(ref),
 }
 # Not a floor: it needs the problem's tier and the other problems' answers, which
 # no model is given. It measures how few answers the benchmark has.

@@ -202,6 +202,17 @@ def test_assumption_as_a_rule_head_breaks_flatness(background):
     assert any("flatness" in m for m in wellformed_violations(fw, background, ["u"]))
 
 
+@pytest.mark.parametrize("asm", ["v(a) defeated_by c_v(a)", "v(X) defeated_by c_v(X)"])
+def test_a_learnable_predicate_cannot_become_an_assumption(background, asm):
+    """Declaring the positive examples assumptions was scored clean: valid, and no rule
+    to be ground (102 of the 103 benchmark problems, with no rule learnt)."""
+    fw = parse_llm_output(f"NEW RULES:\nNONE\nNEW ASSUMPTIONS:\n{asm}", background)
+    assert any("learnable" in m for m in wellformed_violations(fw, background, ["v"]))
+    fresh = parse_llm_output("NEW RULES:\nv(X) :- q(X), a1(X).\nNEW ASSUMPTIONS:\n"
+                             "a1(X) defeated_by c_a1(X)", background)
+    assert wellformed_violations(fresh, background, ["v"]) == []
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Constants, domains and intensionality
 # ─────────────────────────────────────────────────────────────────────────────

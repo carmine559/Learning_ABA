@@ -54,6 +54,9 @@ A floor is what a policy that does no reasoning scores through the same scorer, 
   - exact@k **0.388** (one answer for all problems);
   - valid@1 and agreement **1.000**.
 
+  Declaring the positive examples assumptions is valid on 0.990 but clean on none:
+  a learnable predicate as an assumption is ill-formed (METHOD_HISTORY, Phase 14).
+
   The benchmark has only 9 distinct algorithm answers, so the tier constant
   (the commonest answer of the problem's own tier) is exact on 0.951. It is
   reported as a diagnostic, not a floor: no model is given the tier or the other
