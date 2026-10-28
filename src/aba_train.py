@@ -87,9 +87,9 @@ def revision(mid: str) -> str:
     return Path(p).parent.name if isinstance(p, str) else "unknown"
 
 
-def versions() -> Dict[str, Optional[str]]:
+def versions(extra: Tuple[str, ...] = ()) -> Dict[str, Optional[str]]:
     out = {"python": platform.python_version()}
-    for pkg in ("torch", "transformers", "tokenizers", "accelerate", "peft", "clingo"):
+    for pkg in ("torch", "transformers", "tokenizers", "accelerate", "peft", "clingo") + extra:
         try:
             out[pkg] = importlib.metadata.version(pkg)
         except importlib.metadata.PackageNotFoundError:

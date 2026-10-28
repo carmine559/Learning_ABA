@@ -3,6 +3,7 @@ aba_prompts.py
 Prompt construction and LLM output parsing for ABA framework learning.
 """
 from __future__ import annotations
+import hashlib
 import re
 from typing import Optional, List, Dict
 from src.aba_types import Rule, ABAFramework, LearningProblem
@@ -452,6 +453,17 @@ Output your answer in the required format.
 # following an instruction rather than what it learnt. Whatever procedure a
 # model trained under this prompt follows, it got from its training targets.
 _TASK_SFT = """Construct an intensional solution to the problem above."""
+
+# The end-to-end mode prompts (SYSTEM_PROMPT and the four task blocks). Bump on any edit.
+MODE_PROMPT_VERSION = "v4"
+
+
+def mode_prompt_sha256() -> Dict[str, str]:
+    """sha256 of each mode's fixed text, so a run records the words it was asked in."""
+    blocks = {"direct": _TASK_DIRECT, "cot": _TASK_COT, "guided": _TASK_GUIDED_TEMPLATE,
+              "algorithm": _TASK_ALGORITHM}
+    return {m: hashlib.sha256((SYSTEM_PROMPT + t).encode("utf-8")).hexdigest()
+            for m, t in blocks.items()}
 
 # ---------------------------------------------------------------------------
 # Public: build a prompt

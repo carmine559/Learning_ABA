@@ -1,435 +1,244 @@
 """
 aba_evaluation.py
-Evaluation with held-out generalization testing and k-sampling.
+End-to-end evaluation of prompted answers, every problem posed whole.
 
-Key methodological choices:
-  - Example-level train/test split: the LLM learns from TRAIN examples and is
-    scored on HELD-OUT examples, distinguishing learning from memorisation.
-  - k-sampling: each problem is attempted n_samples times; we report pass@1
-    (mean) and pass@k (any success), with standard deviation.
-  - Structured error profile instead of a single first-match error label.
-  - Semantic comparison with the symbolic reference instead of string equality.
+Each answer is scored by `src.aba_score.score_output` against the algorithm's run
+on the same problem: Definition 1 on the posed examples (valid, clean), exact
+agreement with the algorithm's answer, and agreement off the examples. Each
+problem is asked n_samples times, each sample with its own seed; @1 is the mean
+over samples, @k any sample, with Wilson intervals over problems.
 """
 from __future__ import annotations
+
+import collections
+import hashlib
 import json
+import os
 import re
-import time
-import statistics
-from dataclasses import dataclass, field, asdict
-from typing import List, Dict, Optional, Tuple, Any
+from dataclasses import dataclass, field, fields
+from typing import Dict, List, Optional, Tuple
 
-from src.aba_types import Rule, ABAFramework, LearningProblem
 from src.aba_dataset import ABADataset, DatasetEntry
-from src.aba_validator import (
-    validate_llm_solution, check_brave_entailment, check_has_stable_extension,
-    run_rote_learning,
-)
-from src.aba_prompts import problem_to_prompt, parse_llm_output
-from src.aba_model import LLMBackend, ModelResponse
-from src.aba_generalization import (
-    SplitProblem, split_problem_examples, evaluate_generalization,
-    GeneralizationResult, semantic_equivalence, is_intensional_strict,
-    wellformed_violations,
-)
+from src.aba_model import LLMBackend
+from src.aba_prompts import _parse_rule_line, problem_to_prompt
+from src.aba_score import Reference, ScoreCard, balanced, mean, score_output
+
+METRICS = ("valid", "clean", "exact")
+_CARD_FIELDS = {f.name for f in fields(ScoreCard)}
+_TIER_RE = re.compile(r"^(t\d+_[a-z]+)_\d+")
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Single-sample result
-# ──────────────────────────────────────────────────────────────────────────────
-
-@dataclass
-class SampleResult:
-    """Result of one LLM attempt at one problem."""
-    problem_id:   str
-    mode:         str
-    model_name:   str
-    source:       str
-    sample_idx:   int = 0
-
-    # Parsing
-    parse_success: bool = False
-    raw_output:    str  = ""
-    # Every repair the parser applied to reach a framework (misfiled rules,
-    # multiple answer blocks, echoed problem statement). Kept so a score can
-    # always be traced back to what the model literally wrote.
-    parse_repairs: List[str] = field(default_factory=list)
-
-    # Stability
-    has_extension: bool = False
-
-    # Fit + generalisation (the core signals)
-    fit_valid:            bool  = False
-    gen_valid:            bool  = False       # brave: SOME extension is right
-    gen_determined:       bool  = False       # strict: EVERY train-consistent
-                                              # extension is right
-    determinacy_score:    float = 0.0
-    n_free_heldout:       int   = 0
-    generalization_score: float = 0.0
-    overfit_gap:          float = 0.0
-
-    # Solution quality
-    intensional:   bool = False
-    is_degenerate: bool = False
-    n_new_rules:       int = 0
-    n_new_assumptions: int = 0
-
-    # Error profile
-    unentailed_positives: int = 0
-    spurious_negatives:   int = 0
-    # The failing TRAIN examples themselves, not just how many. Makes the
-    # qualitative error analysis possible directly from results_<mode>.jsonl
-    # ("which examples does this model systematically get wrong?") without
-    # re-running the solver.
-    unentailed_positive_atoms: List[str] = field(default_factory=list)
-    spurious_negative_atoms:   List[str] = field(default_factory=list)
-    error_type:           str = "none"
-    # Definition-1 side conditions ((ii), (iv), flatness) violated by the
-    # candidate, if any — such samples are ill-formed regardless of entailment.
-    wellformed_violations: List[str] = field(default_factory=list)
-
-    # Reference comparison (semantic)
-    semantic_match:        bool  = False
-    semantic_agreement:    float = 0.0
-
-    # Cost
-    llm_latency_s:     float = 0.0
-    clingo_time_s:     float = 0.0
-    prompt_tokens:     int = 0
-    completion_tokens: int = 0
-
-    def to_dict(self) -> Dict:
-        return asdict(self)
+def sha256(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def _classify_error(
-    parse_success: bool,
-    has_extension: bool,
-    gen: GeneralizationResult,
-) -> str:
-    if not parse_success:
-        return "parse_error"
-    if not has_extension:
-        return "stability_error"
-    if gen.unentailed_positives > 0 and gen.spurious_negatives > 0:
-        return "both_errors"
-    if gen.unentailed_positives > 0:
-        return "completeness_error"
-    if gen.spurious_negatives > 0:
-        return "soundness_error"
-    if not gen.gen_valid:
-        return "generalization_error"   # fits train, fails held-out
-    if gen.is_degenerate:
-        return "degenerate"             # memorised but happened to generalise
-    return "none"
+def sample_seed(run_seed: int, pid: str, mode: str, idx: int) -> int:
+    """The same seed for the same sample, in whatever order a run reaches it."""
+    return int(sha256(f"{run_seed}:{pid}:{mode}:{idx}")[:8], 16) % 2 ** 31
+
+
+class ResumeMismatch(RuntimeError):
+    """A stored row is not the sample this run would draw: stop, do not mix runs."""
+
+
+def tier_of(pid: str) -> str:
+    """`t1_mono_0007[_anon]` -> `t1_mono`; the built-ins group as `builtin`."""
+    m = _TIER_RE.match(pid)
+    return m.group(1) if m else "builtin"
 
 
 # ──────────────────────────────────────────────────────────────────────────────
 # One sample
 # ──────────────────────────────────────────────────────────────────────────────
 
-def score_llm_output(
-    entry: DatasetEntry,
-    split: SplitProblem,
-    raw_output: str,
-    mode: str,
-    model_name: str,
-    sample_idx: int = 0,
-) -> SampleResult:
-    """Score one raw LLM answer. The single source of truth for every metric.
+@dataclass
+class SampleResult:
+    """One answer to one problem. Every score is in `card`."""
+    problem_id: str
+    mode: str
+    model_name: str
+    sample_idx: int = 0
+    seed: Optional[int] = None
+    problem_sha256: str = ""
+    prompt_sha256: str = ""
+    raw_output: str = ""
+    finish: str = ""                # stop | length | error
+    llm_latency_s: float = 0.0
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    error: str = ""                 # the card's label, llm_error or unscorable:<type>
+    card: ScoreCard = field(default_factory=ScoreCard)
 
-    Kept separate from generation so that `rescore.py` can recompute metrics
-    from the `raw_output` already stored in results_<mode>.jsonl, without
-    spending GPU time again — and so that no second copy of the scoring logic
-    can drift from this one.
-    """
-    problem = split.train          # the LLM only ever sees the training problem
-    r = SampleResult(
-        problem_id=entry.problem.problem_id,
-        mode=mode,
-        model_name=model_name,
-        source=entry.source,
-        sample_idx=sample_idx,
-    )
-    r.raw_output = raw_output
+    def to_dict(self) -> Dict:
+        row = {f.name: getattr(self, f.name) for f in fields(self) if f.name != "card"}
+        row.update({k: v for k, v in self.card.to_dict().items() if k != "error"})
+        return row
 
-    # 2. Parse
-    candidate = parse_llm_output(raw_output, problem.background,
-                                 repairs=r.parse_repairs)
-    r.parse_success = candidate is not None
-    if candidate is None:
-        r.error_type = "parse_error"
-        return r
+    @classmethod
+    def from_dict(cls, row: Dict) -> "SampleResult":
+        card = ScoreCard(**{k: row[k] for k in _CARD_FIELDS if k in row})
+        own = {f.name for f in fields(cls)} - {"card"}
+        return cls(**{k: row[k] for k in own if k in row}, card=card)
 
-    r.n_new_rules       = len(candidate.new_rules)
-    r.n_new_assumptions = len(candidate.new_assumptions)
 
-    # 2b. Definition-1 well-formedness ((ii) learnable heads, (iv) unchanged
-    #     contraries, flatness, assumption freshness). An ill-formed candidate
-    #     is not a legal solution regardless of what it entails.
-    r.wellformed_violations = wellformed_violations(
-        candidate, entry.problem.background, entry.problem.learnable
-    )
-    if r.wellformed_violations:
-        r.error_type = "illformed_solution"
-        return r
-
-    # 3. Stability + generalisation
-    domain = entry.problem.get_domain()
+def score_sample(ref: Reference, raw: str, truncated: bool,
+                 audit: bool = False) -> Tuple[ScoreCard, str]:
+    """Never raises: model text must not stop a GPU job."""
     try:
-        r.has_extension = check_has_stable_extension(candidate, domain)
-        gen = evaluate_generalization(candidate, split, domain=domain)
-    except Exception:
-        r.parse_success = False
-        r.error_type = "parse_error"
-        return r
-
-    r.fit_valid            = gen.fit_valid
-    r.gen_valid            = gen.gen_valid
-    r.gen_determined       = gen.gen_determined
-    r.determinacy_score    = gen.determinacy_score
-    r.n_free_heldout       = gen.n_free_heldout
-    r.generalization_score = gen.generalization_score
-    r.overfit_gap          = gen.overfit_gap
-    r.intensional          = gen.is_intensional
-    r.is_degenerate        = gen.is_degenerate
-    r.unentailed_positives = gen.unentailed_positives
-    r.spurious_negatives   = gen.spurious_negatives
-    r.unentailed_positive_atoms = list(gen.unentailed_positive_atoms)
-    r.spurious_negative_atoms   = list(gen.spurious_negative_atoms)
-    r.error_type           = _classify_error(r.parse_success, r.has_extension, gen)
-
-    # 4. Semantic comparison with the symbolic reference (if available)
-    if entry.solution is not None:
-        target = entry.problem.learnable[0] if entry.problem.learnable else None
-        if target:
-            match, frac = semantic_equivalence(
-                candidate, entry.solution, target, domain
-            )
-            r.semantic_match     = match
-            r.semantic_agreement = frac
-
-    return r
+        card = score_output(raw, ref, truncated=truncated, audit=audit)
+        return card, card.error
+    except Exception as exc:                       # noqa: BLE001
+        return ScoreCard(truncated=truncated), f"unscorable:{type(exc).__name__}"
 
 
 def evaluate_one_sample(
     entry: DatasetEntry,
-    split: SplitProblem,
+    ref: Reference,
     backend: LLMBackend,
     mode: str,
     sample_idx: int = 0,
     temperature: float = 0.7,
     max_tokens: int = 1024,
-    precomputed_role_facts: Optional[List[Rule]] = None,
+    run_seed: int = 0,
+    problem_sha256: str = "",
+    role_facts=None,
+    audit: bool = False,
 ) -> SampleResult:
-    """Prompt the model once, then score its answer with `score_llm_output`.
+    """Prompt the model once, then score its answer.
 
-    Deliberately ONE turn. The thesis measures whether a model can execute
-    ASP-ABAlearnB unaided; any follow-up turn that carries the solver's verdict
-    back to the model would be measuring oracle-guided search instead, and a
-    result obtained that way could not be reported as replication.
+    Deliberately ONE turn: a follow-up carrying the solver's verdict back to the
+    model would measure oracle-guided search, not replication.
     """
-    model_name = getattr(backend, "model", type(backend).__name__)
-
-    prompt = problem_to_prompt(
-        split.train, mode=mode, precomputed_role_facts=precomputed_role_facts
-    )
+    pid = entry.problem.problem_id
+    prompt = problem_to_prompt(entry.problem, mode=mode,
+                               precomputed_role_facts=role_facts)
+    s = SampleResult(problem_id=pid, mode=mode,
+                     model_name=getattr(backend, "model", type(backend).__name__),
+                     sample_idx=sample_idx, seed=sample_seed(run_seed, pid, mode, sample_idx),
+                     problem_sha256=problem_sha256, prompt_sha256=sha256(prompt))
     try:
-        resp = backend.generate(prompt, temperature=temperature, max_tokens=max_tokens)
-    except Exception as exc:
+        resp = backend.generate(prompt, temperature=temperature,
+                                max_tokens=max_tokens, seed=s.seed)
+    except Exception as exc:                       # noqa: BLE001
         import traceback
-        r = SampleResult(
-            problem_id=entry.problem.problem_id, mode=mode,
-            model_name=model_name, source=entry.source, sample_idx=sample_idx,
-        )
-        r.error_type = "llm_error"
-        # Keep the full traceback: an opaque "AttributeError:" with no frames
-        # costs a cluster run to diagnose. This lands in results_<mode>.jsonl.
-        r.raw_output = (f"[LLM ERROR] {type(exc).__name__}: {exc}\n"
+        # The full traceback: an opaque error costs a cluster run to diagnose.
+        s.finish, s.error = "error", "llm_error"
+        s.raw_output = (f"[LLM ERROR] {type(exc).__name__}: {exc}\n"
                         + traceback.format_exc())
-        return r
-
-    r = score_llm_output(entry, split, resp.text, mode, model_name, sample_idx)
-    r.llm_latency_s     = resp.latency_s
-    r.prompt_tokens     = resp.prompt_tokens
-    r.completion_tokens = resp.completion_tokens
-    # A truncated answer is a budget failure, not a reasoning failure — record
-    # it so --max-tokens can be ruled in or out as a cause. Prefer the
-    # backend's own finish_reason where it reports one; fall back to the token
-    # count, which is all some backends expose.
-    if getattr(resp, "finish_reason", None) == "length" or (
-        resp.completion_tokens and resp.completion_tokens >= max_tokens
-    ):
-        r.parse_repairs.append(f"output hit the {max_tokens}-token cap")
-    return r
+        return s
+    s.raw_output = resp.text
+    s.llm_latency_s = resp.latency_s
+    s.prompt_tokens, s.completion_tokens = resp.prompt_tokens, resp.completion_tokens
+    s.finish = resp.finish_reason or (
+        "length" if resp.completion_tokens and resp.completion_tokens >= max_tokens
+        else "stop")
+    s.card, s.error = score_sample(ref, resp.text, s.finish == "length", audit)
+    return s
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# k-sampling per problem
+# k samples per problem
 # ──────────────────────────────────────────────────────────────────────────────
 
 @dataclass
 class ProblemResult:
-    """Aggregated result over k samples of one problem."""
     problem_id: str
-    mode:       str
+    mode: str
     model_name: str
-    source:     str
-    samples:    List[SampleResult] = field(default_factory=list)
+    structure: str = ""             # src.aba_corpus.structural_signature
+    samples: List[SampleResult] = field(default_factory=list)
 
-    # pass@1 — mean over independent samples
-    fit_at_1:  float = 0.0
-    gen_at_1:  float = 0.0
-    # pass@k — success if ANY sample succeeds
-    fit_at_k:  bool  = False
-    gen_at_k:  bool  = False
-    # STRICT generalisation (every train-consistent extension gets the held-out
-    # examples right). gen_* alone cannot separate learning from a framework
-    # that merely leaves the unseen atoms free.
-    det_at_1:  float = 0.0
-    det_at_k:  bool  = False
-    determinacy_mean: float = 0.0
-    free_heldout_mean: float = 0.0
-    # STRICT success (the ABA-Learning definition): the sample fits ALL
-    # training examples AND generalises to held-out AND is stable AND is not
-    # degenerate — i.e. error_type == "none". gen@k alone flatters solutions
-    # that violate the training negatives (e.g. 80% gen@k with 0% fit on t3).
-    clean_at_1: float = 0.0
-    clean_at_k: bool  = False
-    # variability
-    gen_score_mean: float = 0.0
-    gen_score_std:  float = 0.0
-    # quality (over samples that produced a parseable, valid-fit solution)
-    intensional_rate: float = 0.0
-    degenerate_rate:  float = 0.0
-    parse_rate:       float = 0.0
-    mean_overfit_gap: float = 0.0
+    @property
+    def tier(self) -> str:
+        return tier_of(self.problem_id)
 
-    def compute(self) -> None:
-        n = len(self.samples)
-        if n == 0:
-            return
-        self.parse_rate = sum(s.parse_success for s in self.samples) / n
-        self.fit_at_1   = sum(s.fit_valid for s in self.samples) / n
-        self.gen_at_1   = sum(s.gen_valid for s in self.samples) / n
-        self.fit_at_k   = any(s.fit_valid for s in self.samples)
-        self.gen_at_k   = any(s.gen_valid for s in self.samples)
-        self.det_at_1   = sum(s.gen_determined for s in self.samples) / n
-        self.det_at_k   = any(s.gen_determined for s in self.samples)
-        self.determinacy_mean  = statistics.mean(s.determinacy_score
-                                                 for s in self.samples)
-        self.free_heldout_mean = statistics.mean(float(s.n_free_heldout)
-                                                 for s in self.samples)
-        clean = [s.error_type == "none" for s in self.samples]
-        self.clean_at_1 = sum(clean) / n
-        self.clean_at_k = any(clean)
-        scores = [s.generalization_score for s in self.samples]
-        self.gen_score_mean = statistics.mean(scores)
-        self.gen_score_std  = statistics.pstdev(scores) if n > 1 else 0.0
-        self.mean_overfit_gap = statistics.mean(s.overfit_gap for s in self.samples)
-        # quality among fit-valid samples
-        fit_samples = [s for s in self.samples if s.fit_valid]
-        if fit_samples:
-            self.intensional_rate = sum(s.intensional for s in fit_samples) / len(fit_samples)
-            self.degenerate_rate  = sum(s.is_degenerate for s in fit_samples) / len(fit_samples)
+    def at_1(self, key: str) -> float:
+        """Mean over the samples."""
+        if not self.samples:
+            return 0.0
+        return sum(bool(getattr(s.card, key)) for s in self.samples) / len(self.samples)
 
-    def to_dict(self) -> Dict:
-        d = {k: v for k, v in asdict(self).items() if k != "samples"}
-        d["n_samples"] = len(self.samples)
-        return d
+    def at_k(self, key: str) -> bool:
+        """Any sample."""
+        return any(getattr(s.card, key) for s in self.samples)
 
-
-def evaluate_problem(
-    entry: DatasetEntry,
-    backend: LLMBackend,
-    mode: str,
-    n_samples: int = 5,
-    temperature: float = 0.7,
-    max_tokens: int = 1024,
-    test_ratio: float = 0.34,
-    split_seed: int = 42,
-) -> ProblemResult:
-    # Build the train/test split once
-    split = split_problem_examples(
-        entry.problem, test_ratio=test_ratio, seed=split_seed
-    )
-
-    # Precompute RoLe facts once for guided mode (avoids repeated ASP calls).
-    # IMPORTANT: RoLe is run on the TRAIN problem only — no test-set leakage.
-    precomputed = None
-    if mode == "guided":
-        precomputed, _ok, _ = run_rote_learning(split.train)
-
-    result = ProblemResult(
-        problem_id=entry.problem.problem_id,
-        mode=mode,
-        model_name=getattr(backend, "model", type(backend).__name__),
-        source=entry.source,
-    )
-    for i in range(n_samples):
-        s = evaluate_one_sample(
-            entry, split, backend, mode,
-            sample_idx=i,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            precomputed_role_facts=precomputed,
-        )
-        result.samples.append(s)
-    result.compute()
-    return result
-
-
-# ──────────────────────────────────────────────────────────────────────────────
-# Dataset-level evaluation
-# ──────────────────────────────────────────────────────────────────────────────
 
 def evaluate_dataset(
     dataset: ABADataset,
+    refs: Dict[str, Reference],
     backend: LLMBackend,
     mode: str,
-    n_samples: int = 5,
+    n_samples: int = 3,
     temperature: float = 0.7,
     max_tokens: int = 1024,
-    test_ratio: float = 0.34,
+    run_seed: int = 0,
+    structures: Optional[Dict[str, str]] = None,
+    problem_sha: Optional[Dict[str, str]] = None,
+    rows_path: Optional[str] = None,
+    audit: bool = False,
     verbose: bool = True,
 ) -> List[ProblemResult]:
-    results: List[ProblemResult] = []
-    n = len(dataset)
-    _api_error_shown = False
-    for i, entry in enumerate(dataset):
-        pid = entry.problem.problem_id
-        if verbose:
-            print(f"  [{i+1}/{n}] {pid} (k={n_samples}) ...", end=" ")
-        pr = evaluate_problem(
-            entry, backend, mode,
-            n_samples=n_samples,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            test_ratio=test_ratio,
-        )
-        results.append(pr)
-        if verbose:
-            print(f"gen@1={pr.gen_at_1:.0%} gen@k={'yes' if pr.gen_at_k else 'no'} "
-                  f"fit@1={pr.fit_at_1:.0%} parse={pr.parse_rate:.0%}")
+    """Every problem with a reference, n_samples each.
 
-        # Surface the actual LLM error the first time it happens — otherwise an
-        # invalid model id or a backend bug looks like a silent parse failure.
-        if not _api_error_shown:
-            llm_errs = [s for s in pr.samples if s.error_type == "llm_error"]
-            if llm_errs:
-                _api_error_shown = True
-                backend_name = type(backend).__name__
-                print(f"\n  [!] LLM ERROR DETECTED (backend={backend_name}) - "
-                      "the generate() call is failing, not the parser.")
-                print(f"     {llm_errs[0].raw_output}")
-                if backend_name == "GroqBackend":
-                    print("     Check model ids at "
-                          "https://console.groq.com/docs/models\n")
-                elif backend_name == "LocalHFBackend":
-                    print("     Check the HF model id / VRAM fit; "
-                          "full traceback above.\n")
+    Rows are appended to `rows_path` as they are scored and rows already there
+    are reused, so a killed run resumes; a reused row must be the same sample
+    (same seed and prompt), or the run stops.
+    """
+    model_name = getattr(backend, "model", type(backend).__name__)
+    done: Dict[Tuple[str, int], SampleResult] = {}
+    if rows_path and os.path.exists(rows_path):
+        with open(rows_path, encoding="utf-8") as fh:
+            for line in fh:
+                if line.strip():
+                    s = SampleResult.from_dict(json.loads(line))
+                    if s.mode == mode:
+                        done[(s.problem_id, s.sample_idx)] = s
+    out = open(rows_path, "a", encoding="utf-8") if rows_path else None
+    entries = [e for e in dataset if e.problem.problem_id in refs]
+    results: List[ProblemResult] = []
+    shown_error = False
+    try:
+        for i, entry in enumerate(entries, 1):
+            pid = entry.problem.problem_id
+            ref = refs[pid]
+            role_facts = ([_parse_rule_line(f) for f in ref.record.role_facts]
+                          if mode == "guided" else None)
+            pr = ProblemResult(pid, mode, model_name,
+                               structure=(structures or {}).get(pid, ""))
+            for idx in range(n_samples):
+                s = done.get((pid, idx))
+                if s is not None:
+                    want = problem_to_prompt(entry.problem, mode=mode,
+                                             precomputed_role_facts=role_facts)
+                    if (s.seed, s.prompt_sha256, s.model_name) != (
+                            sample_seed(run_seed, pid, mode, idx), sha256(want), model_name):
+                        raise ResumeMismatch(
+                            f"{rows_path} holds a row of another run ({pid} #{idx}); "
+                            "move it away or use another --output")
                 else:
-                    print("     Common causes: invalid --model id, missing or "
-                          "expired API key, or rate limiting.\n")
+                    s = evaluate_one_sample(
+                        entry, ref, backend, mode, sample_idx=idx,
+                        temperature=temperature, max_tokens=max_tokens,
+                        run_seed=run_seed, problem_sha256=(problem_sha or {}).get(pid, ""),
+                        role_facts=role_facts, audit=audit)
+                    if out:
+                        out.write(json.dumps(s.to_dict()) + "\n")
+                        out.flush()
+                pr.samples.append(s)
+            results.append(pr)
+            if verbose:
+                print(f"  [{i}/{len(entries)}] {pid}: clean {pr.at_1('clean'):.0%} "
+                      f"exact {pr.at_1('exact'):.0%} parse {pr.at_1('parse_ok'):.0%}")
+            # The first LLM error, in full: otherwise a bad model id looks like
+            # a run of unparseable answers.
+            errs = [s for s in pr.samples if s.error == "llm_error"]
+            if errs and not shown_error:
+                shown_error = True
+                print(f"\n  [!] LLM ERROR ({type(backend).__name__}): "
+                      f"{errs[0].raw_output}\n")
+    finally:
+        if out:
+            out.close()
     return results
 
 
@@ -438,12 +247,7 @@ def evaluate_dataset(
 # ──────────────────────────────────────────────────────────────────────────────
 
 def wilson_interval(successes: float, n: int, z: float = 1.96) -> List[float]:
-    """Wilson 95% score interval for a proportion.
-
-    Reported alongside every headline rate: at n≈103 problems the sampling
-    error is several points wide, which matters when comparing model×mode
-    cells that differ by less than that.
-    """
+    """Wilson 95% score interval for a proportion."""
     if n <= 0:
         return [0.0, 0.0]
     p = successes / n
@@ -455,143 +259,85 @@ def wilson_interval(successes: float, n: int, z: float = 1.96) -> List[float]:
 
 
 def aggregate_results(results: List[ProblemResult]) -> Dict:
+    """@1 and @k for valid, clean and exact, with the answer-level details."""
     if not results:
         return {}
     n = len(results)
-
-    def _mean(key):
-        return sum(getattr(r, key) for r in results) / n
-
-    def _rate(key):
-        """Mean of a per-problem @k boolean, with its Wilson interval."""
-        s = sum(bool(getattr(r, key)) for r in results)
-        return round(s / n, 3), wilson_interval(s, n)
-
-    error_counts: Dict[str, int] = {}
-    repair_counts: Dict[str, int] = {}
-    for r in results:
-        for s in r.samples:
-            error_counts[s.error_type] = error_counts.get(s.error_type, 0) + 1
-            for rep in s.parse_repairs:
-                key = rep.split(":")[0]
-                repair_counts[key] = repair_counts.get(key, 0) + 1
-
-    # Quality rates are only defined over samples that produced a fitting
-    # solution. Averaging the 0.0 that a problem with no such sample carries
-    # would report "0% intensional" where the honest answer is "undefined".
-    with_fit = [r for r in results if any(s.fit_valid for s in r.samples)]
-    n_fit = len(with_fit)
-
-    def _quality(key):
-        if not with_fit:
-            return None
-        return round(sum(getattr(r, key) for r in with_fit) / n_fit, 3)
-
-    fit_k, fit_ci     = _rate("fit_at_k")
-    gen_k, gen_ci     = _rate("gen_at_k")
-    det_k, det_ci     = _rate("det_at_k")
-    clean_k, clean_ci = _rate("clean_at_k")
-
-    return {
-        "n_problems":        n,
-        "parse_rate":        round(_mean("parse_rate"), 3),
-        "fit_at_1":          round(_mean("fit_at_1"), 3),
-        "gen_at_1":          round(_mean("gen_at_1"), 3),
-        "det_at_1":          round(_mean("det_at_1"), 3),
-        "fit_at_k":          fit_k,
-        "gen_at_k":          gen_k,
-        "det_at_k":          det_k,
-        "clean_at_1":        round(_mean("clean_at_1"), 3),
-        "clean_at_k":        clean_k,
-        "ci95": {
-            "fit_at_k":   fit_ci,
-            "gen_at_k":   gen_ci,
-            "det_at_k":   det_ci,
-            "clean_at_k": clean_ci,
-        },
-        "gen_score_mean":    round(_mean("gen_score_mean"), 3),
-        "determinacy_mean":  round(_mean("determinacy_mean"), 3),
-        "free_heldout_mean": round(_mean("free_heldout_mean"), 3),
-        "mean_overfit_gap":  round(_mean("mean_overfit_gap"), 3),
-        "n_problems_with_fit": n_fit,
-        "intensional_rate":  _quality("intensional_rate"),
-        "degenerate_rate":   _quality("degenerate_rate"),
-        "error_breakdown":   error_counts,
-        "parse_repairs":     repair_counts,
-    }
+    samples = [s for r in results for s in r.samples]
+    cards = [s.card for s in samples]
+    out: Dict = {"n_problems": n,
+                 "n_structures": len({r.structure or r.problem_id for r in results}),
+                 "n_samples": len(samples)}
+    ci = {}
+    for key in METRICS:
+        k = sum(r.at_k(key) for r in results)
+        out[f"{key}_at_1"] = round(sum(r.at_1(key) for r in results) / n, 3)
+        out[f"{key}_at_k"] = round(k / n, 3)
+        ci[f"{key}_at_k"] = wilson_interval(k, n)
+    out["ci95"] = ci
+    # Agreement over the answers where it is defined, as in sft/eval_sft.py.
+    out["agreement"] = mean(c.agreement for c in cards)
+    out["parse_rate"] = mean(c.parse_ok for c in cards)
+    out["truncated_rate"] = mean(c.truncated for c in cards)
+    out["intensional_rate"] = mean(c.intensional for c in cards if c.valid)
+    r3 = collections.Counter(f"{'yes' if c.ref_defeasible else 'no'}/"
+                             f"{'yes' if c.defeasible else 'no'}"
+                             for c in cards if c.defeasible is not None)
+    out["r3"] = dict(r3)
+    out["r3_balanced"] = balanced(r3)
+    r2 = collections.Counter()
+    for c in cards:
+        r2.update(c.r2_bodies)
+    out["r2_exact"] = round(r2["exact"] / r2["n"], 4) if r2["n"] else None
+    # `direct` asks for an answer, not a derivation: it has no trace to score.
+    out["trace_f1"] = mean(c.trace_fidelity["f1"] for s, c in zip(samples, cards)
+                           if s.mode != "direct" and c.trace_fidelity
+                           and c.trace_fidelity["has_trace"])
+    out["errors"] = dict(collections.Counter(s.error for s in samples))
+    out["parse_repairs"] = dict(collections.Counter(
+        rep.split(":")[0] for c in cards for rep in c.repairs))
+    return out
 
 
-_TIER_RE = re.compile(r"^(t\d+_[a-z]+)_\d+")
-
-
-def tier_breakdown(
-    results_by_mode: Dict[str, List[ProblemResult]],
-) -> Dict[str, Dict[str, Dict]]:
-    """Aggregate per benchmark tier: mode -> tier -> metrics.
-
-    The tier is read from the problem-id prefix (``t1_mono_0007[_anon]`` ->
-    ``t1_mono``); the three built-ins group as ``builtin``. Returns {} when no
-    benchmark problems are present, so the section only appears for
-    ``--benchmark`` runs.
-    """
+def tier_breakdown(results_by_mode: Dict[str, List[ProblemResult]]) -> Dict[str, Dict[str, Dict]]:
+    """mode -> tier -> aggregate; {} when no benchmark problems are present."""
     out: Dict[str, Dict[str, Dict]] = {}
-    any_tier = False
     for mode, results in results_by_mode.items():
-        groups: Dict[str, List[ProblemResult]] = {}
+        groups: Dict[str, List[ProblemResult]] = collections.defaultdict(list)
         for pr in results:
-            m = _TIER_RE.match(pr.problem_id)
-            any_tier = any_tier or bool(m)
-            groups.setdefault(m.group(1) if m else "builtin", []).append(pr)
-        out[mode] = {tier: aggregate_results(prs) for tier, prs in groups.items()}
-    return out if any_tier else {}
+            groups[pr.tier].append(pr)
+        out[mode] = {tier: aggregate_results(prs) for tier, prs in sorted(groups.items())}
+    return out if any(t != "builtin" for m in out.values() for t in m) else {}
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Complexity analysis (for scatter plots)
-# ──────────────────────────────────────────────────────────────────────────────
+def summarise(results_by_mode: Dict[str, List[ProblemResult]], run: Dict) -> Dict:
+    """summary.json: the run's provenance, one aggregate per mode, and per tier."""
+    summary: Dict = {"run": run}
+    summary.update({mode: aggregate_results(rs) for mode, rs in results_by_mode.items()})
+    by_tier = tier_breakdown(results_by_mode)
+    if by_tier:
+        summary["by_tier"] = by_tier
+    return summary
 
-def complexity_analysis(
-    dataset: ABADataset,
-    results: List[ProblemResult],
-) -> List[Dict]:
-    rows = []
+
+def complexity_analysis(dataset: ABADataset, results: List[ProblemResult]) -> List[Dict]:
+    """One row per problem: its size against clean@k, for the scatter plot."""
     rmap = {r.problem_id: r for r in results}
+    rows = []
     for entry in dataset:
-        pid = entry.problem.problem_id
-        r = rmap.get(pid)
+        r = rmap.get(entry.problem.problem_id)
         if r is None:
             continue
+        p = entry.problem
         rows.append({
-            "problem_id":         pid,
-            "n_background_rules": len(entry.problem.background.rules),
-            "n_assumptions":      len(entry.problem.background.assumptions),
-            "n_positive":         len(entry.problem.positive),
-            "n_negative":         len(entry.problem.negative),
-            "domain_size":        len(entry.problem.get_domain()),
-            "valid":              r.gen_at_k,          # use generalisation
-            "gen_at_1":           r.gen_at_1,
-            "intensional":        r.intensional_rate >= 0.5,
+            "problem_id": p.problem_id,
+            "n_background_rules": len(p.background.rules),
+            "n_assumptions": len(p.background.assumptions),
+            "n_positive": len(p.positive),
+            "n_negative": len(p.negative),
+            "domain_size": len(p.get_domain()),
+            "clean_at_k": r.at_k("clean"),
+            "clean_at_1": r.at_1("clean"),
+            "exact_at_k": r.at_k("exact"),
         })
     return rows
-
-
-# ──────────────────────────────────────────────────────────────────────────────
-# Symbolic reference comparison
-# ──────────────────────────────────────────────────────────────────────────────
-
-def compare_with_reference(
-    dataset: ABADataset,
-    results: List[ProblemResult],
-) -> Dict:
-    rmap = {r.problem_id: r for r in results}
-    n_ref = sum(1 for e in dataset if e.solution is not None)
-    n_gen = sum(1 for r in results if r.gen_at_k)
-    n_semantic = 0
-    for r in results:
-        if any(s.semantic_match for s in r.samples):
-            n_semantic += 1
-    return {
-        "reference_solutions_available": n_ref,
-        "llm_generalises_at_k":          n_gen,
-        "llm_semantically_matches_ref":  n_semantic,
-    }

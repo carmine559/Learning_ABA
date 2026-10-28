@@ -874,13 +874,15 @@ _TRACE_FIELDS = ("has_trace", "precision", "recall", "f1", "align_exact",
 
 
 def score_output(raw: str, ref: Reference, meta: Optional[Dict] = None,
-                 truncated: bool = False) -> ScoreCard:
+                 truncated: bool = False, audit: bool = True) -> ScoreCard:
+    """`audit=False` skips the step audit, for answers that are not written traces."""
     p = ref.problem
     bg, dom = p.background, p.get_domain()
     card = ScoreCard(truncated=truncated, ref_defeasible=_defeasible(ref.solution))
     cand = parse_llm_output(raw, bg, card.repairs)
     card.parse_ok = cand is not None
-    card.audit = audit_trace(raw, p, ref.trace_target, truncated)   # even without its answer
+    if audit:
+        card.audit = audit_trace(raw, p, ref.trace_target, truncated)  # even without its answer
     if cand is None:
         card.error = "parse_error"
         return card
@@ -938,6 +940,22 @@ def reward(card: ScoreCard, w: Dict = REWARD_WEIGHTS) -> float:
     if w["process"] and card.audit:
         r += w["process"] * (card.audit["accuracy"] or 0.0)
     return r
+
+
+def mean(xs) -> Optional[float]:
+    """Mean over the defined values; None when there are none."""
+    xs = [x for x in xs if x is not None]
+    return round(sum(xs) / len(xs), 4) if xs else None
+
+
+def balanced(c: collections.Counter) -> Optional[float]:
+    """Mean of the recall on truth-yes and on truth-no; 0.5 for any constant answer.
+
+    Keys are `truth/said`; an omitted decision is a miss.
+    """
+    yes = c["yes/yes"] + c["yes/no"] + c["yes/omitted"]
+    no = c["no/no"] + c["no/yes"] + c["no/omitted"]
+    return round((c["yes/yes"] / yes + c["no/no"] / no) / 2, 4) if yes and no else None
 
 
 # ─────────────────────────────────────────────────────────────────────────────

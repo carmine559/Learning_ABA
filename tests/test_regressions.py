@@ -24,12 +24,11 @@ from src.aba_algorithm import solve_aba_learning
 from src.aba_anonymize import verify_invariance
 from src.aba_generalization import (
     is_intensional_strict, rule_contains_constant, wellformed_violations,
-    split_problem_examples, evaluate_generalization,
 )
 from src.aba_prompts import (
     parse_llm_output, problem_to_prompt, _parse_rule_line, _split_body,
 )
-from src.aba_validator import _build_asp, conditioned_status, witness_extension
+from src.aba_validator import _build_asp, conditioned_status
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -235,9 +234,10 @@ def test_propositional_assumption_gets_no_dom_guard():
 # ─────────────────────────────────────────────────────────────────────────────
 
 def test_free_choice_framework_is_caught_by_determinacy():
-    """The reference Nixon solution leaves pacifist(e) FREE once e is held out:
-    some extension consistent with the training examples accepts it and another
-    rejects it, so a brave check scores a coin flip as a success."""
+    """Off the conditioning examples, the reference Nixon solution leaves
+    pacifist(e) FREE: one extension with pacifist(a) and without pacifist(b)
+    accepts it and another rejects it, so brave entailment of an atom is not
+    evidence that the framework decides it."""
     problem, _ = make_nixon_diamond()
     solution, trace = solve_aba_learning(problem)
     assert trace.success
@@ -249,25 +249,6 @@ def test_free_choice_framework_is_caught_by_determinacy():
     assert status["pacifist(e)"] == "FREE"
     assert status["pacifist(a)"] == "ALWAYS"
     assert status["pacifist(d)"] == "NEVER"
-
-
-def test_witness_extension_is_a_real_extension():
-    problem, _ = make_nixon_diamond()
-    solution, _ = solve_aba_learning(problem)
-    w = witness_extension(solution, problem.positive, problem.negative,
-                          problem.get_domain())
-    assert w is not None
-    assert all(e.replace(" ", "") in w for e in problem.positive)
-    assert all(e.replace(" ", "") not in w for e in problem.negative)
-
-
-def test_determined_generalisation_implies_brave_generalisation():
-    problem = make_flies_problem()
-    split = split_problem_examples(problem)
-    solution, trace = solve_aba_learning(split.train)
-    assert trace.success
-    g = evaluate_generalization(solution, split, domain=problem.get_domain())
-    assert not g.gen_determined or g.gen_valid
 
 
 # ─────────────────────────────────────────────────────────────────────────────

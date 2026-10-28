@@ -17,9 +17,12 @@ Usage:
 """
 from __future__ import annotations
 import argparse
+import datetime
 import json
 import os
-from typing import List, Dict, Optional, Any
+import random
+import sys
+from typing import List, Dict, Optional, Any, Tuple
 
 # ── project imports ──────────────────────────────────────────────────────────
 from src.aba_types      import ABAFramework
@@ -27,13 +30,17 @@ from src.aba_dataset    import ABADataset
 from src.aba_algorithm  import solve_aba_learning
 from src.aba_model      import get_backend, LLMBackend
 from src.aba_evaluation import (
-    ProblemResult, evaluate_dataset, aggregate_results, complexity_analysis,
-    tier_breakdown,
+    ProblemResult, ResumeMismatch, evaluate_dataset, aggregate_results,
+    complexity_analysis, sha256, summarise,
 )
 from src.aba_probes import (
     run_probes, aggregate_probes, KINDS as PROBE_KINDS,
 )
-from extras.aba_visualization import save_all_plots
+from src.aba_prompts import MODE_PROMPT_VERSION, mode_prompt_sha256
+from src.aba_score import Reference, degenerate_answer, reference, score_output
+from src.aba_sft import Untrainable
+
+SEED_DERIVATION = "int(sha256(f'{sampling_seed}:{problem_id}:{mode}:{sample_idx}')[:8], 16) % 2**31"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -99,9 +106,56 @@ def build_dataset(
             _save_name_maps(ds, output_dir)
 
     stats = ds.stats()
-    print(f"  Solved: {stats['solved']}/{stats['total']}  "
-          f"avg_bg_rules={stats['avg_background_rules']}")
+    if solve_symbolic:
+        print(f"  Solved: {stats['solved']}/{stats['total']}  "
+              f"avg_bg_rules={stats['avg_background_rules']}")
     return ds
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# References: the algorithm's run on every problem, posed whole
+# ─────────────────────────────────────────────────────────────────────────────
+
+def build_references(ds: ABADataset) -> Tuple[Dict[str, Reference], Dict[str, str],
+                                               Dict[str, str], Dict[str, str], List[Dict]]:
+    """(refs, structures, problem_sha, excluded, rows) for every problem of `ds`.
+
+    A problem whose run cannot be a target (`Untrainable`) is excluded, with its
+    reason; `rows` is references.jsonl.
+    """
+    from src.aba_corpus import problem_to_dict, structural_signature
+    refs: Dict[str, Reference] = {}
+    structures, problem_sha, excluded = {}, {}, {}
+    rows: List[Dict] = []
+    for entry in ds:
+        p = entry.problem
+        pid = p.problem_id
+        problem_sha[pid] = sha256(json.dumps(problem_to_dict(p), sort_keys=True))
+        structures[pid] = structural_signature(p)
+        try:
+            ref = refs[pid] = reference(p)
+        except Untrainable as exc:
+            excluded[pid] = str(exc)
+            continue
+        rows.append({"problem_id": pid, "problem_sha256": problem_sha[pid],
+                     "structure": structures[pid],
+                     "endpoint_target": ref.endpoint_target,
+                     "role_facts": list(ref.record.role_facts), "status": ref.status})
+    return refs, structures, problem_sha, excluded, rows
+
+
+def instrument_control(refs: Dict[str, Reference]) -> List[str]:
+    """Before any model call: the algorithm's answer must score clean and exact, and
+    RoLe's facts valid but not clean, or the scorer does not measure what it claims."""
+    bad = []
+    for pid, ref in refs.items():
+        gold = score_output(ref.endpoint_target, ref, audit=False)
+        deg = score_output(degenerate_answer(ref), ref, audit=False)
+        if not (gold.clean and gold.exact):
+            bad.append(f"{pid}: the algorithm's answer scores {gold.error}, exact {gold.exact}")
+        if not deg.valid or deg.clean:
+            bad.append(f"{pid}: RoLe's facts score valid {deg.valid}, clean {deg.clean}")
+    return bad
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -110,23 +164,13 @@ def build_dataset(
 
 def run_symbolic_baseline(ds: ABADataset, verbose: bool = False,
                           output_dir: Optional[str] = None) -> Dict:
-    """Run ASP-ABAlearnB twice per problem, for two different purposes.
+    """Run ASP-ABAlearnB on every problem, posed whole.
 
-      * on the FULL problem — the reference solution used for export and for
-        the semantic comparison; this is the algorithm doing its published job;
-      * on the TRAIN split only, then scored on the held-out examples exactly
-        like an LLM sample. Only this second number is comparable with the LLM
-        rows: every LLM sees the training split alone, so a 100% built from the
-        full problem is a different task, not a ceiling.
+    The solution and trace go on the entry (graded analysis, export) and the
+    traces to symbolic_traces.jsonl.
     """
-    from src.aba_generalization import split_problem_examples, evaluate_generalization
-
     print("\n=== Symbolic baseline (ASP-ABAlearnB) ===")
-    results = {
-        "total": 0, "solved": 0, "intensional": 0,
-        "train_solved": 0, "train_gen": 0, "train_determined": 0,
-        "problems": [],
-    }
+    results = {"total": 0, "solved": 0, "intensional": 0, "problems": []}
     traces: List[Dict] = []
 
     for entry in ds:
@@ -149,40 +193,19 @@ def run_symbolic_baseline(ds: ABADataset, verbose: bool = False,
         entry.trace = trace
         traces.append(trace.to_dict())
 
-        # ── the comparable, train-only run ───────────────────────────────────
-        split = split_problem_examples(problem)
-        tr_sol, tr_trace = solve_aba_learning(split.train)
-        tr_ok = tr_sol is not None and tr_trace.success
-        tr_gen = tr_det = False
-        if tr_ok:
-            g = evaluate_generalization(tr_sol, split, domain=problem.get_domain())
-            tr_gen, tr_det = g.gen_valid, g.gen_determined
-        results["train_solved"]     += int(tr_ok)
-        results["train_gen"]        += int(tr_gen)
-        results["train_determined"] += int(tr_det)
-
         results["problems"].append({
             "problem_id": problem.problem_id,
             "solved": ok,
             "intensional": inten,
             "n_steps": len(trace.steps),
             "n_new_rules": len(solution.new_rules) if solution else 0,
-            "train_solved": tr_ok,
-            "train_gen_valid": tr_gen,
-            "train_gen_determined": tr_det,
         })
-
-        status = "OK intensional" if inten else ("OK ground" if ok else "FAIL")
-        print(f"  {problem.problem_id}: {status}"
-              f"   [train-only: {'gen' if tr_gen else 'no-gen'}"
-              f"/{'determined' if tr_det else 'undetermined'}]")
+        print(f"  {problem.problem_id}: "
+              f"{'OK intensional' if inten else ('OK ground' if ok else 'FAIL')}")
 
     n = results["total"]
-    print(f"\nSymbolic (full problem): {results['solved']}/{n} solved, "
+    print(f"Symbolic: {results['solved']}/{n} solved, "
           f"{results['intensional']}/{n} intensional")
-    print(f"Symbolic (train only, comparable with the LLM rows): "
-          f"{results['train_gen']}/{n} generalise, "
-          f"{results['train_determined']}/{n} determined")
 
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
@@ -200,13 +223,19 @@ def run_symbolic_baseline(ds: ABADataset, verbose: bool = False,
 
 def run_prompt_experiments(
     ds: ABADataset,
+    refs: Dict[str, Reference],
     backend: LLMBackend,
     modes: List[str],
     n_samples: int = 5,
     temperature: float = 0.7,
     max_tokens: int = 1024,
+    sampling_seed: int = 0,
+    structures: Optional[Dict[str, str]] = None,
+    problem_sha: Optional[Dict[str, str]] = None,
     output_dir: str = "./results",
 ) -> Dict[str, List[ProblemResult]]:
+    """Every mode on every problem with a reference. results_<mode>.jsonl is
+    written row by row, so a rerun into the same --output resumes."""
     os.makedirs(output_dir, exist_ok=True)
     results_by_mode: Dict[str, List[ProblemResult]] = {}
 
@@ -214,12 +243,18 @@ def run_prompt_experiments(
         print(f"\n=== Mode: {mode} ===")
         try:
             results = evaluate_dataset(
-                ds, backend, mode,
+                ds, refs, backend, mode,
                 n_samples=n_samples,
                 temperature=temperature,
                 max_tokens=max_tokens,
+                run_seed=sampling_seed,
+                structures=structures,
+                problem_sha=problem_sha,
+                rows_path=os.path.join(output_dir, f"results_{mode}.jsonl"),
                 verbose=True,
             )
+        except ResumeMismatch:
+            raise
         except Exception as exc:
             print(f"  [!] Mode '{mode}' crashed: {type(exc).__name__}: {exc}")
             print(f"  Skipping '{mode}' and continuing with the remaining modes.")
@@ -227,16 +262,8 @@ def run_prompt_experiments(
 
         results_by_mode[mode] = results
         agg = aggregate_results(results)
-        print(f"  -> clean@k={agg['clean_at_k']:.1%}  gen@k={agg['gen_at_k']:.1%}  "
-              f"det@k={agg['det_at_k']:.1%}  fit@1={agg['fit_at_1']:.1%}")
-
-        # Save raw per-sample results per mode immediately, so a later crash
-        # never loses work already completed.
-        path = os.path.join(output_dir, f"results_{mode}.jsonl")
-        with open(path, "w", encoding="utf-8") as f:
-            for pr in results:
-                for s in pr.samples:
-                    f.write(json.dumps(s.to_dict()) + "\n")
+        print(f"  -> valid@k={agg['valid_at_k']:.1%}  clean@k={agg['clean_at_k']:.1%}  "
+              f"exact@k={agg['exact_at_k']:.1%}  parse={agg['parse_rate']:.1%}")
 
     return results_by_mode
 
@@ -366,7 +393,7 @@ def run_graded_analysis(
             sample_fws = []
             for pr in prs_by_pid[pid]:
                 for s in pr.samples:
-                    if s.parse_success and s.raw_output:
+                    if s.card.parse_ok and s.raw_output:
                         fw = parse_llm_output(s.raw_output, problem.background)
                         if fw is not None:
                             sample_fws.append(fw)
@@ -459,118 +486,27 @@ def run_graded_analysis(
 
 def generate_report(
     results_by_mode: Dict[str, List[ProblemResult]],
-    symbolic_results: Optional[Dict],
+    refs: Dict[str, Reference],
     ds: ABADataset,
+    run: Dict,
     output_dir: str,
-) -> None:
+) -> Dict:
+    """summary.json, the results tables, sample.md, figures and explanations."""
     os.makedirs(os.path.join(output_dir, "figures"), exist_ok=True)
-
-    summary = {
-        mode: aggregate_results(results)
-        for mode, results in results_by_mode.items()
-    }
-    if symbolic_results:
-        n = max(symbolic_results["total"], 1)
-        # NOT comparable with the LLM rows — the algorithm sees every example.
-        # Kept because it is the reference the export and semantic comparison
-        # are built from.
-        summary["symbolic_full_problem"] = {
-            "n_problems":          symbolic_results["total"],
-            "parse_rate":          1.0,
-            "fit_at_1":            symbolic_results["solved"] / n,
-            "gen_at_1":            symbolic_results["solved"] / n,
-            "det_at_1":            symbolic_results["solved"] / n,
-            "fit_at_k":            symbolic_results["solved"] / n,
-            "gen_at_k":            symbolic_results["solved"] / n,
-            "det_at_k":            symbolic_results["solved"] / n,
-            "clean_at_1":          symbolic_results["solved"] / n,
-            "clean_at_k":          symbolic_results["solved"] / n,
-            "intensional_rate":    symbolic_results["intensional"] / n,
-            "degenerate_rate":     0.0,
-            "mean_overfit_gap":    0.0,
-            "note":                "sees ALL examples; not an LLM-comparable ceiling",
-        }
-        # THE comparable row: same train/test split, same scoring.
-        summary["symbolic_train_only"] = {
-            "n_problems":          symbolic_results["total"],
-            "parse_rate":          1.0,
-            "fit_at_1":            symbolic_results["train_solved"] / n,
-            "gen_at_1":            symbolic_results["train_gen"] / n,
-            "det_at_1":            symbolic_results["train_determined"] / n,
-            "fit_at_k":            symbolic_results["train_solved"] / n,
-            "gen_at_k":            symbolic_results["train_gen"] / n,
-            "det_at_k":            symbolic_results["train_determined"] / n,
-            "clean_at_1":          symbolic_results["train_gen"] / n,
-            "clean_at_k":          symbolic_results["train_gen"] / n,
-            "intensional_rate":    symbolic_results["intensional"] / n,
-            "degenerate_rate":     0.0,
-            "mean_overfit_gap":    0.0,
-            "note":                "same split and scoring as the LLM rows",
-        }
-
-    # Per-tier breakdown (benchmark suite): WHICH capability does the LLM
-    # replicate? Problem ids carry the tier prefix, e.g. t2_defeas_0003[_anon].
-    by_tier = tier_breakdown(results_by_mode)
-    if by_tier:
-        summary["by_tier"] = by_tier
-
-    # Save summary JSON
+    summary = summarise(results_by_mode, run)
     summary_path = os.path.join(output_dir, "summary.json")
-    with open(summary_path, "w") as f:
+    with open(summary_path, "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2)
     print(f"\nSummary saved to {summary_path}")
 
-    # Print formatted table. clean@k is the STRICT criterion (error_type ==
-    # "none": fits ALL train examples AND generalises) — the honest measure of
-    # "replicates the algorithm"; gen@k alone can be high while fit is 0.
-    print("\n=== Results table ===")
-    metrics = ["clean_at_k", "gen_at_k", "det_at_k", "fit_at_1",
-               "intensional_rate", "parse_rate"]
-    header = f"{'Config':<24}" + "".join(f"{m:>18}" for m in metrics)
-    print(header)
-    print("-" * len(header))
-    for name, agg in summary.items():
-        if name == "by_tier":
-            continue
-        row = f"{name:<24}"
-        for m in metrics:
-            v = agg.get(m)
-            # A quality rate is None when no sample ever fitted: "undefined",
-            # which must not be printed as a measured 0%.
-            cell = "n/a" if v is None else (
-                f"{v:.1%}" if ("rate" in m or "_at_" in m) else f"{v:.2f}")
-            row += f"{cell:>18}"
-        print(row)
-    print("\n  clean@k = legal+stable+fits+generalises+non-degenerate (brave)")
-    print("  gen@k   = solves the full problem in SOME stable extension")
-    print("  det@k   = held-out labels are forced in EVERY train-consistent "
-          "extension\n            (gen@k minus det@k is how much of gen@k is "
-          "free choice, not learning)")
+    write_sample(results_by_mode, refs, os.path.join(output_dir, "sample.md"))
+    print_tables(summary)
 
-    if by_tier:
-        print("\n=== Per-tier breakdown: gen@k / clean@k "
-              "(clean = fits train AND generalises) ===")
-        tiers = sorted({t for mode_t in by_tier.values() for t in mode_t})
-        header = f"{'Mode':<12}" + "".join(f"{t:>14}" for t in tiers)
-        print(header)
-        print("-" * len(header))
-        for mode, tier_aggs in by_tier.items():
-            row = f"{mode:<12}"
-            for t in tiers:
-                agg = tier_aggs.get(t)
-                if agg:
-                    cell = f"{agg['gen_at_k']:.0%}/{agg.get('clean_at_k', 0):.0%}"
-                    row += f"{cell:>14}"
-                else:
-                    row += f"{'-':>14}"
-            print(row)
-
-    # Generate figures
     try:
+        from extras.aba_visualization import save_all_plots
         complexity_rows = []
         for mode, results in results_by_mode.items():
             complexity_rows.extend(complexity_analysis(ds, results))
-
         save_all_plots(
             results_by_mode=results_by_mode,
             complexity_rows=complexity_rows,
@@ -581,18 +517,77 @@ def generate_report(
     except Exception as e:
         print(f"Warning: figure generation failed: {e}")
 
-    # ── Generate per-problem explanations ───────────────────────────────────
     try:
-        _write_explanations(ds, results_by_mode, output_dir)
+        _write_explanations(ds, refs, results_by_mode, output_dir)
     except Exception as e:
         print(f"Warning: explanation generation failed: {e}")
+    return summary
 
 
-def _write_explanations(ds, results_by_mode, output_dir):
+def _cell(agg: Dict, key: str) -> str:
+    v = agg.get(key)
+    if v is None:
+        return "-"
+    ci = agg.get("ci95", {}).get(key)
+    return f"{v:.3f}" + (f" [{ci[0]:.2f}, {ci[1]:.2f}]" if ci else "")
+
+
+def print_tables(summary: Dict) -> None:
+    """Per mode, then clean@k / exact@k per tier."""
+    modes = [m for m in summary if m not in ("run", "by_tier")]
+    cols = ["valid_at_1", "valid_at_k", "clean_at_1", "clean_at_k", "exact_at_1",
+            "exact_at_k", "agreement", "parse_rate", "truncated_rate", "r3_balanced",
+            "trace_f1"]
+    print("\n=== Results (problems posed whole; @k: any of k samples, Wilson 95%) ===")
+    for mode in modes:
+        agg = summary[mode]
+        print(f"\n  {mode}  ({agg['n_problems']} problems, {agg['n_structures']} structures, "
+              f"{agg['n_samples']} samples)")
+        for c in cols:
+            print(f"    {c:<16}{_cell(agg, c)}")
+    by_tier = summary.get("by_tier")
+    if not by_tier:
+        return
+    tiers = sorted({t for m in by_tier.values() for t in m})
+    first = next(iter(by_tier.values()))
+    print("\n=== Per tier: clean@k / exact@k (structures per tier in brackets) ===")
+    print(f"{'mode':<12}" + "".join(
+        f"{t + ' (' + str(first[t]['n_structures']) + ')':>22}" for t in tiers if t in first))
+    for mode, tier_aggs in by_tier.items():
+        row = f"{mode:<12}"
+        for t in tiers:
+            a = tier_aggs.get(t)
+            cell = f"{a['clean_at_k']:.2f} / {a['exact_at_k']:.2f}" if a else "-"
+            row += f"{cell:>22}"
+        print(row)
+
+
+def write_sample(results_by_mode: Dict[str, List[ProblemResult]],
+                 refs: Dict[str, Reference], path: str,
+                 per_mode: int = 5, seed: int = 0) -> None:
+    """Rows to read by hand before any aggregate: `per_mode` seeded samples per mode,
+    each beside the algorithm's answer."""
+    rng = random.Random(seed)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(f"# Hand audit: {per_mode} rows per mode\n\n")
+        for mode, prs in results_by_mode.items():
+            samples = [s for pr in prs for s in pr.samples]
+            for s in sorted(rng.sample(samples, min(per_mode, len(samples))),
+                            key=lambda s: (s.problem_id, s.sample_idx)):
+                c = s.card
+                f.write(f"## {mode}: {s.problem_id} #{s.sample_idx}\n\n"
+                        f"error `{s.error}`, finish `{s.finish}`, valid {c.valid}, "
+                        f"clean {c.clean}, exact {c.exact}, agreement {c.agreement}\n\n"
+                        f"The algorithm's answer:\n\n```\n{refs[s.problem_id].endpoint_target}\n```\n\n"
+                        f"The model's output:\n\n```\n{s.raw_output}\n```\n\n")
+    print(f"Hand-audit sample saved to {path}")
+
+
+def _write_explanations(ds, refs, results_by_mode, output_dir):
     """
-    For each problem, reconstruct a grounded explanation of how the model
-    generalised, using the best (generalising, else best-fit) sample.
-    Writes a human-readable explanations.md and aggregate mechanism stats.
+    For each problem, a grounded account of one answer, beside the algorithm's:
+    the first clean sample, else the first parsed one. Writes explanations.md
+    and the mechanism statistics.
     """
     from extras.aba_explain import explain_sample, mechanism_statistics
     entry_by_id = {e.problem.problem_id: e for e in ds}
@@ -604,29 +599,26 @@ def _write_explanations(ds, results_by_mode, output_dir):
         md_lines.append(f"\n## Mode: {mode}\n")
         for pr in results:
             entry = entry_by_id.get(pr.problem_id)
-            if entry is None or entry.solution is None:
+            ref = refs.get(pr.problem_id)
+            if entry is None or ref is None:
                 continue
-            # Pick the most informative sample: a generalising one if any,
-            # otherwise the first parseable one.
-            chosen = next((s for s in pr.samples if s.gen_valid), None)
+            chosen = next((s for s in pr.samples if s.card.clean), None)
             if chosen is None:
-                chosen = next((s for s in pr.samples if s.parse_success), None)
+                chosen = next((s for s in pr.samples if s.card.parse_ok), None)
             if chosen is None:
                 continue
-            expl = explain_sample(entry, chosen.raw_output, mode=mode)
+            expl = explain_sample(entry, ref, chosen.raw_output, chosen.card, mode=mode)
             if expl is None:
                 continue
             all_expls.append(expl)
-            md_lines.append(f"### {pr.problem_id}  (gen@1={pr.gen_at_1:.0%}, "
-                            f"gen@k={'yes' if pr.gen_at_k else 'no'})")
+            md_lines.append(f"### {pr.problem_id}  (clean@1={pr.at_1('clean'):.0%}, "
+                            f"exact@k={'yes' if pr.at_k('exact') else 'no'})")
             md_lines.append(expl.narrative + "\n")
 
-    # Aggregate mechanism -> generalisation correlation
     mech_stats = mechanism_statistics(all_expls)
     if mech_stats:
-        md_lines.append("\n## Mechanism vs. generalisation (success rate)\n")
-        md_lines.append("How often each rule mechanism co-occurred with full "
-                        "generalisation:\n")
+        md_lines.append("\n## Mechanism vs. a clean answer (share of answers)\n")
+        md_lines.append("How often each rule mechanism co-occurred with a clean answer:\n")
         for mech, rate in sorted(mech_stats.items(), key=lambda x: -x[1]):
             md_lines.append(f"- **{mech.replace('_', ' ')}**: {rate:.0%}")
 
@@ -647,6 +639,7 @@ def run_export(
     source_name: str = "llm",
     output_dir: str = "./results",
     basename: str = "frameworks",
+    refs: Optional[Dict[str, Reference]] = None,
 ) -> Dict[str, str]:
     """
     Export all learned ABA frameworks — symbolic ground truth and every LLM
@@ -694,7 +687,8 @@ def run_export(
             mode="",
             sample_idx=-1,
             valid=True,
-            generalises=True,
+            clean=True,
+            exact=True,
         )
         enrich_record(rec, entry.problem.background,
                       graded_scores=graded_by_pid.get(pid))
@@ -707,8 +701,9 @@ def run_export(
                 pid = pr.problem_id
                 entry = entry_by_id.get(pid)
                 bg = entry.problem.background if entry else None
-                for idx, s in enumerate(pr.samples):
-                    if not s.parse_success or not s.raw_output:
+                ref = (refs or {}).get(pid)
+                for s in pr.samples:
+                    if not s.card.parse_ok or not s.raw_output:
                         continue
                     fw = parse_llm_output(s.raw_output, bg) if bg else None
                     if fw is None:
@@ -718,17 +713,19 @@ def run_export(
                         problem_id=pid,
                         source=source_name,
                         mode=mode,
-                        sample_idx=idx,
-                        valid=getattr(s, "fit_valid",  s.parse_success),
-                        generalises=getattr(s, "gen_valid", None),
+                        sample_idx=s.sample_idx,
+                        valid=s.card.valid,
+                        clean=s.card.clean,
+                        exact=s.card.exact,
                     )
                     # Mechanism tags need the background framework
                     narrative_text: Optional[str] = None
                     if entry is not None and bg is not None:
                         enrich_record(rec, bg)
-                        expl = explain_sample(entry, s.raw_output, mode=mode)
-                        if expl is not None:
-                            narrative_text = expl.narrative
+                        if ref is not None:
+                            expl = explain_sample(entry, ref, s.raw_output, s.card, mode=mode)
+                            if expl is not None:
+                                narrative_text = expl.narrative
                     enrich_record(rec, bg or ABAFramework(),
                                   narrative=narrative_text,
                                   graded_scores=graded_by_pid.get(pid))
@@ -789,6 +786,12 @@ def parse_args() -> argparse.Namespace:
                             "throttle). Try 2-4 on free tiers.")
     g_llm.add_argument("--temperature", type=float, default=0.7)
     g_llm.add_argument("--max-tokens", type=int, default=1024)
+    g_llm.add_argument("--sampling-seed", type=int, default=0,
+                       help="Run seed. Each sample's seed is derived from it, the "
+                            "problem, the mode and the sample index, so a resumed "
+                            "run draws the same samples. 4-bit kernels are not "
+                            "bitwise deterministic: the seed fixes the draw, not "
+                            "the output.")
 
     # ── Dataset ──────────────────────────────────────────────────────────────
     g_data = p.add_argument_group("Dataset")
@@ -798,6 +801,8 @@ def parse_args() -> argparse.Namespace:
                              "t3_noise, t4_domain, t5_twopath). The per-tier "
                              "breakdown in the report shows WHICH part of the "
                              "algorithm the LLM replicates.")
+    g_data.add_argument("--dataset-seed", type=int, default=42,
+                        help="Seed of the benchmark and synthetic generators.")
     g_data.add_argument("--n-synthetic", type=int, default=0,
                         help="Number of single-path synthetic problems to add.")
     g_data.add_argument("--n-complex", type=int, default=0,
@@ -835,7 +840,7 @@ def parse_args() -> argparse.Namespace:
                           "  algorithm : the full ASP-ABAlearnB algorithm to EXECUTE\n"
                       ))
     g_t1.add_argument("--n-samples", type=int, default=5,
-                      help="LLM samples per problem (for pass@k).")
+                      help="LLM samples per problem (@k: any of the k samples).")
     g_t1.add_argument("--symbolic-only", action="store_true",
                       help="Run only the symbolic ASP-ABAlearnB reference, no LLM.")
 
@@ -907,6 +912,57 @@ def _build_backend_kwargs(args: argparse.Namespace) -> dict:
     return kwargs
 
 
+def run_block(args: argparse.Namespace, backend: LLMBackend, problem_sha: Dict[str, str],
+              references_sha: str, excluded: Dict[str, str]) -> Dict:
+    """Provenance of an end-to-end run: what was asked, of which model, scored how."""
+    from src.aba_tracelog import _git_rev
+    from src.aba_train import revision, versions
+    gpu = None
+    if args.backend == "local":
+        import torch
+        gpu = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "cpu"
+    pids = sorted(problem_sha)
+    model = getattr(backend, "model", type(backend).__name__)     # as the rows name it
+    return {
+        "design": "posed whole: every example is in the prompt and in the scoring",
+        "mode_prompt_version": MODE_PROMPT_VERSION,
+        "mode_prompt_sha256": mode_prompt_sha256(),
+        "scorer": "src.aba_score.score_output",
+        "audit": False,
+        "code_rev": _git_rev(),
+        "command": " ".join(["python"] + sys.argv),
+        "slurm_job_id": os.environ.get("SLURM_JOB_ID"),
+        "started": datetime.datetime.now().isoformat(timespec="seconds"),
+        "backend": args.backend,
+        "model": model,
+        "model_revision": revision(model) if args.backend == "local" else None,
+        "load_4bit": bool(args.load_4bit),
+        "gpu": gpu,
+        "versions": versions(("bitsandbytes",)),
+        "decoding": {
+            "temperature": args.temperature,
+            # LocalHFBackend's; the API backends use the provider's default
+            "top_p": 0.95 if args.backend == "local" and args.temperature > 0 else None,
+            "max_tokens": args.max_tokens,
+            "n_samples": args.n_samples,
+            "sampling_seed": args.sampling_seed,
+            "seed_derivation": SEED_DERIVATION,
+        },
+        "dataset": {
+            "benchmark_per_tier": args.benchmark,
+            "n_synthetic": args.n_synthetic,
+            "n_complex": args.n_complex,
+            "seed": args.dataset_seed,
+            "anonymize": args.anonymize,
+            "anonymize_scheme": args.anonymize_scheme,
+            "n_problems": len(pids),
+            "problem_ids_sha256": sha256("\n".join(pids)),
+        },
+        "references_sha256": references_sha,
+        "excluded": excluded,
+    }
+
+
 def main() -> None:
     args = parse_args()
     os.makedirs(args.output, exist_ok=True)
@@ -921,7 +977,8 @@ def main() -> None:
         n_synthetic=args.n_synthetic,
         n_complex=args.n_complex,
         benchmark_per_tier=args.benchmark,
-        solve_symbolic=True,
+        synthetic_seed=args.dataset_seed,
+        solve_symbolic=False,
         anonymize=args.anonymize,
         anonymize_scheme=args.anonymize_scheme,
         output_dir=args.output,
@@ -960,6 +1017,24 @@ def main() -> None:
             run_export(ds, graded_data=sym_graded_data, output_dir=args.output)
         return
 
+    # ── References and the instrument control, before any model call ─────────
+    if not args.probes:
+        print("\nReferences (the algorithm's run on every problem, posed whole)...")
+        refs, structures, problem_sha, excluded, ref_rows = build_references(ds)
+        bad = instrument_control(refs)
+        if bad:
+            print("  [!] Instrument control failed; no model is called:")
+            for why in bad[:20]:
+                print(f"    {why}")
+            sys.exit(1)
+        references_text = "".join(json.dumps(r) + "\n" for r in ref_rows)
+        ref_path = os.path.join(args.output, "references.jsonl")
+        with open(ref_path, "w", encoding="utf-8", newline="\n") as f:
+            f.write(references_text)
+        print(f"  {len(refs)} references, {len(excluded)} excluded"
+              f"{f' {excluded}' if excluded else ''}; control passed on every problem "
+              f"-> {ref_path}")
+
     # ── LLM prompt experiments ────────────────────────────────────────────────
     print(f"\n[3/4] LLM experiments (backend={args.backend}, "
           f"model={args.model or 'default'})...")
@@ -977,12 +1052,16 @@ def main() -> None:
         )
         return
 
+    run = run_block(args, backend, problem_sha, sha256(references_text), excluded)
     results_by_mode = run_prompt_experiments(
-        ds, backend,
+        ds, refs, backend,
         modes=args.modes,
         n_samples=args.n_samples,
         temperature=args.temperature,
         max_tokens=args.max_tokens,
+        sampling_seed=args.sampling_seed,
+        structures=structures,
+        problem_sha=problem_sha,
         output_dir=args.output,
     )
 
@@ -1003,7 +1082,7 @@ def main() -> None:
 
     # ── Report ────────────────────────────────────────────────────────────────
     print("\n[4/4] Generating report and figures...")
-    generate_report(results_by_mode, symbolic_results, ds, args.output)
+    generate_report(results_by_mode, refs, ds, run, args.output)
 
     # ── Optional graded semantics analysis ───────────────────────────────────
     graded_data: Optional[Dict] = None
@@ -1027,6 +1106,7 @@ def main() -> None:
             graded_data=graded_data,
             source_name=args.model or args.backend,
             output_dir=args.output,
+            refs=refs,
         )
 
     print("\nDone.")
