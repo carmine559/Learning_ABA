@@ -43,11 +43,35 @@ With --set, each model's probe metrics in that set are printed beside these
 floors, with 95% bootstrap intervals over problems, and the answers that explain
 a check or role score.
 
+With --end-to-end, whole answers go through the end-to-end scorer
+(`src/aba_evaluation.score_sample`, as a run scores them) instead. A floor policy
+sees only the problem as posed, or answers every problem alike:
+  empty answer      : NONE / NONE.
+  RoLe's facts      : line 8's answer as the whole answer; a solution by Theorem 2.
+  positional rule   : t(X) :- p(X), a. (`positional_answer`); no rule body is read.
+  one answer for all: the commonest algorithm's answer among the other problems.
+The tier constant (the commonest answer among the other problems of the same
+tier) is reported but is not a floor: no model is given the tier or the other
+answers. Measured on the same benchmark (METHOD_HISTORY, Phase 13):
+
+    policy                    valid@1  clean@k  exact@k  agreement  R3 balanced
+    empty answer                0.000    0.000    0.000      0.000        0.500
+    RoLe's facts                1.000    0.000    0.000      0.333        0.500
+    positional rule             0.777    0.777    0.000      1.000        0.500
+    one answer for all          0.417    0.417    0.388      0.350        0.500
+    tier constant (not floor)   0.951    0.951    0.951      0.967        1.000
+
+The benchmark has 9 distinct answers, one per tier on t2-t4. With --set,
+each model x mode of an end-to-end set is read against these floors, with and
+without t5 (rule 1 of the registered reading: Wilson lower bound above the floor).
+
 Usage:
     python analysis/null_baselines.py [--benchmark 20] [--out null_baselines.json]
     python analysis/null_baselines.py --set experiments/06_probes_v3
+    python analysis/null_baselines.py --end-to-end [--set experiments/07_e2e_whole_v4]
 """
 import argparse
+import collections
 import glob
 import json
 import os
@@ -57,9 +81,13 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from main import build_dataset
+from main import build_dataset, build_references
+from src.aba_evaluation import (ProblemResult, SampleResult, aggregate_results,
+                                score_sample, tier_of)
+from src.aba_generalization import _pred_of
 from src.aba_probes import (BINARY_KINDS, KINDS, ProbeResult, aggregate_probes,
                             generate_probes, score_probe)
+from src.aba_score import degenerate_answer
 
 # The metric each probe is read by, as named in the probe summary.
 METRIC = {"role": "score", "fold": "accuracy", "check": "balanced_accuracy",
@@ -128,8 +156,13 @@ def main():
     ap.add_argument("--out", default=None,
                     help="optional path to write the floors as JSON")
     ap.add_argument("--set", default=None,
-                    help="a probe set (bench_*/probes.jsonl) to read against the floors")
+                    help="a set (bench_*/probes.jsonl, or bench_*/results_<mode>.jsonl "
+                         "with --end-to-end) to read against the floors")
+    ap.add_argument("--end-to-end", action="store_true",
+                    help="floors of the end-to-end modes instead of the probes")
     args = ap.parse_args()
+    if args.end_to_end:
+        return end_to_end(args)
 
     ds = build_dataset(benchmark_per_tier=args.benchmark, solve_symbolic=True,
                        anonymize=True, anonymize_scheme="letters")
@@ -248,6 +281,179 @@ def compare(set_dir, floors, ids, problems, n_boot=2000, seed=0):
                 same = sum(_facts(r) == positives[r.problem_id] for r in by_kind_rows(by))
                 print(f"  {'':<11}answers equal to E+: {same}; wrong facts {len(wrong)}, "
                       f"on contrary predicates {contrary}")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# End to end: whole answers that read no rule body, scored as a run is
+# ─────────────────────────────────────────────────────────────────────────────
+
+EMPTY = "NEW RULES:\nNONE\n\nNEW ASSUMPTIONS:\nNONE"
+E2E_METRICS = ("valid_at_1", "clean_at_k", "exact_at_k", "agreement", "r3_balanced")
+PRIMARY = ("clean_at_k", "exact_at_k")
+MODES = ("direct", "cot", "guided", "algorithm")
+SCOPES = {"all tiers": lambda prs: prs,
+          "without t5": lambda prs: [r for r in prs if r.tier != "t5_twopath"]}
+
+
+def positional_answer(ref):
+    """t(X) :- p(X), a.  t: the first positive example's predicate; p: the first
+    background rule head, in the order the prompt lists them, other than t and dom;
+    a: the first background assumption, omitted if there is none."""
+    prob = ref.problem
+    t = _pred_of(prob.positive[0])
+    p = next((_pred_of(r.head) for r in prob.background.rules
+              if _pred_of(r.head) not in (t, "dom", None)), None)
+    if p is None:
+        return EMPTY
+    body = [f"{p}(X)"] + prob.background.assumptions[:1]
+    return f"NEW RULES:\n{t}(X) :- {', '.join(body)}.\n\nNEW ASSUMPTIONS:\nNONE"
+
+
+def constant_answers(refs, group=lambda pid: "all"):
+    """Per problem, the commonest algorithm's answer among the OTHER problems of its group."""
+    by_group = collections.defaultdict(list)
+    for pid in refs:
+        by_group[group(pid)].append(pid)
+    out = {}
+    for pids in by_group.values():
+        for pid in pids:
+            others = collections.Counter(refs[q].endpoint_target for q in pids if q != pid)
+            out[pid] = min(others.items(), key=lambda kv: (-kv[1], kv[0]))[0] if others else EMPTY
+    return out
+
+
+# Floors: each policy sees only the problem as posed, or answers every problem alike.
+E2E_POLICIES = {
+    "empty answer": lambda pid, ref, const: EMPTY,
+    "RoLe's facts": lambda pid, ref, const: degenerate_answer(ref),
+    "positional rule": lambda pid, ref, const: positional_answer(ref),
+    "one answer for all (leave one out)": lambda pid, ref, const: const["all"][pid],
+}
+# Not a floor: it needs the problem's tier and the other problems' answers, which
+# no model is given. It measures how few answers the benchmark has.
+E2E_DIAGNOSTICS = {
+    "tier constant (leave one out)": lambda pid, ref, const: const["tier"][pid],
+}
+
+
+def _fmt(v):
+    return "-" if v is None else f"{v:.3f}"
+
+
+def end_to_end(args):
+    ds = build_dataset(benchmark_per_tier=args.benchmark, synthetic_seed=args.seed,
+                       solve_symbolic=False, anonymize=True, anonymize_scheme="letters")
+    refs, structures, _, excluded, _ = build_references(ds)
+    const = {"all": constant_answers(refs), "tier": constant_answers(refs, tier_of)}
+    by_policy = {}
+    for name, policy in {**E2E_POLICIES, **E2E_DIAGNOSTICS}.items():
+        prs = []
+        for e in ds:
+            pid = e.problem.problem_id
+            if pid not in refs:
+                continue
+            text = policy(pid, refs[pid], const)
+            card, err = score_sample(refs[pid], text, truncated=False)
+            prs.append(ProblemResult(pid, name, "NULL", structure=structures[pid], samples=[
+                SampleResult(pid, name, "NULL", raw_output=text, finish="stop", error=err,
+                             card=card)]))
+        by_policy[name] = prs
+
+    print(f"\n=== END-TO-END NULL BASELINES (no model; {len(refs)} problems, "
+          f"excluded {excluded or 'none'}) ===")
+    floors = {}
+    for scope, pick in SCOPES.items():
+        print(f"\n{scope}")
+        print(f"  {'policy':<36}" + "".join(f"{m:>13}" for m in E2E_METRICS))
+        floors[scope] = {}
+        for name, prs in by_policy.items():
+            agg = aggregate_results(pick(prs))
+            diag = name in E2E_DIAGNOSTICS
+            print(f"  {name:<36}" + "".join(f"{_fmt(agg[m]):>13}" for m in E2E_METRICS)
+                  + ("   (diagnostic, not a floor)" if diag else ""))
+            for m in E2E_METRICS:
+                if not diag and agg[m] is not None and (m not in floors[scope]
+                                                        or agg[m] > floors[scope][m]["value"]):
+                    floors[scope][m] = {"value": agg[m], "policy": name}
+        print("  floors: " + "; ".join(f"{m} {v['value']:.3f} ({v['policy']})"
+                                       for m, v in floors[scope].items()))
+
+    print("\nper tier, clean@k / exact@k (problems, structures)")
+    tiers = sorted({r.tier for prs in by_policy.values() for r in prs})
+    for name, prs in by_policy.items():
+        cells = []
+        for t in tiers:
+            agg = aggregate_results([r for r in prs if r.tier == t])
+            cells.append(f"{t} {agg['clean_at_k']:.2f}/{agg['exact_at_k']:.2f} "
+                         f"({agg['n_problems']}, {agg['n_structures']})")
+        print(f"  {name:<36}" + "; ".join(cells))
+
+    if args.out:
+        with open(args.out, "w", encoding="utf-8") as f:
+            json.dump({"floors": floors, "policies": {
+                n: {s: aggregate_results(pick(prs)) for s, pick in SCOPES.items()}
+                for n, prs in by_policy.items()}}, f, indent=2)
+        print(f"\nwrote {args.out}")
+    if args.set:
+        compare_e2e(args.set, floors, refs, structures)
+
+
+def _boot_agreement(prs, rng, n_boot=2000):
+    """95% bootstrap interval over problems of the mean agreement where defined."""
+    def m(sample):
+        xs = [s.card.agreement for r in sample for s in r.samples if s.card.agreement is not None]
+        return sum(xs) / len(xs) if xs else None
+    boots = sorted(x for x in (m(rng.choices(prs, k=len(prs))) for _ in range(n_boot))
+                   if x is not None)
+    if not boots:
+        return None, None, None
+    return m(prs), boots[int(0.025 * len(boots))], boots[int(0.975 * len(boots)) - 1]
+
+
+def compare_e2e(set_dir, floors, refs, structures, seed=0):
+    """Each model x mode against the floors. Primary: clean@k and exact@k, above iff
+    the Wilson lower bound is above the best floor. Secondary: agreement (bootstrap),
+    valid@1 against its floor, R3 balanced against 0.5. Over 10% of samples at the
+    token cap makes a cell a lower bound."""
+    rng = random.Random(seed)
+    print(f"\n=== {set_dir}: against the end-to-end floors ===")
+    for d in sorted(glob.glob(os.path.join(set_dir, "bench_*"))):
+        print(os.path.basename(d))
+        for scope, pick in SCOPES.items():
+            print(f"  {scope}")
+            for mode in MODES:
+                path = os.path.join(d, f"results_{mode}.jsonl")
+                if not os.path.exists(path):
+                    continue
+                by = {}
+                with open(path, encoding="utf-8") as f:
+                    for line in f:
+                        if line.strip():
+                            s = SampleResult.from_dict(json.loads(line))
+                            if s.problem_id not in refs:
+                                raise SystemExit(f"{s.problem_id}: not in this benchmark")
+                            by.setdefault(s.problem_id, ProblemResult(
+                                s.problem_id, mode, s.model_name,
+                                structure=structures[s.problem_id])).samples.append(s)
+                prs = pick(list(by.values()))
+                agg = aggregate_results(prs)
+                fl = floors[scope]
+                cells = []
+                for m in PRIMARY:
+                    lo, hi = agg["ci95"][m]
+                    cells.append(f"{m} {agg[m]:.3f} [{lo:.2f}, {hi:.2f}] floor "
+                                 f"{fl[m]['value']:.3f} {'above' if lo > fl[m]['value'] else 'not above'}")
+                ag, lo, hi = _boot_agreement(prs, rng)
+                cells.append("agreement -" if ag is None else
+                             f"agreement {ag:.3f} [{lo:.2f}, {hi:.2f}] floor "
+                             f"{fl['agreement']['value']:.3f}")
+                cells.append(f"valid@1 {agg['valid_at_1']:.3f} floor {fl['valid_at_1']['value']:.3f}")
+                cells.append(f"R3 balanced {_fmt(agg['r3_balanced'])}")
+                trunc = agg["truncated_rate"] or 0.0
+                cells.append(f"truncated {trunc:.1%}" + (" (lower bound)" if trunc > 0.10 else ""))
+                print(f"    {mode}")
+                for c in cells:
+                    print(f"      {c}")
 
 
 if __name__ == "__main__":

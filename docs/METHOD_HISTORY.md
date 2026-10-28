@@ -668,6 +668,116 @@ the 6,180 end-to-end answers have explanation lines containing `:-`.
 The end-to-end prompting sets 00–05 were scored under the old grammar and are not
 rescored here.
 
+## Phase 13 — The end-to-end study, posed whole (Oct 2026)
+
+**Why the split was withdrawn.** The end-to-end prompting study (sets 00–03 and the
+end-to-end half of set 05) did not pose problems whole. It hid part of each problem's
+examples from the prompt: `split_problem_examples`, test ratio 0.34, 30.4% of the
+benchmark's examples. A `max(1, …)` floor hid one example per list even at ratio 0.
+The answers were then scored on the hidden examples: gen@k, det@k and the overfit gap.
+
+- **Why that is wrong.** Definition 1 defines a solution relative to the examples
+  given, and Algorithm 1 is run on the whole problem. Hiding examples changes the
+  problem: it turned 26–58% of the defeasible problems monotonic (docs/CORPUS.md). It
+  also asks the model for something the algorithm is never asked.
+- **Consequence.** Those figures measure neither correctness by Definition 1 nor
+  fidelity to the algorithm. The sets stay as the as-run record, marked superseded, and
+  `rescore.py` refuses them.
+- **Unaffected.** The step probes (sets 04–06) and the fine-tuning arms always posed
+  problems whole.
+
+**The instrument that replaces it.**
+
+- **Scoring.** Every answer is scored by `src/aba_score.py`, the fine-tuning scorer,
+  against the algorithm's run on the same problem:
+  - valid and clean (Definition 1 on the posed examples);
+  - exact (the algorithm's answer, up to assumption names and body order);
+  - agreement off the examples, R2 bodies and R3.
+
+  The step audit is off: it misfires on free prose.
+- **Instrument control.** Before any model call, the algorithm's answer must score
+  clean and exact, and RoLe's facts valid but not clean. Both hold on all 103 problems.
+- **Provenance.** Each sample's seed is derived from the run seed, the problem, the mode
+  and the index, so a resumed run draws the same samples. 4-bit kernels are not bitwise
+  deterministic: the seed fixes the draw, not the output.
+- **The run record.** The run's `summary.json` records:
+  - the prompt version (v4) and the hash of each mode's prompt;
+  - the code revision, the model revision and the package versions;
+  - the decoding settings and the dataset;
+  - the hash of the references.
+
+  `rescore.py` rebuilds a run from that record.
+- **Retired analyses.** `analysis/conformance.py` and `analysis/step_fidelity.py`
+  studied only the split runs. The score card carries R1 (ground rules), R2 (bodies)
+  and R3 (defeasibility). Their R4 finding stands:
+  - **R4 is unmeasured end to end.** Of set 05's 1,466 answers with ground facts, 1,449
+    are not solutions, so only 17 pose R4's question, too few to score.
+  - **The reference does not reach an R4 fixpoint.** It tests subsumption once per fact,
+    when the fact is popped (line 16), and never retests a rule that a later assumption
+    introduction makes redundant. So 8 of the 103 answers in set 05's symbolic traces
+    keep a removable intensional rule, and a removable rule is a divergence only when
+    it is a ground fact.
+
+**Floors** (`analysis/null_baselines.py --end-to-end`). The benchmark has 103
+problems (seed 42, `--benchmark 20`, anonymised). The floors were computed twice,
+with identical results.
+
+| policy | valid@1 | clean@k | exact@k | agreement | R3 balanced |
+| --- | --- | --- | --- | --- | --- |
+| empty answer | 0.000 | 0.000 | 0.000 | 0.000 | 0.500 |
+| RoLe's facts | 1.000 | 0.000 | 0.000 | 0.333 | 0.500 |
+| positional rule | 0.777 | **0.777** | 0.000 | **1.000** | 0.500 |
+| one answer for all (leave one out) | 0.417 | 0.417 | **0.388** | 0.350 | 0.500 |
+| tier constant (leave one out), not a floor | 0.951 | 0.951 | 0.951 | 0.967 | 1.000 |
+
+The policies:
+
+- **Positional rule:** `t(X) :- p(X), a.` Here t is the first positive example's
+  predicate, p the first listed background head other than t and dom, and a the first
+  background assumption. It is clean on all of t1–t4, but it is never the algorithm's
+  answer: the algorithm introduces a new assumption with its contrary rule, where this
+  rule reuses the background one.
+- **One answer for all:** the commonest algorithm's answer among the other 102
+  problems.
+- **Without t5,** the clean@k floor is 0.964 and the exact@k floor 0.482.
+
+**The benchmark has 9 distinct answers.** Anonymisation names by first appearance, so:
+
+- t2, t3 and t4 each have one answer string across their 20 problems;
+- t1 has two answers (18 and 2 problems), t5 two (15 and 5), and the 3 built-ins three;
+- t5's 20 problems share one structure; the other tiers have 19–20 structures each.
+
+The tier constant writes the commonest answer of the problem's own tier. It is not a
+floor, because it needs the tier and the other problems' answers, which no model is
+given. It measures what exact@k means here: whether the model writes its tier's one
+answer.
+
+**Registered reading** (written before the run, set 07):
+
+1. **Primary metrics: clean@k and exact@k.** A model × mode cell is *above* iff its
+   Wilson 95% lower bound exceeds the floor: 0.777 for clean@k, 0.388 for exact@k
+   (without t5: 0.964 and 0.482).
+2. **Secondary metrics,** none of which can show reasoning on this benchmark:
+   - valid@1 has a floor of 1.000 (RoLe's facts);
+   - agreement has a floor of 1.000 and is undefined on 43 of the 103 problems, which
+     have no atoms outside the examples;
+   - R3 balanced is read against 0.500.
+3. **Truncation.** A cell with more than 10% of its samples at the token cap is a lower
+   bound.
+4. **Hand-reading.** Each model's `sample.md` (20 rows, each beside the algorithm's
+   answer) is read before any aggregate.
+5. **Size ordering.** A smaller model outranking a larger one is reported with a
+   mechanism, or as unexplained.
+6. **t5** is reported with and without it.
+7. **Independence.** The intervals treat problems as independent. They are not:
+   tiers t2–t4 share one answer each, and t5 one structure.
+8. **Advantage to the model.** Each floor is one deterministic answer per problem,
+   while a model gets k = 3 samples, so @k favours the model. A cell that is not above
+   at @k would not be above at @1.
+9. **No comparison with sets 00–05.** They posed a different problem.
+10. **The finding if nothing is above.** If no cell is above on either primary metric,
+    that is the finding.
+
 ## Pending
 
 - Decide the `apply_folding` scope question (Phase 6, item 4); measure how many
