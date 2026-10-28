@@ -26,7 +26,9 @@ from src.aba_generalization import (
     is_intensional_strict, rule_contains_constant, wellformed_violations,
     split_problem_examples, evaluate_generalization,
 )
-from src.aba_prompts import parse_llm_output, problem_to_prompt, _split_body
+from src.aba_prompts import (
+    parse_llm_output, problem_to_prompt, _parse_rule_line, _split_body,
+)
 from src.aba_validator import _build_asp, conditioned_status, witness_extension
 
 
@@ -142,6 +144,29 @@ def test_reused_background_assumption_is_not_reported_as_new(background):
     fw = parse_llm_output(text, background)
     assert fw.new_assumptions == []
     assert fw.assumptions.count("u(X)") == 1
+
+
+def test_prose_containing_a_rule_arrow_is_not_a_rule(background):
+    """Explanations with ':-' were read as rules and made the answer ill-formed
+    (1,361 of set 05's 6,180 answers)."""
+    text = ("NEW RULES:\n"
+            "v(X) :- t(X), u(X).\n"
+            "v(a) holds since q(a)\n"
+            "NEW ASSUMPTIONS:\n"
+            "NONE\n"
+            "Explanation: the rule v(X) :- t(X), u(X) covers every positive.\n")
+    repairs = []
+    fw = parse_llm_output(text, background, repairs=repairs)
+    assert [r.to_prolog() for r in fw.new_rules] == ["v(X) :- t(X), u(X)."]
+    assert wellformed_violations(fw, background, ["v"]) == []
+    assert any("not rules" in m for m in repairs)
+
+
+def test_rule_grammar_drops_comments_and_keeps_literals():
+    assert _parse_rule_line("v(X) :- t(X). % covers a").to_prolog() == "v(X) :- t(X)."
+    assert _parse_rule_line("p(X) :- q(X), not r(X), X != a.").body == [
+        "q(X)", "not r(X)", "X != a"]
+    assert _parse_rule_line("v(a) holds since q(a)") is None
 
 
 # ─────────────────────────────────────────────────────────────────────────────

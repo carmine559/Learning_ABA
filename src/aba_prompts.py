@@ -74,9 +74,7 @@ specific individuals.
 # Example 5), while the task half forbids ground facts outright; and every probe
 # gives its own answer format, which the task half overrides.
 #
-# The split is text-only: SYSTEM_PROMPT below is the two halves concatenated, so
-# the mode prompts stay byte-identical to v3 and experiments/01_bench_prompts_v1
-# to 03_bench_prompts_v3 remain comparable.
+# The split is text-only: SYSTEM_PROMPT below is the two halves concatenated.
 _SYSTEM_PROMPT_TASK = """
 YOUR TASK: given an ABA Learning problem, construct a solution satisfying
 Definition 1. In this task an INTENSIONAL solution is REQUIRED:
@@ -135,9 +133,9 @@ SYSTEM_PROMPT = SYSTEM_PROMPT_DEFS + _SYSTEM_PROMPT_TASK
 # at the very end, which is how `parse_llm_output` reads it anyway.
 #
 # It is a frozen literal, deliberately NOT derived from `_SYSTEM_PROMPT_TASK`:
-# once training data is generated against it, a later edit to the v3 text must
-# not be able to move it. Zero-shot numbers measured under v3 are not comparable
-# with anything produced under this prompt.
+# once training data is generated against it, a later edit to the mode prompts
+# must not be able to move it. Zero-shot numbers measured under the mode prompts
+# are not comparable with anything produced under this prompt.
 SFT_PROMPT_VERSION = "v4-sft"
 
 _SYSTEM_PROMPT_SFT_TASK = """
@@ -758,10 +756,13 @@ def _parse_answer_block(block: str) -> tuple:
     rules_text, asms_text = _sections_of(block)
 
     new_rules: List[Rule] = []
+    n_prose = 0
     for line in _iter_content_lines(rules_text):
         rule = _parse_rule_line(line)
         if rule:
             new_rules.append(rule)
+        elif ':-' in line:
+            n_prose += 1
 
     new_asms: Dict[str, str] = {}
     n_misfiled = 0
@@ -775,29 +776,44 @@ def _parse_answer_block(block: str) -> tuple:
             if rule:
                 new_rules.append(rule)
                 n_misfiled += 1
+            else:
+                n_prose += 1
     if n_misfiled:
         log.append(f"recovered {n_misfiled} rule(s) written under "
                    f"'NEW ASSUMPTIONS:'")
+    if n_prose:
+        log.append(f"skipped {n_prose} line(s) containing ':-' that are not rules")
     new_rules = list(dict.fromkeys(new_rules))   # Rule is hashable; keep order
     return new_rules, new_asms, log
+
+
+_TERM = r'(?:[A-Za-z_]\w*|-?\d+)'
+_ATOM = rf'[a-z]\w*(?:\s*\(\s*{_TERM}(?:\s*,\s*{_TERM})*\s*\))?'
+_ATOM_RE = re.compile(rf'^{_ATOM}$')
+_LITERAL_RE = re.compile(
+    rf'^(?:(?:not\s+)?{_ATOM}|{_TERM}\s*(?:==|!=|<=|>=|=|<|>)\s*{_TERM})$')
 
 
 def _parse_rule_line(line: str) -> Optional[Rule]:
     """
     Parse a line like 'pacifist(X) :- quaker(X), normal_quaker(X).'
     or 'pacifist(a).'
+
+    None unless the head is an atom and every body element an atom, a `not`
+    atom or a comparison: prose containing ':-' is not a rule.
     """
-    line = line.strip().rstrip('.').strip()
+    line = re.sub(r'\s*%.*$', '', line).strip().rstrip('.').strip()
     if not line:
         return None
     if ':-' in line:
         head, body = line.split(':-', 1)
-        head = head.strip()
-        if not head:
+        head, atoms = head.strip(), _split_body(body)
+        if not (_ATOM_RE.match(head) and atoms
+                and all(_LITERAL_RE.match(a) for a in atoms)):
             return None
-        return Rule(head=head, body=_split_body(body))
+        return Rule(head=head, body=atoms)
     # Fact
-    if re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*(\(.*\))?$', line):
+    if _ATOM_RE.match(line):
         return Rule(head=line, body=[])
     return None
 
