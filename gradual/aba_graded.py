@@ -36,7 +36,6 @@ The base scores can come from three sources (StrengthSource):
 """
 from __future__ import annotations
 import re
-import math
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Dict, Optional, Tuple, Set

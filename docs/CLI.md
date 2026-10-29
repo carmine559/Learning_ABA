@@ -18,7 +18,7 @@ python main.py [dataset flags] [LLM flags] [task flags] [output flags]
 | `--dataset-seed N` | `42` | Seed of the benchmark and synthetic generators. Every committed set used 42. |
 | `--n-synthetic N` | `0` | N extra single-path synthetic problems. |
 | `--n-complex N` | `0` | N extra two-path synthetic problems (richer QBAFs → intermediate σ under Task 2). |
-| `--anonymize` / `--no-anonymize` | **on** | Rename every predicate and constant to an abstract symbol before the model sees the problem. On by default; `--no-anonymize` keeps real names (human inspection, or Task 3 / RAG where retrieval needs them). |
+| `--anonymize` / `--no-anonymize` | **on** | Rename every predicate and constant to an abstract symbol before the model sees the problem. On by default; `--no-anonymize` keeps real names, for human inspection. |
 | `--anonymize-scheme {letters,indexed}` | `letters` | `p,q,r,… / a,b,c,…` or `p0,p1,… / c0,c1,…`. |
 
 The three built-in problems (`nixon_diamond`, `flies`, `tax_law`) are always

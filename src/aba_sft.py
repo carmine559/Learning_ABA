@@ -60,7 +60,7 @@ checks every target against the parser and the scorer.
 """
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from src.aba_types import ABAFramework, LearningProblem
 from src.aba_prompts import (

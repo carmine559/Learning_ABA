@@ -13,10 +13,10 @@ of CPU instead of a day of GPU.
 USAGE
 -----
     # rescore in place (rows and summary.json)
-    python rescore.py results/e2e_whole_v4/bench_qwen2.5-7b
+    python rescore.py results/bench_qwen2.5-7b
 
     # several runs, into a separate tree
-    python rescore.py "results/e2e_whole_v4/bench_*" --out rescored/
+    python rescore.py "experiments/07_e2e_whole_v4/bench_*" --out rescored/
 
     # step probes
     python rescore.py experiments/06_probes_v3/bench_qwen2.5-3b --probes

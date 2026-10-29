@@ -1,10 +1,9 @@
 """
 main.py
-Single-pipeline orchestration for the three ABA experiments:
+Single-pipeline orchestration for the two ABA experiments:
 
   Task 1 (default)  : can an LLM replicate the ASP-ABAlearnB algorithm?
   Task 2 (--graded) : gradual ABA semantics (BSAF vs BAF baseline)
-  Task 3            : ArgLLMs + RAG  (planned; see argllm/README.md)
 
 Usage:
     python main.py --symbolic-only                              # ASP-ABAlearnB reference only
@@ -78,7 +77,7 @@ def build_dataset(
     ds.load_builtin_benchmarks(solve=solve_symbolic)
     print(f"  Loaded {len(ds)} built-in benchmark problems.")
 
-    # Stratified benchmark suite (massive testing: one tier per capability)
+    # Stratified benchmark suite: one tier per capability
     if benchmark_per_tier > 0:
         ds.add_benchmark_suite(n_per_tier=benchmark_per_tier,
                                seed=synthetic_seed, solve=solve_symbolic)
@@ -319,9 +318,9 @@ def run_probe_experiment(
         print(f"  {kind:<12}{e['n']:>5}{e['accuracy']:>8.3f}{e['score']:>8.3f}"
               f"{(f'{ba:.3f}' if ba is not None else '-'):>10}"
               f"{e['chance']:>8.2f}")
-    print("\n  Binary probes (check, subsume) must be read against the 0.50 "
-          "floor:\n  balanced accuracy puts a constant YES/NO answer at exactly "
-          "0.50.")
+    print("\n  Read every probe against the measured floors "
+          "(analysis/null_baselines.py):\n  balanced accuracy puts a constant "
+          "YES/NO answer at 0.50, and cue-based policies score more.")
     print(f"  -> {path}")
     return summary
 
@@ -750,10 +749,9 @@ def run_export(
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
         description=(
-            "ABA framework learning - three experiments:\n"
+            "ABA framework learning - two experiments:\n"
             "  Task 1 (default) : can an LLM replicate the ASP-ABAlearnB algorithm?\n"
-            "  Task 2 (--graded): gradual ABA semantics (BSAF vs BAF baseline)\n"
-            "  Task 3           : ArgLLMs + RAG  (planned; see argllm/README.md)"
+            "  Task 2 (--graded): gradual ABA semantics (BSAF vs BAF baseline)"
         )
     )
 
@@ -780,8 +778,8 @@ def parse_args() -> argparse.Namespace:
                        ))
     g_llm.add_argument("--thinking", action="store_true",
                        help="Enable Gemini thinking mode (google_ai, gemini-2.5-*): "
-                            "a hidden chain-of-thought that helps multi-step ABA "
-                            "reasoning, at higher latency/token cost.")
+                            "a hidden chain-of-thought, at higher latency and "
+                            "token cost.")
     g_llm.add_argument("--load-4bit", action="store_true",
                        help="local backend only: load the model in 4-bit (nf4). "
                             "Needed to fit big models (32B) on an L40, or any 7B on "
@@ -801,7 +799,7 @@ def parse_args() -> argparse.Namespace:
     # ── Dataset ──────────────────────────────────────────────────────────────
     g_data = p.add_argument_group("Dataset")
     g_data.add_argument("--benchmark", type=int, default=0, metavar="N",
-                        help="Massive testing: add the stratified benchmark suite "
+                        help="Add the stratified benchmark suite "
                              "with N problems per tier (t1_mono, t2_defeas, "
                              "t3_noise, t4_domain, t5_twopath). The per-tier "
                              "breakdown in the report shows WHICH part of the "
@@ -819,7 +817,7 @@ def parse_args() -> argparse.Namespace:
                             "Rename every predicate/constant to an abstract symbol "
                             "(p, q, ... / a, b, ...) before the LLM sees the problem. "
                             "ON BY DEFAULT for Task 1; use --no-anonymize to keep real "
-                            "names (e.g. for Task 3 / RAG, or human inspection). "
+                            "names (e.g. for human inspection). "
                             "Controls hallucination and knowledge leakage; the rewrite "
                             "is a bijection so symbolic results are unchanged. Name "
                             "maps are saved to name_maps.json."
@@ -867,7 +865,7 @@ def parse_args() -> argparse.Namespace:
                            "giving ~7-8 probes per problem).")
     g_pr.add_argument("--probe-samples", type=int, default=1, metavar="K",
                       help="Samples per probe (default 1: power comes from the "
-                           "~780 probe items, not from repeated draws).")
+                           "number of probe items, not from repeated draws).")
 
     # ── Task 2: gradual semantics ────────────────────────────────────────────
     g_t2 = p.add_argument_group("Task 2 - gradual semantics")

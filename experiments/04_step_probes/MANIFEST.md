@@ -36,6 +36,9 @@ python rescore.py "experiments/04_step_probes/bench_qwen2.5-*" \
     --benchmark 20 --probes --out rescored_v2/
 ```
 
+The command wrote to `rescored_v2/` at the repository root; the output now lives here as
+`rescored_rev3/`.
+
 | probe (Algorithm 1 line) | chance | 3B | 7B | 14B | 32B |
 | --- | --- | --- | --- | --- | --- |
 | `role` — RoLe (3–12) | ~0 | 0.000 | 0.000 | 0.534 | **0.777** |
@@ -126,8 +129,8 @@ is a convention, not a fact about the answer.
 - `bench_*/probe_summary.json` — rev-1 aggregates, kept as the as-run record.
 - `bench_*/symbolic_traces.jsonl`, `name_maps.json` — the reference traces and
   the anonymisation maps needed to read the answers back.
-- `../../rescored/` — rev 2 (superseded).
-- `../../rescored_v2/` — **rev 3, the table above**; its `probe_summary.json`
+- `rescored_rev2/` — rev 2 (superseded).
+- `rescored_rev3/` — **rev 3, the table above**; its `probe_summary.json`
   carries `probe_prompt_version: v1`, because re-scoring does not change which
   prompts produced the answers.
 

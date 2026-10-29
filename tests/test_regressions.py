@@ -9,7 +9,6 @@ Run with:  python -m pytest tests -q
 """
 from __future__ import annotations
 
-import re
 import sys
 from pathlib import Path
 
@@ -146,8 +145,7 @@ def test_reused_background_assumption_is_not_reported_as_new(background):
 
 
 def test_prose_containing_a_rule_arrow_is_not_a_rule(background):
-    """Explanations with ':-' were read as rules and made the answer ill-formed
-    (1,361 of set 05's 6,180 answers)."""
+    """Explanations with ':-' were read as rules and made the answer ill-formed."""
     text = ("NEW RULES:\n"
             "v(X) :- t(X), u(X).\n"
             "v(a) holds since q(a)\n"

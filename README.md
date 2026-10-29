@@ -37,14 +37,15 @@ MSc thesis project, University of Bologna.
     and scored the answers on them. They are superseded and not quoted here.
   - The re-run poses every problem whole and uses the scorer above. It is set 07,
     read by rules registered before the run
-    ([docs/METHOD_HISTORY.md](docs/METHOD_HISTORY.md), Phase 13).
+    ([docs/METHOD_HISTORY.md](docs/METHOD_HISTORY.md), Phases 13 and 15): no model,
+    in any of the four modes, is above the no-reasoning floors.
   - The step probes were re-run under probe prompts v3 (set 06): no prompted model
     performs any probed step above a policy that does no reasoning.
 - **Task 2** ([`gradual/`](gradual/), [docs/GRADED.md](docs/GRADED.md)): BSAF
   gradual semantics for ABA (Rapberger, Russo, Rago & Toni, KR 2025) against an
   argument-tree DF-QuAD baseline.
 
-## Results so far
+## Results
 
 Endpoint and trace from [`sft/compare_sft.py`](sft/compare_sft.py), registered
 before the trace arm was scored; S2 from [`sft/compare_step.py`](sft/compare_step.py),
@@ -92,6 +93,26 @@ is in [docs/FINDINGS.md](docs/FINDINGS.md).
   shape that no v1 training answer has: a new assumption in the rule for another's
   contrary (five problems), or RoLe facts other than the positive examples (three). The arms write v1's
   shapes ([`analysis/answer_shapes.py`](analysis/answer_shapes.py)).
+
+### Prompted models
+
+These are Qwen2.5 3B–32B and Mistral-7B at 4-bit, on the 103-problem benchmark. Each is
+read against no-reasoning floors measured through the same scorer
+([set 06](experiments/06_probes_v3/MANIFEST.md), [set 07](experiments/07_e2e_whole_v4/MANIFEST.md)).
+
+- **One step at a time** (set 06): no model performs any of the five probed steps above a
+  policy that does no reasoning.
+- **Whole answers, problems posed whole** (set 07): no model × mode cell is above the
+  floors.
+  - The closest on clean answers is 32B direct, clean on 0.757 of the problems, against
+    the positional rule's 0.777.
+  - The closest on exact answers is 14B cot, exact on 0.136, against 0.388 for one answer
+    given to every problem. 14B guided's registered 0.155 counts three ill-formed answers
+    as exact.
+  - 32B's clean answers have the positional rule's shape: they reuse a background
+    assumption where the algorithm introduces a new one.
+- **Algorithm mode:** the models write the answer first, and 32B's median answer there is
+  41 tokens.
 
 ## Installation
 
@@ -142,13 +163,11 @@ python sft/compare_step.py    # results/sft-step/COMPARISON_STEP.md, the D5 verd
 | `runs/` | one `TRAINING_MANIFEST.json` per run; adapters stay on the cluster |
 | `results/` | evaluation outputs, tracked so cluster runs come back with `git push` |
 | [`experiments/`](experiments/) | the prompting study's result sets, one `MANIFEST.md` each; 00–03 and 05's end-to-end half are superseded |
-| `rescored/`, `rescored_v2/` | offline re-scorings of set 04's probe answers |
 | [`analysis/`](analysis/) | offline studies: no-reasoning floors (probes and end to end), answer shapes on Table 1, S2's errors |
 | [`tests/`](tests/) | golden traces, corpus, scorer, steps, oracle hook |
 | [`cluster/`](cluster/) | SLURM scripts for the DISI L40 nodes |
 | [`gradual/`](gradual/) | Task 2: gradual semantics |
 | [`extras/`](extras/) | reporting for `main.py`: framework export, explanations, figures |
-| [`argllm/`](argllm/) | notes on a possible further task; no code |
 | [`docs/`](docs/) | [corpus](docs/CORPUS.md) · [method history](docs/METHOD_HISTORY.md) · [experiments](docs/EXPERIMENTS.md) · [prompts](docs/PROMPTS.md) · [CLI](docs/CLI.md) · [graded semantics](docs/GRADED.md) |
 | `main.py`, `rescore.py` | the prompting-study pipeline and its offline re-scoring |
 

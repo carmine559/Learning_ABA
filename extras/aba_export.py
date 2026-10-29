@@ -21,7 +21,7 @@ import os
 from dataclasses import dataclass, asdict, field
 from typing import List, Dict, Optional, Any
 
-from src.aba_types import Rule, ABAFramework, LearningProblem
+from src.aba_types import Rule, ABAFramework
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -124,20 +124,6 @@ class FrameworkRecord:
             exact=exact,
             natural_language_rules=nlr,
         )
-
-
-def record_to_framework(rec: Dict) -> ABAFramework:
-    """Re-load a saved record back into an ABAFramework (rules only)."""
-    rules = [_parse_prolog_rule(s) for s in rec["new_rules"]]
-    rules = [r for r in rules if r is not None]
-    fw = ABAFramework(
-        rules=rules,
-        assumptions=list(rec.get("new_assumptions", [])),
-        contraries=dict(rec.get("contraries", {})),
-        new_rules=rules,
-        new_assumptions=list(rec.get("new_assumptions", [])),
-    )
-    return fw
 
 
 def enrich_record(
@@ -311,27 +297,3 @@ def export_frameworks(
     paths["csv"] = csv_path
 
     return paths
-
-
-def defeasibility_summary(records: List[FrameworkRecord]) -> Dict[str, Any]:
-    """
-    Aggregate proof that we are learning defeasible (not monotonic) rules,
-    broken down by source.
-    """
-    by_source: Dict[str, Dict[str, int]] = {}
-    for rec in records:
-        s = by_source.setdefault(rec.source, {"total": 0, "defeasible": 0,
-                                              "monotonic": 0})
-        s["total"] += 1
-        if rec.structure["is_defeasible"]:
-            s["defeasible"] += 1
-        if rec.structure["is_monotonic"]:
-            s["monotonic"] += 1
-    return {
-        src: {
-            **counts,
-            "defeasible_rate": round(counts["defeasible"] / counts["total"], 3)
-                               if counts["total"] else 0.0,
-        }
-        for src, counts in by_source.items()
-    }

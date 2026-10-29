@@ -20,7 +20,6 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from src.aba_types import Rule, LearningTrace, TransformStep
 from src.aba_dataset import ABADataset, make_nixon_diamond
 from src.aba_algorithm import (
     solve_aba_learning, gen_phase, assumption_introduction, _current_framework,

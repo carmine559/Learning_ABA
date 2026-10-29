@@ -6,20 +6,14 @@ WHY THIS EXISTS
 ---------------
 Every other metric in this repo is an OUTCOME metric — is the final framework a
 Definition-1 solution? The thesis question is narrower: does the model replicate
-the *algorithm*? Those come apart. Qwen2.5-14B scores 56.3% clean@k in `direct`
-mode (168 tokens, no algorithmic process at all) but only 21.4% in `algorithm`
-mode, where its intensionality collapses from 1.00 to 0.47 — the signature of
-performing RoLe and then abandoning Gen.
+the *algorithm*? A model can reach a solution without performing the steps, or
+perform some steps and abandon the rest.
 
 WHY EXTRACTION IS LABEL-FREE
 ----------------------------
 The obvious approach — count "Fold", "Remove", "STEP 2" markers — measures
-instruction-following literalism, not reasoning. Measured on experiments/03_bench_prompts_v3:
-mistral-7b writes the requested `Remove ... (solution preserved)` template 10x
-more often than Qwen2.5-14B (35.3% vs 3.6%) and `Alternative path found` 6.5x
-more often, while being far the weaker reasoner. `algorithm` mode has 0% template
-compliance because _TASK_ALGORITHM never asks for one. A marker-counting metric
-would rank mistral above 14B.
+instruction-following literalism, not reasoning: a model that copies the
+requested templates scores high without folding anything.
 
 So this module ignores prose entirely. It reads the RULES the model writes, in
 the order it writes them, and infers which transformation each one represents
@@ -524,16 +518,10 @@ class TraceScore:
     n_steps_gold: int  = 0
     n_steps_llm:  int  = 0
     align_exact: float = 0.0     # order-sensitive LCS on (symbol, rule)
-    # CAUTION when reporting the aggregate. Gold traces on this benchmark are
-    # 44.8% R1 / 23.5% R2 / 10.4% R3 / 21.3% R4, so f1 is weighted towards R1.
-    # R1 is not merely "copy the examples" — RoLe adds a MINIMAL set over the
-    # learnable predicates, and 23.2% of its facts are contraries of assumptions
-    # that occur in no example list — but it is still the step whose output
-    # overlaps most with text the model was given (76.8% of R1 facts coincide
-    # with a listed positive here). Consistent with that, mistral-7B edges
-    # Qwen2.5-14B on cot f1 (0.352 vs 0.307) while losing every per-rule recall
-    # (r2 0.126 vs 0.183, r3 0.000 vs 0.069). Report r2_recall/r3_recall as the
-    # discriminating figures; f1 is a summary, not a headline.
+    # CAUTION when reporting the aggregate: gold traces are mostly R1 steps, and
+    # R1 is the step whose output overlaps most with the given text (most RoLe
+    # facts are positive examples), so f1 favours copying. Report
+    # r2_recall/r3_recall as the discriminating figures; f1 is a summary.
     precision:   float = 0.0     # of the steps written, how many the solver took
     recall:      float = 0.0     # of the solver's steps, how many were written
     f1:          float = 0.0

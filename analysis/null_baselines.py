@@ -1,13 +1,13 @@
-"""Measured null floors for the step probes — no model, no GPU.
+"""Measured null floors — no model, no GPU.
 
-Runs answer policies that contain no reasoning whatsoever through the REAL
-`score_probe`, so the floor each probe metric must be read against is measured
-rather than assumed. The `chance` field the probe summaries emit
-(`src/aba_probes.py`) is 0.5 for the binary kinds and 0.0 otherwise; both are
-wrong, and these are the numbers that replace them.
+Answer policies that contain no reasoning run through the REAL scorers, so the
+floor each metric is read against is measured rather than assumed. The `chance`
+field the probe summaries emit (`src/aba_probes.py`) is 0.5 for the binary kinds
+and 0.0 otherwise; these floors replace it.
 
-Policies, per probe; the floor is the best of them. The first of each is the one
-registered with probe prompts v3 (METHOD_HISTORY, Phase 10).
+Step probes (the default). Per probe, the floor is the best of these policies;
+the first of each is the one registered with probe prompts v3, and the others
+were found after set 06 ran.
   role      : always NONE; one fact per positive example.
   fold      : copy the rule back unchanged; fold onto dom(X), which Definition 3
               puts in R for every constant.
@@ -17,57 +17,26 @@ registered with probe prompts v3 (METHOD_HISTORY, Phase 10).
               rule body is read.
   subsume   : the check's cue; YES iff the state lists a learnt rule with no
               equality.
-
-Measured on the 103-problem benchmark (seed 42, `--benchmark 20`, anonymised),
-with probe prompts v3 and the reference after METHOD_HISTORY Phase 8:
-
-    kind       policy                                   n  accuracy  score  balanced  fails
-    role       always NONE                            103     0.000  0.000         -    103
-    role       one fact per positive example          103     0.990  0.994         -      1
-    fold       the rule copied back                   186     0.000  0.000         -    186
-    fold       fold onto dom(X)                       186     1.000  1.000         -      0
-    check      YES iff assumptions are listed         186     0.651  0.546     0.633    104
-    introduce  reuse the last introduced, else new    166     0.855  0.855     0.855     24
-    subsume    YES iff assumptions are listed         204     0.662  0.662     0.663     69
-    subsume    YES iff a learnt rule has no equality  204     0.760  0.760     0.762     49
-
-`role` and `fold` cannot discriminate on this set: RoLe's answer is the positive
-examples on 102 of 103 problems, and dom(X) is a legal fold at every state, which
-the probe accepts. `introduce` is balanced over line 36's two branches (81 reuse,
-85 new), so always answering a new assumption gets 0.500; its policy gets 0.855
-because every reuse state follows an assumption introduced for the same body.
-Sets 04 and 05 were harvested from the earlier reference: their floors are in
-their MANIFESTs.
-
 With --set, each model's probe metrics in that set are printed beside these
 floors, with 95% bootstrap intervals over problems, and the answers that explain
 a check or role score.
 
-With --end-to-end, whole answers go through the end-to-end scorer
-(`src/aba_evaluation.score_sample`, as a run scores them) instead. A floor policy
-sees only the problem as posed, or answers every problem alike:
+End to end (--end-to-end): whole answers go through the end-to-end scorer
+(`src/aba_evaluation.score_sample`, as a run scores them). A floor policy sees
+only the problem as posed, or answers every problem alike:
   empty answer      : NONE / NONE.
   RoLe's facts      : line 8's answer as the whole answer; a solution by Theorem 2.
   positional rule   : t(X) :- p(X), a. (`positional_answer`); no rule body is read.
   one answer for all: the commonest algorithm's answer among the other problems.
   positives as assumptions: every positive example declared an assumption, no rule.
-                      Valid, and clean until a learnable predicate as an assumption
-                      was made ill-formed (METHOD_HISTORY, Phase 14).
 The tier constant (the commonest answer among the other problems of the same
 tier) is reported but is not a floor: no model is given the tier or the other
-answers. Measured on the same benchmark (METHOD_HISTORY, Phase 13):
+answers. With --set, each model x mode of an end-to-end set is read against these
+floors, with and without t5: a cell is above iff its Wilson lower bound exceeds
+the floor.
 
-    policy                    valid@1  clean@k  exact@k  agreement  R3 balanced
-    empty answer                0.000    0.000    0.000      0.000        0.500
-    RoLe's facts                1.000    0.000    0.000      0.333        0.500
-    positional rule             0.777    0.777    0.000      1.000        0.500
-    one answer for all          0.417    0.417    0.388      0.350        0.500
-    positives as assumptions    0.990    0.000    0.000      0.333        0.500
-    tier constant (not floor)   0.951    0.951    0.951      0.967        1.000
-
-The benchmark has 9 distinct answers, one per tier on t2-t4. With --set,
-each model x mode of an end-to-end set is read against these floors, with and
-without t5 (rule 1 of the registered reading: Wilson lower bound above the floor).
+The measured floors are recorded in docs/METHOD_HISTORY.md (Phases 10 and 13)
+and in each set's MANIFEST.
 
 Usage:
     python analysis/null_baselines.py [--benchmark 20] [--out null_baselines.json]

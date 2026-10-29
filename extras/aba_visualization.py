@@ -4,13 +4,11 @@ Publication-quality figures for the thesis.
 All functions return matplotlib Figure objects (no side effects).
 """
 from __future__ import annotations
-import math
-from typing import List, Dict, Optional, Tuple, Any
+from typing import List, Dict, Optional, Tuple
 
 import matplotlib
 matplotlib.use("Agg")           # headless — safe in notebooks too
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 import matplotlib.ticker as mticker
 import numpy as np
 
@@ -287,126 +285,7 @@ def plot_comparison_table(
     return fig
 
 
-# ── 5. SFT training curves ────────────────────────────────────────────────────
-
-def plot_training_curves(
-    log_history: List[Dict],
-    title: str = "SFT training curve",
-    figsize: Tuple = (8, 4),
-) -> plt.Figure:
-    """
-    Plot train loss and eval loss from HuggingFace Trainer log_history.
-    """
-    _apply_thesis_style()
-    train_steps, train_loss = [], []
-    eval_steps,  eval_loss  = [], []
-
-    for entry in log_history:
-        if "loss" in entry:
-            train_steps.append(entry.get("step", len(train_steps)))
-            train_loss.append(entry["loss"])
-        if "eval_loss" in entry:
-            eval_steps.append(entry.get("step", len(eval_steps)))
-            eval_loss.append(entry["eval_loss"])
-
-    fig, ax = plt.subplots(figsize=figsize)
-    if train_steps:
-        ax.plot(train_steps, train_loss, color=PALETTE["blue"],
-                label="Train loss", linewidth=1.5)
-    if eval_steps:
-        ax.plot(eval_steps, eval_loss, color=PALETTE["orange"],
-                label="Eval loss", linewidth=1.5, linestyle="--")
-
-    ax.set_xlabel("Training step")
-    ax.set_ylabel("Loss")
-    ax.set_title(title)
-    ax.legend(framealpha=0.8)
-    fig.tight_layout()
-    return fig
-
-
-# ── 6. QBAF graph (for a single problem / solution) ──────────────────────────
-
-def plot_qbaf(
-    rules: List,           # List[Rule]
-    assumptions: List[str],
-    contraries: Dict[str, str],
-    title: str = "Learned ABA framework",
-    figsize: Tuple = (9, 5),
-) -> plt.Figure:
-    """
-    Visualise the rule dependency graph of an ABA framework.
-    Nodes = predicates, edges = rule dependencies.
-    Assumptions shown in a different colour.
-    Requires networkx.
-    """
-    _apply_thesis_style()
-    try:
-        import networkx as nx
-    except ImportError:
-        fig, ax = plt.subplots(figsize=(4, 1))
-        ax.text(0.5, 0.5, "pip install networkx for QBAF visualisation",
-                ha="center", va="center", transform=ax.transAxes)
-        ax.axis("off")
-        return fig
-
-    G = nx.DiGraph()
-    asm_preds = {re.match(r'^([a-z]\w*)', a).group(1)
-                 for a in assumptions if re.match(r'^([a-z]\w*)', a)}
-    contrary_preds = {re.match(r'^([a-z]\w*)', c).group(1)
-                      for c in contraries.values()
-                      if re.match(r'^([a-z]\w*)', c)}
-
-    import re as _re
-    def _pred(atom: str) -> str:
-        m = _re.match(r'^([a-z]\w*)', atom)
-        return m.group(1) if m else atom
-
-    for rule in rules:
-        head_pred = _pred(rule.head)
-        G.add_node(head_pred)
-        for body_atom in rule.body:
-            bp = _pred(body_atom)
-            if bp not in ("dom", "not"):
-                G.add_edge(bp, head_pred)
-
-    node_colors = []
-    for node in G.nodes():
-        if node in asm_preds:
-            node_colors.append(PALETTE["orange"])
-        elif node in contrary_preds:
-            node_colors.append(PALETTE["red"])
-        else:
-            node_colors.append(PALETTE["blue"])
-
-    fig, ax = plt.subplots(figsize=figsize)
-    try:
-        pos = nx.drawing.nx_pydot.graphviz_layout(G, prog="dot")
-    except Exception:
-        pos = nx.spring_layout(G, seed=42)
-
-    nx.draw_networkx(
-        G, pos, ax=ax,
-        node_color=node_colors, node_size=1400,
-        font_size=9, font_color="white", font_weight="bold",
-        edge_color=PALETTE["grey"], arrows=True,
-        arrowstyle="->", arrowsize=15,
-        connectionstyle="arc3,rad=0.1",
-    )
-
-    legend_handles = [
-        mpatches.Patch(color=PALETTE["blue"],   label="Derived predicate"),
-        mpatches.Patch(color=PALETTE["orange"], label="Assumption"),
-        mpatches.Patch(color=PALETTE["red"],    label="Contrary"),
-    ]
-    ax.legend(handles=legend_handles, loc="lower right", fontsize=8)
-    ax.set_title(title)
-    ax.axis("off")
-    fig.tight_layout()
-    return fig
-
-
-# ── 7. Per-problem heatmap ───────────────────────────────────────────────────
+# ── 5. Per-problem heatmap ───────────────────────────────────────────────────
 
 def plot_results_heatmap(
     results_by_mode: Dict[str, List[ProblemResult]],

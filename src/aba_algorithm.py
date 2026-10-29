@@ -1,27 +1,18 @@
 """
 aba_algorithm.py
-Symbolic implementation of the Gen phase of ASP-ABAlearnB.
+The reference: ASP-ABAlearnB, Algorithm 1 of De Angelis, Proietti & Toni
+(ECAI 2024, p. 3449).
 
-Implements:
-  - Fact Subsumption  (R4)
-  - Folding           (R2)
-  - Assumption Introduction (R3)
-  - gen_phase():  orchestrates R2 → R3 → R4 for each learnt ground fact
+  - solve_aba_learning(): RoLe (lines 3-12, in aba_validator), then Gen
+  - gen_phase(): Fact Subsumption (R4), Folding (R2) and Assumption
+    Introduction (R3) on each learnt ground fact
 """
 from __future__ import annotations
 import re
-import copy
-from dataclasses import dataclass, field
 from typing import Any, List, Optional, Tuple, Dict, Callable, Iterator
 
 from src.aba_types import Rule, ABAFramework, LearningProblem, TransformStep, LearningTrace
-from src.aba_validator import (
-    check_brave_entailment,
-    check_has_stable_extension,
-    run_rote_learning,
-    _build_asp,
-    _solve,
-)
+from src.aba_validator import check_brave_entailment, run_rote_learning
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -127,16 +118,13 @@ def _candidate_folds_traced(
     VAR=const — i.e. whose body includes  VAR=const  or whose
     head is the ground fact  pred(const).
 
-    The paired rule is the paper's rho2 — the rule used for folding. It is not
-    recorded on `TransformStep.folding_rule`, which stays None: writing it would
-    change `LearningTrace.to_dict()` and break the golden master that pins this
-    algorithm against the traces committed in
-    `experiments/05_scale_4bit_probes_v2/`. The provenance is carried
-    here instead, for the trace log to pick up.
+    The paired rule is the paper's rho2, the rule used for folding. It is not
+    recorded on `TransformStep.folding_rule`, which stays None so that
+    `LearningTrace.to_dict()`, pinned by tests/test_golden_traces.py, does not
+    change; the trace log reads the provenance from here.
 
-    `_candidate_folds` below is the plain-rule view of this function and is what
-    the algorithm itself uses; the two must stay in lockstep, including ORDER,
-    because `gen_phase` accepts the first candidate that passes its check.
+    The order matters: `gen_phase` accepts the first candidate that passes its
+    check.
     """
     eq_info = _extract_eq(rule.body)
     if eq_info is None:
@@ -200,7 +188,7 @@ def _candidate_folds_traced(
 
 
 def _candidate_folds(rule: Rule, background: ABAFramework) -> List[Rule]:
-    """One folding step, candidates only — the view the algorithm runs on."""
+    """One folding step, candidates only."""
     return [c for c, _ in _candidate_folds_traced(rule, background)]
 
 
@@ -311,7 +299,7 @@ def asm_intro_options(
     """
     Every way `applyAsmIntro` can guard `folded_rule`, yielded lazily in order.
 
-    Algorithm 1 (De Angelis, Proietti & Toni, arXiv:2408.10126v2, PDF):
+    Algorithm 1 (De Angelis, Proietti & Toni, ECAI 2024, p. 3449):
 
         36 if there exists alpha(X) in A relative to B then
         37   rho := H <- B, alpha(X);  S := {}
@@ -344,7 +332,7 @@ def asm_intro_options(
 
     dom = problem.get_domain()
 
-    # ── Lines 37-41: an assumption relative to the body exists ────────────────
+    # ── Lines 36-40: an assumption relative to the body exists ────────────────
     reusable = _ask(oracle, "reuse_scan",
                     lambda: _assumptions_relative_to(folded_rule.body, current),
                     learnt=list(learnt), new_asms=dict(new_asms), folded=folded_rule)
@@ -369,11 +357,11 @@ def asm_intro_options(
                 contrary = current.contraries.get(asm, f"c_{asm}")
                 _notify("asm_decision", mode="reuse", asm=asm, contrary=contrary)
                 yield defeasible, asm, contrary, []
-        # Line 40. Every relative assumption is exhausted: no R3 on this body.
+        # Line 39: every relative assumption failed, so this body gets no R3.
         _notify("asm_decision", mode="fail", asm=None)
         return
 
-    # ── Lines 42-45: none is relative, so introduce a fresh one ───────────────
+    # ── Lines 41-45: none is relative, so introduce a fresh one ───────────────
     all_asms = list(dict.fromkeys(background.assumptions + list(new_asms.keys())))
     asm, contrary = _new_assumption_name(all_asms)
     defeasible = Rule(
@@ -465,12 +453,9 @@ def gen_phase(
     is applied; after, for "fact_done"). Kinds: "subsume", "fold", "check",
     "asm_reuse_scan", "asm_reuse_try", "asm_decision", "asm_intro",
     "fact_done", "backtrack", "fact_failed", "search_budget_exceeded". It is a
-    pure spectator: it receives copies and its return value is ignored.
-
-    It exists so that the step probes in `aba_probes.py` can be built from the
-    states this search actually visits. Re-implementing the search in a
-    separate harvester would let the probe states drift away from the reference
-    algorithm, which is the one thing that must not happen.
+    pure spectator: it receives copies and its return value is ignored. The step
+    probes (`aba_probes.py`) are built from the states it reports, so they are
+    the states this search visits.
 
     `oracle`, when given, answers the computed steps (lines 16, 17, 18, 36, 38,
     44) through `_ask`, so the same search runs on someone else's answers.
@@ -549,7 +534,7 @@ def gen_phase(
                     note="redundant, removed",
                 )]
                 if verbose:
-                    print(f"    -> Subsumption: removed.")
+                    print("    -> Subsumption: removed.")
                 _notify("fact_done", learnt, new_asms, idx, rule, outcome="subsumed")
                 continue
 
@@ -658,8 +643,7 @@ def solve_aba_learning(
     and additionally receives the RoLe facts as a "role" notification so that
     R1 provenance arrives on the same stream as everything else. It is a pure
     spectator: None (the default) is bit-for-bit the reference behaviour, which
-    `tests/test_golden_traces.py` pins against the traces committed in
-    `experiments/05_scale_4bit_probes_v2/`.
+    `tests/test_golden_traces.py` pins against the committed reference traces.
 
     `oracle` (see `_ask`) answers line 8 here and is forwarded to `gen_phase`;
     None is the reference.
@@ -688,7 +672,7 @@ def solve_aba_learning(
 
     # Phase 2: Gen
     if verbose:
-        print(f"[Gen]")
+        print("[Gen]")
     solution, gen_trace = gen_phase(facts, problem, verbose=verbose,
                                     observer=observer, oracle=oracle)
     trace.steps.extend(gen_trace.steps)

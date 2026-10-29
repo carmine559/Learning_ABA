@@ -10,10 +10,7 @@ def rule_contains_constant(rule: Rule) -> bool:
     """
     True if the rule head or body mentions any individual constant — both the
     normalised form ``p(X) :- X = c`` and a bare ground fact ``p(c).``.
-    A genuinely intensional rule contains only variables.
-
-    Single implementation, shared with ``Rule.is_intensional`` so the two
-    checks cannot drift apart.
+    A genuinely intensional rule contains only variables (`Rule.contains_constant`).
     """
     return rule.contains_constant()
 

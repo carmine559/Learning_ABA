@@ -33,10 +33,18 @@ better than it.
   Mistral-7B), no model performs any of the five probed steps above a policy that does no
   reasoning. Four of the five answer line 18's test with a constant. The arm fine-tuned
   on whole traces gives a first line-18 verdict at the level of a guess.
+- **Asked for whole answers, the prompted models do not beat a shortcut.**
+  - With every problem posed whole (set 07), no model in any of four prompting modes is
+    above the no-reasoning floors on clean or exact answers.
+  - The most clean answers are 32B's. They have the shape of a positional rule that
+    reuses a background assumption where Algorithm 1 introduces a new one.
+  - In algorithm mode, the models write the answer first.
 
 ## The evidence, in order
 
-### 1. Prompted models (step probes v3, Qwen2.5 3B–32B and Mistral-7B)
+### 1. Prompted models (Qwen2.5 3B–32B and Mistral-7B)
+
+#### One step at a time (step probes v3, set 06)
 
 Source: [`experiments/06_probes_v3/MANIFEST.md`](../experiments/06_probes_v3/MANIFEST.md).
 The reading was fixed before the run (METHOD_HISTORY, Phase 10).
@@ -67,8 +75,42 @@ policies measured on the same probes.
 - **Caveats.** The intervals treat the 103 problems as independent; 20 of them are one
   structure in 20 surface forms. The earlier end-to-end prompting figures (sets 00–03,
   half of 05) hid part of each problem's examples and are superseded. The re-run with
-  every problem posed whole (set 07) is read by rules registered before it ran
-  (METHOD_HISTORY, Phase 13).
+  every problem posed whole is set 07, below.
+
+#### Whole answers, problems posed whole (set 07)
+
+Source: [`experiments/07_e2e_whole_v4/MANIFEST.md`](../experiments/07_e2e_whole_v4/MANIFEST.md).
+The reading was fixed before the run (METHOD_HISTORY, Phase 13), and the outcome is in
+Phase 15.
+
+**Setup.**
+
+- Each model writes a whole answer to each of the 103 problems, in four prompting modes:
+  direct, cot, guided and algorithm.
+- Each gets k = 3 samples at temperature 0.7, with all models at 4-bit.
+- Every example is in the prompt and in the scoring.
+
+**Results.**
+
+- **No model × mode cell is above the no-reasoning floors,** with or without t5. The
+  floors are clean@k 0.777 (a positional rule) and exact@k 0.388 (one answer for all).
+  - The closest clean@k is 32B direct, 0.757 [0.67, 0.83]. 3B is at 0 in every cell.
+  - The highest exact@k is 14B's: 0.155 [0.10, 0.24] in guided mode, and 0.136 in cot.
+    The guided figure is 0.126 once three ill-formed answers, which the scorer credits as
+    exact, are removed.
+- **32B's clean answers are the positional rule's shape.**
+  - On t2–t4, 332 of its 364 clean answers reuse the background assumption, where
+    Algorithm 1 introduces a new one: no assumption is relative to the body (Definition 4).
+  - It never writes the plain fold that is the algorithm's answer on t1.
+  - It is the habit the step probes found at lines 36 and 41.
+- **14B outranks 32B on exact@k** because it writes t1's plain fold in guided and
+  algorithm modes. In cot, it also writes the algorithm's new assumption and contrary on
+  t2–t4.
+- **Algorithm mode does not run the algorithm.**
+  - The answer comes first in 307–309 of the 309 algorithm answers for every model but
+    14B, which has 264.
+  - 32B's median algorithm answer is 41 tokens.
+  - What the models write as steps mostly follows the answer.
 
 ### 2. Fine-tuning on the answer or on the whole trace ([`results/sft/COMPARISON.md`](../results/sft/COMPARISON.md))
 
@@ -256,6 +298,13 @@ has a shape that v1's training answers never have, and every arm writes v1's sha
   - *Line 8.* The reference computes it once, while the paper also backtracks into line 8's
     alternative answer sets (p. 3450). Gen succeeds from the first RoLe answer on all 2,000
     v1 problems and on every Table 1 problem, so no figure depends on it.
+  - *Exact credits one run.* The paper leaves open line 14's order, `applyFolding` (line
+    17), the choice at line 36 and `getAS` (lines 8 and 44) (p. 3450). The reference fixes
+    one resolution of each, and exact credits only its answer.
+    - In set 07, some of 32B's answers fold a contrary once more than the algorithm:
+      `c_alpha(X) :- v(X)` instead of `c_alpha(X) :- q(X)`, with `v(X) :- q(X)` in the
+      background.
+    - They mean the same, but exact does not credit them (METHOD_HISTORY, Phase 15).
 
 ## What would settle more
 
@@ -266,5 +315,7 @@ has a shape that v1's training answers never have, and every arm writes v1's sha
   assumptions.** This removes the shortcuts S2 took, and tests whether Table 1's shapes
   can be learnt.
 - **The fold order, checked against the released tool.**
+- **A benchmark whose answers vary within a tier.** On the 103-problem benchmark, t2–t4
+  have one answer each, so exact@k asks whether a model writes its tier's one answer.
 - **Reinforcement learning.** The registered rule chose the endpoint arm as its base.
   Starting from S2 would be a new decision, and would have to be registered.

@@ -235,16 +235,9 @@ def anonymize_problem(
 # De-anonymisation (for human-readable reporting)
 # ──────────────────────────────────────────────────────────────────────────────
 
-def deanonymize_atom(atom: str, nm: NameMap) -> str:
-    """Map an anonymised atom back to original names where possible.
-
-    Invented symbols not present in the map (e.g. assumptions the solver/LLM
-    created, like `normal_p` or `alpha`) are left unchanged.
-    """
-    return rewrite_atom(atom, nm.inverse())
-
-
 def deanonymize_framework(fw: ABAFramework, nm: NameMap) -> ABAFramework:
+    """Map an anonymised framework back to the original names. Invented symbols
+    not in the map (e.g. `alpha_0`) are left unchanged."""
     return rewrite_framework(fw, nm.inverse())
 
 

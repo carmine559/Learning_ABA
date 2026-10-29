@@ -26,9 +26,10 @@ judge, no alignment, no gold-path bias.
 P2 and P4 accept ANY legal answer, not the one the solver happened to pick, so
 the nondeterminism of `applyFolding`/`applyAsmIntro` costs the model nothing.
 P4 is reported per line-36 branch and balanced over the two.
-P3 and P5 are binary: report BALANCED ACCURACY against the explicit 50% floor,
-never raw accuracy. P3 also asks which examples fail, and that half has a ~0
-chance floor, so it carries most of the probe's discriminating power.
+P3 and P5 are binary: report BALANCED ACCURACY, never raw accuracy (a constant
+answer scores 0.5), and read every probe against the measured floors of
+analysis/null_baselines.py. P3 also asks which examples fail, and that half has
+a ~0 chance floor, so it carries most of the probe's discriminating power.
 """
 from __future__ import annotations
 
@@ -37,10 +38,9 @@ import re
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Optional, Tuple, Any
 
-from src.aba_types import Rule, ABAFramework, LearningProblem
+from src.aba_types import Rule, LearningProblem
 from src.aba_algorithm import (
-    gen_phase, apply_folding, fact_subsumption, _current_framework,
-    _is_ground_fact, _assumptions_relative_to,
+    gen_phase, _current_framework, _is_ground_fact, _assumptions_relative_to,
 )
 from src.aba_validator import run_rote_learning, check_brave_entailment
 from src.aba_prompts import SYSTEM_PROMPT_DEFS, _format_problem, _clean_llm_output
@@ -49,18 +49,9 @@ from src.aba_trace import _strip_echo, _RULES_HDR, _ASMS_HDR
 KINDS = ("role", "fold", "check", "introduce", "subsume")
 BINARY_KINDS = ("check", "subsume")
 
-# Probe prompts version themselves, independently of the end-to-end mode prompts
-# (frozen at v3). Probe results are comparable only within one version.
-#   v1  the run in experiments/04_step_probes. Two defects: `_head` prepended the whole
-#       SYSTEM_PROMPT, whose format block contradicted every probe's own format,
-#       and whose "NEVER leave ground facts" contradicted the RoLe probe.
-#   v2  definitions-only preamble; RoLe states that ground facts are expected;
-#       R3 asks for the two choices `applyAsmIntro` makes and not for the
-#       contrary, which ASP computes at line 44.
-#   v3  RoLe drops v2's contrary clause, which drew facts for contrary predicates;
-#       the check defines a failing example (models listed the negative examples);
-#       R3 states Definition 4 and lines 36/41 instead of "declared".
-# Bump this when any probe prompt changes, and record it in the set MANIFEST.
+# Probe prompts are versioned independently of the end-to-end mode prompts; each
+# version's changes are in docs/PROMPTS.md. Probe results are comparable only
+# within one version. Bump this when any probe prompt changes.
 PROBE_PROMPT_VERSION = "v3"
 
 
@@ -356,14 +347,10 @@ def _rule_from(text: str) -> Optional[Rule]:
 def score_probe(probe: Probe, raw_output: str,
                 problem: LearningProblem) -> Tuple[bool, float, str]:
     """Return (correct, partial_score, parsed_repr)."""
-    # Drop echoed problem text BEFORE anything reads the answer. Qwen2.5-7B
-    # echoes the whole problem after its answer in 415/780 probes, and both the
-    # background facts and its `<asm> defeated_by <contrary>` declarations are
-    # otherwise indistinguishable from the model's own output: `role` would
-    # score one answer as 12 facts against an oracle of 2, and relaxing the
-    # ASSUMPTION: prefix below would read the background's contraries back as
-    # the proposal.
-    # Region-based, not truncation: the answer often comes FIRST (aba_trace.py).
+    # Drop echoed problem text BEFORE anything reads the answer: echoed background
+    # facts and `<asm> defeated_by <contrary>` declarations are otherwise
+    # indistinguishable from the model's own output. Region-based, not
+    # truncation: the answer often comes FIRST (aba_trace.py).
     text = "\n".join(
         _strip_echo(_clean_llm_output(raw_output or "").split("\n")))
 

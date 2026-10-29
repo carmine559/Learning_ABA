@@ -35,7 +35,6 @@ from src.aba_steps import (
     STEP_PROMPT_VERSION, WITNESSED, ModelOracle, StepStop, chained_run, gold_backend,
     harvest, parse_answer, same_answer, step_prompt,
 )
-from src.aba_types import Rule
 
 GOLDEN = ROOT / "tests/golden/step_prompts.txt"
 GOLDEN_PROBLEM = "t4_nested_0080"                  # train; all seven kinds and extra rows

@@ -96,8 +96,9 @@ symbolically solvable, ≥2 examples per side, no E+/E− overlap, no duplicates
 Runtime scales as `5·N + 3` problems × modes × samples; with `BENCH_N=20`,
 `--n-samples 3` and 4 modes that is 1236 calls per model. In set 05 (4-bit,
 `--max-tokens 1536`, one L40), generation took 0.6 h for 3B, 4.0 h for 7B, 5.6 h
-for Mistral-7B, 6.7 h for 14B and 2.1 h for 32B, whose answers are short. These
-are summed from the rows' `llm_latency_s`; model loading and scoring come on
+for Mistral-7B, 6.7 h for 14B and 2.1 h for 32B, whose answers are short. Set 07,
+the same design with every problem posed whole, took 0.6, 4.1, 5.7, 7.0 and 2.4 h.
+These are summed from the rows' `llm_latency_s`; model loading and scoring come on
 top. Trim `BENCH_N` or the mode list for a faster pass.
 
 Rows are appended as they are scored. A job that dies can be resubmitted into the
@@ -161,4 +162,5 @@ Qwen, Mistral and Phi are ungated — easiest to start with `--model qwen2.5-3b`
 | Reporting | add `--export` (frameworks + figures + narratives) |
 
 Drop `--graded-source llm_elicited` (→ default `uniform`) for a faster Task 2 with
-no extra LLM calls. Use `--no-anonymize` only for a future Task 3 (RAG) run.
+no extra LLM calls. Every committed set ran anonymised; `--no-anonymize` is for
+reading problems by their real names.

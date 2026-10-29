@@ -45,20 +45,13 @@ class LLMBackend(ABC):
         seed: Optional[int] = None,
     ) -> ModelResponse: ...
 
-    def batch_generate(
-        self, prompts: List[str], **kwargs
-    ) -> List[ModelResponse]:
-        return [self.generate(p, **kwargs) for p in prompts]
-
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Groq  — free API, fast LPU inference, access to Llama 3.1 70B
-# Sign up: https://console.groq.com  → copy key to GROQ_API_KEY
+# Groq API (OpenAI-compatible); the key goes in GROQ_API_KEY
 # ─────────────────────────────────────────────────────────────────────────────
 
 GROQ_MODELS = {
     # model_alias          : groq_model_id
-    #   https://console.groq.com/docs/models
     "llama3-70b":          "llama-3.3-70b-versatile",   # 70B, recommended
     "llama3-8b":           "llama-3.1-8b-instant",      # faster, smaller
     "gemma2-9b":           "gemma2-9b-it",
@@ -105,7 +98,6 @@ class GroqBackend(LLMBackend):
                 "Set GROQ_API_KEY environment variable. "
                 "Get a free key at https://console.groq.com"
             )
-        from groq import Groq
         self.client = Groq(api_key=api_key)
         self.model = GROQ_MODELS.get(model, model)
         self.max_retries = max_retries
@@ -196,8 +188,7 @@ class GroqBackend(LLMBackend):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# HuggingFace Inference API  — free serverless tier, no local GPU
-# Sign up: https://huggingface.co  →  Settings → Access Tokens
+# HuggingFace Inference API: serverless, no local GPU; the token goes in HF_TOKEN
 # ─────────────────────────────────────────────────────────────────────────────
 
 HF_MODELS = {
@@ -211,8 +202,7 @@ HF_MODELS = {
 
 class HFInferenceBackend(LLMBackend):
     """
-    Calls the HuggingFace Serverless Inference API (free tier).
-    No GPU needed. Rate-limited to ~100 req/day on free accounts.
+    Calls the HuggingFace Serverless Inference API. No GPU needed.
 
     Key: set HF_TOKEN=hf_...
     """
@@ -232,7 +222,6 @@ class HFInferenceBackend(LLMBackend):
                 "Set HF_TOKEN environment variable. "
                 "Get a free token at https://huggingface.co/settings/tokens"
             )
-        from huggingface_hub import InferenceClient
         self.model  = HF_MODELS.get(model, model)
         self.client = InferenceClient(model=self.model, token=token)
 
@@ -263,20 +252,9 @@ class HFInferenceBackend(LLMBackend):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Google AI Studio  —  Gemini models via google-genai SDK
-# Sign up: https://aistudio.google.com  → Get API key → copy to GOOGLE_API_KEY
-# Install: pip install google-genai
-#
-# Free-tier limits (AI Studio):
-#   gemini-2.5-flash :  500 req/day  10 req/min   1 M tok/min   ← recommended
-#   gemini-2.0-flash : 1500 req/day  15 req/min   1 M tok/min
-#   gemini-2.5-pro   :   50 req/day   5 req/min  250 K tok/min
-#
-# Thinking mode (gemini-2.5-*):
-#   Pass thinking=True to enable the model's built-in chain-of-thought.
-#   This improves accuracy on ABA tasks (folding / assumption introduction)
-#   at the cost of more output tokens. Thinking tokens are NOT counted toward
-#   the response max_tokens; the final answer is still capped at max_tokens.
+# Google AI Studio: Gemini models via the google-genai SDK; the key goes in
+# GOOGLE_API_KEY. thinking=True turns on the model's built-in reasoning; its
+# tokens do not count toward max_tokens.
 # ─────────────────────────────────────────────────────────────────────────────
 
 GOOGLE_MODELS: Dict[str, str] = {
@@ -304,7 +282,6 @@ class GoogleAIBackend(LLMBackend):
     Thinking mode (gemini-2.5-* only):
       Pass thinking=True at construction time.  The model emits a <think> chain
       before the final answer; only the final answer is returned as ModelResponse.text.
-      Use this for the cot / guided modes where multi-step reasoning matters most.
     """
 
     def __init__(
@@ -315,7 +292,7 @@ class GoogleAIBackend(LLMBackend):
         thinking: bool = False,
     ):
         try:
-            from google import genai as _genai          # noqa: F401
+            from google import genai as _genai
         except ImportError:
             raise ImportError("Run: pip install google-genai")
 
@@ -326,7 +303,6 @@ class GoogleAIBackend(LLMBackend):
                 "Get a free key at https://aistudio.google.com/apikey"
             )
 
-        from google import genai as _genai
         self.client = _genai.Client(api_key=api_key)
         self.model = GOOGLE_MODELS.get(model, model)
         self.max_retries = max_retries
@@ -348,7 +324,6 @@ class GoogleAIBackend(LLMBackend):
         max_tokens: int = 1024,
         seed: Optional[int] = None,
     ) -> ModelResponse:
-        from google import genai as _genai
         from google.genai import types as _types
 
         config_kwargs: Dict[str, Any] = {
@@ -376,7 +351,6 @@ class GoogleAIBackend(LLMBackend):
                 )
                 self._last_call_t = time.time()
 
-                # Extract text. Used to ignore any embedded <think> blocks
                 text = resp.text or ""
                 usage = resp.usage_metadata
                 cands = getattr(resp, "candidates", None) or []

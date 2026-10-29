@@ -787,6 +787,8 @@ answer.
 10. **The finding if nothing is above.** If no cell is above on either primary metric,
     that is the finding.
 
+The outcome is in Phase 15.
+
 ## Phase 14 — A learnable predicate is not an assumption (Oct 2026)
 
 Found by reading the rows of set 07's smoke run (Qwen2.5-3B, `--benchmark 1`, k = 2)
@@ -826,23 +828,107 @@ by hand, before set 07 ran.
   untracked outputs counted. Untracked files other than Python sources no longer
   count, so `-dirty` now means the code differs from the revision.
 
-## Pending
+## Phase 15 — Set 07's outcome (Oct 2026)
 
-- Run set 07 (Phase 13) and record its outcome under the registered reading.
-- A benchmark whose answers vary within a tier. On the 103-problem benchmark, the
-  algorithm has 9 distinct answers and t2–t4 one each (Phase 13), so exact@k there
-  asks whether the model writes its tier's one answer.
-- Decide the `apply_folding` scope question (Phase 6, item 4); measure how many
-  extra legal folds appear when folding against `R ∪ learnt`.
-- Make the `role` and `fold` probes discriminate (Phase 10): problems whose RoLe answer
-  is not the positive examples, and a fold probe that folding onto dom(X) does not pass
-  trivially.
-- Check the fold-order convention against the Zenodo implementation.
-- Settle N1 (Phase 9). When line 18's test succeeds, the printed algorithm adds ρf
-  nowhere, while the reference keeps it, following the prose (p. 3450).
-- Line 8 and backtracking. The paper (p. 3450) says the #minimize directive "will also
+**Outcome** ([`experiments/07_e2e_whole_v4`](../experiments/07_e2e_whole_v4/MANIFEST.md),
+jobs 73997–74001). 20 rows per model were read by hand before any aggregate, and every
+verdict follows from what the parser read. `rescore.py` reproduces every row and every
+summary field, and every sample's seed matches its derivation.
+
+- **As registered, no model × mode cell is above its floor on either primary metric,**
+  with or without t5 (rule 10).
+  - The closest clean@k cell is 32B direct, 0.757 [0.67, 0.83], against the positional
+    rule's 0.777.
+  - The highest exact@k cell is 14B guided, 0.155 [0.10, 0.24], against 0.388. Three of
+    its problems are credited by ill-formed answers (below). Without them, the highest is
+    14B cot, 0.136 [0.08, 0.21].
+  - The algorithm-mode cells of 7B and Mistral are lower bounds: 15% and 22% of their
+    answers reached the token cap (rule 3).
+  - valid@1 is at most 0.515 and agreement at most 0.517, against floors of 1.000. R3
+    balanced lies between 0.340 and 0.592.
+- **32B writes the positional rule's shape.**
+  - On t2–t4, 332 of its 364 clean answers reuse the background assumption. Definition 4
+    does not let line 36 reuse it: no assumption is relative to the body, so line 41
+    introduces a new one.
+  - On t1, where the algorithm's answer is a plain fold, 32B guards a rule with an
+    assumption on 59–60 of the 60 samples in every mode.
+  - Set 06 measured the same habit at lines 36 and 41 (Phase 10).
+- **Smaller above larger** (rule 5). 14B outranks 32B on exact@k in cot, guided and
+  algorithm modes. The mechanism:
+  - 14B writes the plain fold on t1 in guided and algorithm modes;
+  - in cot, 14B introduces an assumption with the algorithm's contrary on t2–t4;
+  - 32B does neither.
+- **Algorithm mode does not run the algorithm.** Its prompt asks for the steps and then
+  the final answer.
+  - The answer comes first in 307–309 of the 309 algorithm answers for 3B, 7B, Mistral
+    and 32B, and in 264 for 14B.
+  - 32B's median algorithm answer is 41 tokens.
+  - Steps, when written, mostly follow the answer. So the mode does not measure step
+    execution; the step probes (sets 04–06) do.
+
+**Two defects of the scorer, found after the run.** Neither changes a verdict. The
+registered figures stand, with the corrections beside them in the set's MANIFEST.
+
+1. **Exact credits a name that is not fresh.** `same_answer` renames every assumption an
+   answer declares new as if its name were fresh.
+   - Three 14B guided answers on t3 declare `v(X) defeated_by c_v(X)`, where `v` is a
+     background predicate (`v(X) :- q(X)`), and otherwise match the algorithm's answer.
+   - They score exact, although they are ill-formed and not solutions.
+   - A scan of every stored score row finds no other: none in set 07's other cells, none
+     in any fine-tuning result. No floor policy writes one either.
+   - With exact requiring clean, 14B guided is 13/103.
+2. **The parser reads past the answer.** Phase 12 recovers rules written under `NEW
+   ASSUMPTIONS:`, and that section runs to the end of the answer block.
+   - So a rule quoted in an explanation after the answer becomes part of it. Models that
+     answer first and explain afterwards trigger this.
+   - Ending the section at its first line of prose moves 14B the most: algorithm clean@k
+     14 → 20, guided exact@k 16 → 19.
+   - It moves no other model by more than one problem, and takes no cell across its
+     floor.
+
+**What exact can mean.** The paper leaves four choices open (p. 3450):
+
+- line 14's order: Gen "considers any non-intensional rule ρ ∈ Rl";
+- `applyFolding` at line 17: "We do not provide a concrete definition";
+- the assumption chosen at line 36: "nondeterministic";
+- the answer set `getAS` returns at lines 8 and 44.
+
+The reference fixes one resolution of each, and exact credits only the answer that
+resolution reaches.
+
+- **An example from set 07.** When 32B introduces an assumption, its commonest non-exact
+  answer folds the contrary once more than the algorithm does: `c_alpha(X) :- v(X)`,
+  where the background has `v(X) :- q(X)`.
+  - It means the same as the algorithm's `c_alpha(X) :- q(X)`.
+  - Some run of Algorithm 1 returns it only if `applyFolding` may fold an intensional
+    rule again.
+- **The positional rule is not such an answer:** line 36 reuses only an assumption
+  relative to the body.
+
+## Left open
+
+- **Exact and fresh names** (Phase 15). Requiring an exact answer to be clean changes one
+  cell of set 07 (14B guided, 16 → 13 of 103) and no other registered figure.
+- **Where the answer ends** (Phase 15). The `NEW ASSUMPTIONS:` section runs to the end of
+  the block, so a trailing explanation joins the answer. Ending it at the first line of
+  prose changes no verdict.
+- **Crediting any run of Algorithm 1** (Phase 15). Exact credits only the reference's
+  resolution of lines 8, 14, 17, 36 and 44.
+- **A benchmark whose answers vary within a tier.** On the 103-problem benchmark, the
+  algorithm has 9 distinct answers and t2–t4 one each (Phase 13). So exact@k there asks
+  whether the model writes its tier's one answer.
+- **The `apply_folding` scope question** (Phase 6, item 4), and how many extra legal folds
+  appear when folding against `R ∪ learnt`.
+- **Probes that discriminate on `role` and `fold`** (Phase 10). This needs problems whose
+  RoLe answer is not the positive examples, and a fold probe that folding onto dom(X) does
+  not pass trivially.
+- **The fold-order convention,** checked against the Zenodo implementation.
+- **N1** (Phase 9). When line 18's test succeeds, the printed algorithm adds ρf nowhere,
+  while the reference keeps it, following the prose (p. 3450).
+- **Line 8 and backtracking.** The paper (p. 3450) says the #minimize directive "will also
   minimize the set of alternative answer sets that are computed at line 8 in case of
-  backtracking". The reference computes RoLe once, and a Gen failure ends the run. Gen
-  succeeds from the first RoLe answer on all 2,000 v1 problems and on every Table 1
-  problem, so no figure depends on it. Decide whether the reference should backtrack into
-  line 8.
+  backtracking".
+  - The reference computes RoLe once, and a Gen failure ends the run.
+  - Gen succeeds from the first RoLe answer on all 2,000 v1 problems and on every Table 1
+    problem, so no figure depends on it.
+  - Whether the reference should backtrack into line 8 is open.

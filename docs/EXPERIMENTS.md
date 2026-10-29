@@ -16,7 +16,7 @@ are *promoted* into `experiments/` together with a manifest.
 | [`04_step_probes`](../experiments/04_step_probes/MANIFEST.md) | Sep 2026 | Qwen2.5-3B/7B/14B/**32B**, 4-bit | local (L40) | probes **v1** | probe rev 3 (re-scored offline) | 780 probes/model over the same 103 problems | done; `role` superseded |
 | [`05_scale_4bit_probes_v2`](../experiments/05_scale_4bit_probes_v2/MANIFEST.md) | Sep 2026 | Qwen2.5-3B/7B/14B/32B, Mistral-7B, 4-bit | local (L40) | modes **v4**, probes **v2** | rev 4; probe rev 3 | the same 103 problems; 780 probes/model | probes done; end-to-end superseded (examples held out) |
 | [`06_probes_v3`](../experiments/06_probes_v3/MANIFEST.md) | Oct 2026 | Qwen2.5-3B/7B/14B/32B, Mistral-7B, 4-bit | local (L40) | probes **v3** | probe floors measured | 845 probes/model over the same 103 problems | done |
-| `07_e2e_whole_v4` | Oct 2026 | Qwen2.5-3B/7B/14B/32B, Mistral-7B, 4-bit | local (L40) | modes **v4** | score card, posed whole | the same 103 problems, k = 3 | registered ([METHOD_HISTORY.md](METHOD_HISTORY.md), Phase 13) |
+| [`07_e2e_whole_v4`](../experiments/07_e2e_whole_v4/MANIFEST.md) | Oct 2026 | Qwen2.5-3B/7B/14B/32B, Mistral-7B, 4-bit | local (L40) | modes **v4** | score card, posed whole | the same 103 problems, k = 3 | done; no cell above its floor ([METHOD_HISTORY.md](METHOD_HISTORY.md), Phase 15) |
 
 **Sets 00–03 and set 05's end-to-end half are superseded.** They hid part of each
 problem's examples from the prompt and scored the answers on the hidden ones, so they
@@ -87,11 +87,11 @@ example. The fields of its score card:
 
 | Field | Definition |
 | --- | --- |
-| `parse_ok` | the output yields a framework. An explicit `NONE` / `NONE` answer is an empty framework, not a parse failure. A rule's head must be an atom and each body element an atom, a `not` atom or a comparison; anything else is not a rule ([METHOD_HISTORY.md](METHOD_HISTORY.md), Phase 12). Every repair the parser applied is listed in `repairs` |
+| `parse_ok` | the output yields a framework. An explicit `NONE` / `NONE` answer is an empty framework, not a parse failure. A rule's head must be an atom and each body element an atom, a `not` atom or a comparison; anything else is not a rule ([METHOD_HISTORY.md](METHOD_HISTORY.md), Phase 12). Every repair the parser applied is listed in `repairs`. Rules written under `NEW ASSUMPTIONS:` are recovered from that heading to the end of the answer block, so a rule quoted in an explanation after the answer joins it (Phase 15) |
 | `illformed` | the Definition-1 side conditions it violates: (ii) every new-rule head with a background predicate is learnable; (iv) contraries of existing assumptions unchanged; flatness (no assumption as a rule head); new-assumption predicates fresh, and never learnable, since Definition 1 keeps T and the assumptions disjoint ([METHOD_HISTORY.md](METHOD_HISTORY.md), Phase 14) |
 | `valid` | the answer **is a solution**: one stable extension accepts every posed positive and no posed negative (one joint check) |
 | `clean` | valid, intensional (no constant in any new rule), not ill-formed, and not self-defeating |
-| `exact` | the algorithm's answer, up to assumption names and body order |
+| `exact` | the algorithm's answer, up to assumption names and body order. The renaming does not check that a declared assumption's name is fresh, so an ill-formed answer can score exact (Phase 15) |
 | `agreement` | over the example predicate's atoms outside E+ and E-, the share whose status given E+/E- (`ALWAYS` / `NEVER` / `FREE`) matches the algorithm's framework; undefined when there are no such atoms |
 | `r2_bodies` | R2: each learnt rule's body against the algorithm's, for the same head |
 | `defeasible` | R3: whether the answer guards a rule with an assumption, read against `ref_defeasible` as balanced accuracy |
@@ -116,7 +116,8 @@ posed, or answer every problem alike, scored by the same function. On the
 103-problem benchmark the floors are clean@k **0.777** (a positional rule) and
 exact@k **0.388** (one answer for all). Valid@1 and agreement both have floors of
 1.000, so neither can show reasoning on this benchmark. The registered reading of
-set 07 is in [METHOD_HISTORY.md](METHOD_HISTORY.md), Phase 13.
+set 07 is in [METHOD_HISTORY.md](METHOD_HISTORY.md), Phase 13. Under it, no model ×
+mode cell of set 07 is above either floor (Phase 15).
 
 > **Superseded: the fit / gen / det chain (sets 00–03, set 05's end-to-end half).**
 > Those runs hid part of each problem's examples (`test_ratio` 0.34) and scored
@@ -201,7 +202,9 @@ The score card's `trace_fidelity` (the frozen scorer of
 [`src/aba_trace.py`](../src/aba_trace.py)) reports how much of the symbolic
 execution the model's free-text reasoning reproduces: `has_trace`, rule-keyed
 `f1`, and `r2_recall` / `r3_recall`. `summary.json` reports the mean f1 as
-`trace_f1`. All measures are keyed to a **canonical rule**, whose chance rate is ~0.
+`trace_f1`, over the answers that contain a trace. Count them before reading it: in set
+07 they are 31 of 32B's 309 algorithm answers. All measures are keyed to a **canonical
+rule**, whose chance rate is ~0.
 
 > An earlier version aligned the R1/R2/R3/R4 **symbol sequence** against the
 > symbolic trace. It was dropped: random sequences of the same length score

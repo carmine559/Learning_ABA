@@ -4,7 +4,7 @@ Core data structures for ABA framework learning.
 """
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import List, Dict, Tuple, Optional, Any
+from typing import List, Dict, Optional, Any
 import re
 
 
@@ -97,36 +97,6 @@ class ABAFramework:
     new_rules: List[Rule] = field(default_factory=list)
     new_assumptions: List[str] = field(default_factory=list)
 
-    def to_prolog_block(self, include_dom: bool = False,
-                        domain: Optional[List[str]] = None) -> str:
-        lines = []
-        if include_dom and domain:
-            for c in domain:
-                lines.append(f"dom({c}).")
-            lines.append("")
-        for rule in self.rules:
-            lines.append(rule.to_prolog())
-        lines.append("")
-        for asm in self.assumptions:
-            contrary = self.contraries.get(asm, f"c_{asm}")
-            var_match = re.search(r'\((.+)\)', asm)
-            args = ([a.strip() for a in var_match.group(1).split(',')]
-                    if var_match else [])
-            guards = "".join(f"dom({a}), " for a in args if a[:1].isupper())
-            lines.append(f"{asm} :- {guards}not {contrary}.")
-        return "\n".join(lines)
-
-    def to_natural_language(self) -> str:
-        parts = ["Rules:"]
-        for r in self.rules:
-            parts.append(f"  - {r.to_text()}")
-        if self.assumptions:
-            parts.append("Assumptions (defeasible by default):")
-            for asm in self.assumptions:
-                contrary = self.contraries.get(asm, f"c_{asm}")
-                parts.append(f"  - {asm}  [defeated by: {contrary}]")
-        return "\n".join(parts)
-
     def get_domain(self) -> List[str]:
         """Infer the domain (all constants) from rules."""
         constants = set()
@@ -213,8 +183,7 @@ class TransformStep:
             return f"Fact Subsumption: removed {self.input_rule}"
         return f"Step({self.step_type})"
 
-    # Short symbols matching the paper's transformation rules R1-R4, used as the
-    # alphabet of the trace-alignment scorer.
+    # The paper's transformation rules R1-R4.
     RULE_SYMBOL = {
         "rote_learning":           "R1",
         "folding":                 "R2",
@@ -249,7 +218,7 @@ class LearningTrace:
     success: bool = False
 
     def symbol_sequence(self) -> List[str]:
-        """The trace as an R1/R2/R3/R4 string — the alignment alphabet."""
+        """The trace as a sequence of R1-R4 symbols."""
         return [s.rule_symbol for s in self.steps]
 
     def to_dict(self) -> Dict[str, Any]:

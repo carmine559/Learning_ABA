@@ -1,9 +1,10 @@
-"""Score one model output against ASP-ABAlearnB: correctness, fidelity, reward.
+"""Score one model output against ASP-ABAlearnB: correctness and fidelity.
 
-The single scorer of the SFT ablation and the source of the RL reward. Every
-figure is read against the algorithm's own run on the same problem
-(`reference`), and no model output is scored until every gold target scores the
-maximum on every field (`python -m src.aba_score --control corpus/v1`).
+The single scorer of the prompting and fine-tuning studies. Every figure is read
+against the algorithm's own run on the same problem (`reference`), and no model
+output is scored until every gold target scores the maximum on every field
+(`python -m src.aba_score --control corpus/v1`). `reward()` is the scalar reward
+designed for an RL stage, which was not run.
 
 Instrument per arm:
 
@@ -12,7 +13,9 @@ Instrument per arm:
     agreement off the examples              yes        yes        yes
     final answer: exact, R2 bodies, R3      yes        yes        yes
     held-out choice (t8/t9)                 yes        yes        yes
-    on-policy audit of the written steps    if any     n/a        yes
+    on-policy audit of the written steps    off        n/a        yes
+
+The audit is off for prompted answers (`audit=False`): it misfires on free prose.
 
 Correctness is Definition 1 on the posed examples. Problems are posed whole, so
 generalisation is measured on unseen problems (test split, held-out tiers,
@@ -35,7 +38,6 @@ from __future__ import annotations
 
 import argparse
 import collections
-import itertools
 import json
 import re
 import sys
@@ -180,7 +182,11 @@ def _alpha_order(a: ABAFramework, b: ABAFramework) -> Optional[Tuple[int, ...]]:
 
 
 def same_answer(a: ABAFramework, b: ABAFramework) -> bool:
-    """Same learnt rules, up to the names of fresh assumptions and body order."""
+    """Same learnt rules, up to the names of fresh assumptions and body order.
+
+    Every assumption `a` declares new is renamed, fresh or not: an answer whose
+    new assumption reuses a background predicate's name can match.
+    """
     return _alpha_order(a, b) is not None
 
 

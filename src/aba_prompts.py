@@ -190,15 +190,8 @@ SYSTEM_PROMPT_SFT = SYSTEM_PROMPT_DEFS + _SYSTEM_PROMPT_SFT_TASK
 # ---------------------------------------------------------------------------
 
 def _format_problem(problem: LearningProblem) -> str:
-    """Serialise the problem in the same notation the answer must use.
-
-    Rendering the background as prose ("p(a) is always true.",
-    "u(X) [defeated by: t(X)]") while every definition, transformation rule and
-    the required output are in ABA/Prolog syntax forces the model to translate
-    between three notations before it can start reasoning. One
-    notation throughout: rules as `h :- b1, b2.`, assumptions as
-    `a(X) defeated_by c(X)`.
-    """
+    """Serialise the problem in the notation the answer must use: rules as
+    `h :- b1, b2.`, assumptions as `a(X) defeated_by c(X)`."""
     bg = problem.background
     domain = problem.get_domain()
 
@@ -693,13 +686,13 @@ def parse_llm_output(
     Parse the LLM's output into an ABAFramework.
     Returns None if parsing fails entirely.
 
-    The parser repairs three failure modes that are common enough to dominate
-    the results if left alone (measured over 4 944 benchmark samples):
-      * several ``NEW RULES:`` blocks, only the last of which is the answer
-        (17.9% of samples) — the last usable block wins;
-      * rules written under ``NEW ASSUMPTIONS:`` (46.2%) — they are routed to
-        the rule list instead of being dropped;
-      * the problem statement echoed after the answer (23.6%) — truncated.
+    The parser repairs three common failure modes:
+      * several ``NEW RULES:`` blocks, only the last of which is the answer:
+        the last usable block wins;
+      * rules written under ``NEW ASSUMPTIONS:``: they are routed to the rule
+        list instead of being dropped. The section runs to the end of the
+        block, so a rule quoted in a trailing explanation is read too;
+      * the problem statement echoed after the answer: truncated.
 
     Pass a list as `repairs` to receive a note for every repair applied, so a
     sample's score can always be traced back to what the model literally wrote.

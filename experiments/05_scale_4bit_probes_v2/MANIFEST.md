@@ -5,8 +5,10 @@
 > hidden ones (gen@k). Definition 1 poses a problem whole, so those figures measure
 > neither correctness by Definition 1 nor fidelity to Algorithm 1
 > ([METHOD_HISTORY.md](../../docs/METHOD_HISTORY.md), Phase 13). They are kept as the
-> as-run record, and `rescore.py` refuses them. The probe half stands, read against
-> the floors below; probe prompts v3 (set 06) supersede it.
+> as-run record, and `rescore.py` refuses them. Set 07
+> ([`07_e2e_whole_v4`](../07_e2e_whole_v4/MANIFEST.md)) re-runs the end-to-end half
+> with every problem posed whole. The probe half stands, read against the floors below;
+> probe prompts v3 (set 06) supersede it.
 
 One run per model covering **both** halves of the evaluation on a single load of
 the weights: the four end-to-end modes (mode prompts **v4**; set 03 ran v3) and
@@ -55,7 +57,7 @@ or a longer budget into the probes.
 
 Same 103 problems, same scoring code, same 4-bit quantisation — the only
 difference is the prompt. Set 04 column is its rev-3 re-scoring
-(`rescored_v2/`); Mistral has no v1 column because it was not in set 04.
+(`../04_step_probes/rescored_rev3/`); Mistral has no v1 column because it was not in set 04.
 
 | probe | metric | 3B v1→v2 | 7B v1→v2 | 14B v1→v2 | 32B v1→v2 |
 | --- | --- | --- | --- | --- | --- |

@@ -190,9 +190,6 @@ system prompt gained a matching `REUSE FIRST` line.
 The code stamps this version as `MODE_PROMPT_VERSION = "v4"`, and every
 end-to-end run records it, with each mode's prompt hash, in its `summary.json`.
 
-`to_natural_language()` is retained, but only for reports
-(`explanations.md`, `frameworks.md`).
-
 ### v4-sft — the prompt of the SFT ablation (`corpus/v1`)
 
 The core ablation trains two arms on the same problems: one on the **trace**
@@ -260,7 +257,7 @@ version.
 | `experiments/02_bench_prompts_v2` | v2 | rev 2 | nothing (superseded: examples held out) |
 | `experiments/03_bench_prompts_v3` | v3 | rev 4 | nothing (superseded: examples held out) |
 | `experiments/05_scale_4bit_probes_v2`, end-to-end half | **v4** | rev 4 | nothing (superseded: examples held out) |
-| `07_e2e_whole_v4` (registered, [METHOD_HISTORY](METHOD_HISTORY.md) Phase 13) | **v4** | score card, posed whole | later v4 runs posed whole |
+| `experiments/07_e2e_whole_v4` ([METHOD_HISTORY](METHOD_HISTORY.md) Phases 13 and 15) | **v4** | score card, posed whole | later v4 runs posed whole |
 | [`corpus/v1`](../corpus/v1/MANIFEST.md) (SFT training and evaluation) | **v4-sft** | trace fidelity + rev 4 | runs trained or evaluated on it |
 
 A prompt change and a scoring change are independent axes. A scoring change can be

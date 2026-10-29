@@ -11,7 +11,8 @@ repository-code: "https://github.com/carmine559/Learning_ABA"
 abstract: >-
   Experimental pipeline for an MSc thesis investigating whether large language
   models can replicate the ASP-ABAlearnB algorithm for learning Assumption-Based
-  Argumentation frameworks from background knowledge and examples, with a
-  stratified anonymised benchmark, gradual ABA semantics (BSAF), and a planned
-  ArgLLMs+RAG extension.
+  Argumentation frameworks from background knowledge and examples: a reference
+  implementation of the algorithm, a stratified anonymised benchmark and training
+  corpus, prompting and fine-tuning studies scored against the algorithm's runs,
+  and gradual ABA semantics (BSAF).
 license: MIT

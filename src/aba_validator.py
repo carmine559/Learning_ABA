@@ -193,11 +193,9 @@ def conditioned_status(
                        score it as a success anyway
       ``NO_EXTENSION`` the conditions themselves are unsatisfiable
 
-    Conditioning on the TRAINING examples and asking about the HELD-OUT ones is
-    the honest generalisation test under brave semantics: brave ABA Learning
-    admits mutually-attacking assumptions that let a framework realise any
-    labelling of the unseen atoms, so "some extension gets it right" is not
-    evidence of having learnt anything.
+    `agreement` conditions on the posed examples and asks about the atoms outside
+    them. A brave check would not do: mutually attacking assumptions let a
+    framework accept such an atom in some extension and reject it in another.
     """
     dom = domain or framework.get_domain()
     base = _build_asp(framework, condition_positive, condition_negative, dom)
@@ -266,38 +264,3 @@ def run_rote_learning(
                 new_facts.append(rule)
 
     return new_facts, True, f"RoLe: found {len(new_facts)} ground facts."
-
-
-# ──────────────────────────────────────────────────────────────────────────────
-# Full solution validator
-# ──────────────────────────────────────────────────────────────────────────────
-
-def validate_llm_solution(
-    background: ABAFramework,
-    candidate: ABAFramework,
-    positive: List[str],
-    negative: List[str],
-    domain: Optional[List[str]] = None,
-    timeout: int = 30,
-) -> Dict:
-    """
-    Full validation of a candidate framework produced by an LLM.
-
-    Returns a dict with keys:
-        valid, has_extension, intensional,
-        n_new_rules, n_new_assumptions, clingo_time, message.
-    """
-    dom = domain or candidate.get_domain()
-    has_ext = check_has_stable_extension(candidate, dom, timeout)
-    valid, msg, elapsed = check_brave_entailment(
-        candidate, positive, negative, dom, timeout
-    )
-    return {
-        "valid": valid,
-        "has_extension": has_ext,
-        "intensional": candidate.is_intensional(),
-        "n_new_rules": len(candidate.new_rules),
-        "n_new_assumptions": len(candidate.new_assumptions),
-        "clingo_time": elapsed,
-        "message": msg,
-    }

@@ -4,18 +4,12 @@ Hard-coded benchmark problems and synthetic problem generation.
 The paper's Table 1 benchmarks are read by src/aba_zenodo.py.
 """
 from __future__ import annotations
-import os
-import json
 import random
-import copy
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Tuple, Optional, Dict, Iterator
 
 from src.aba_types import Rule, ABAFramework, LearningProblem, LearningTrace
-from src.aba_validator import (
-    check_brave_entailment, run_rote_learning,
-    check_has_stable_extension
-)
+from src.aba_validator import check_brave_entailment, run_rote_learning
 
 
 # ---------------------------------------------------------------------------
@@ -311,7 +305,6 @@ class SyntheticGenerator:
         if len(consts) < 3:
             return None
         try:
-            from src.aba_validator import run_rote_learning
             _facts, ok, _ = run_rote_learning(problem)
             if not ok:
                 return None
@@ -910,11 +903,11 @@ class ABADataset:
         solve: bool = True,
     ) -> None:
         """
-        Generate the stratified benchmark suite for massive Task-1 testing.
+        Generate the stratified Task-1 benchmark suite.
 
         Each tier isolates ONE capability of the ABA-learning algorithm, so the
-        per-tier gen@k breakdown tells you *which part* of the algorithm the LLM
-        can replicate, not just an overall average:
+        per-tier breakdown (clean@k / exact@k) tells *which part* of the
+        algorithm the LLM can replicate, not just an overall average:
 
           t1_mono     folding only — no exceptions, a monotonic rule suffices
           t2_defeas   assumption introduction — one exception must be defeated
@@ -987,19 +980,6 @@ class ABADataset:
         solution.rules.extend(new_facts)
         solution.new_rules = new_facts
         return solution
-
-    # ---- Filtering ---------------------------------------------------------
-
-    def filter_solved(self) -> 'ABADataset':
-        """Return a dataset containing only entries with known solutions."""
-        ds = ABADataset()
-        ds.entries = [e for e in self.entries if e.solution is not None]
-        return ds
-
-    def filter_by_source(self, source: str) -> 'ABADataset':
-        ds = ABADataset()
-        ds.entries = [e for e in self.entries if e.source == source]
-        return ds
 
     # ---- Statistics --------------------------------------------------------
 
