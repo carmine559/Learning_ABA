@@ -1,0 +1,1358 @@
+{
+  "run": {
+    "design": "posed whole: every example is in the prompt and in the scoring",
+    "mode_prompt_version": "v4",
+    "mode_prompt_sha256": {
+      "direct": "47db4a1aaddbcbe6279223a830db376977736e794336172775b099e1355a2fee",
+      "cot": "ba46e34feee7e13b01fe3f15bb84d187bf2444e39ab31750023914fdf9d29445",
+      "guided": "c7e8faf0e928e6cdba2ee2f12ee4347cd2eae83259739890fbbb054f76861821",
+      "algorithm": "9c85a743c6fdffbda0d43f4a7b1f6ef5418c255846fdec2b46d4bbba59406df2"
+    },
+    "scorer": "src.aba_score.score_output",
+    "audit": false,
+    "code_rev": "1eec742-dirty",
+    "command": "python main.py --backend local --model qwen2.5-32b --benchmark 20 --modes direct cot guided algorithm --n-samples 3 --max-tokens 1536 --export --output results/e2e_whole_v4/bench_qwen2.5-32b --load-4bit",
+    "slurm_job_id": "74001",
+    "started": "2026-10-29T10:34:09",
+    "backend": "local",
+    "model": "Qwen/Qwen2.5-32B-Instruct",
+    "model_revision": "5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd",
+    "load_4bit": true,
+    "gpu": "NVIDIA L40",
+    "versions": {
+      "python": "3.13.5",
+      "torch": "2.7.1+cu118",
+      "transformers": "5.17.0",
+      "tokenizers": "0.23.2",
+      "accelerate": "1.15.0",
+      "peft": "0.21.0",
+      "clingo": "5.8.2",
+      "bitsandbytes": "0.50.2"
+    },
+    "decoding": {
+      "temperature": 0.7,
+      "top_p": 0.95,
+      "max_tokens": 1536,
+      "n_samples": 3,
+      "sampling_seed": 0,
+      "seed_derivation": "int(sha256(f'{sampling_seed}:{problem_id}:{mode}:{sample_idx}')[:8], 16) % 2**31"
+    },
+    "dataset": {
+      "benchmark_per_tier": 20,
+      "n_synthetic": 0,
+      "n_complex": 0,
+      "seed": 42,
+      "anonymize": true,
+      "anonymize_scheme": "letters",
+      "n_problems": 103,
+      "problem_ids_sha256": "a3b1aa2fe4d7ffd2badd97771ac09f91f1986a0eac8151d3c9095fc6c26935cd"
+    },
+    "references_sha256": "518603bd2dfc4c131663096e09561f6cf1508085df5d1efb15e85834bd57a228",
+    "excluded": {}
+  },
+  "direct": {
+    "n_problems": 103,
+    "n_structures": 83,
+    "n_samples": 309,
+    "valid_at_1": 0.515,
+    "valid_at_k": 0.757,
+    "clean_at_1": 0.511,
+    "clean_at_k": 0.757,
+    "exact_at_1": 0.0,
+    "exact_at_k": 0.0,
+    "ci95": {
+      "valid_at_k": [
+        0.666,
+        0.83
+      ],
+      "clean_at_k": [
+        0.666,
+        0.83
+      ],
+      "exact_at_k": [
+        0.0,
+        0.036
+      ]
+    },
+    "agreement": 0.5167,
+    "parse_rate": 1.0,
+    "truncated_rate": 0.0,
+    "intensional_rate": 1.0,
+    "r3": {
+      "yes/yes": 246,
+      "no/yes": 60,
+      "yes/no": 3
+    },
+    "r3_balanced": 0.494,
+    "r2_exact": 0.9485,
+    "trace_f1": null,
+    "errors": {
+      "not_a_solution": 150,
+      "ok": 158,
+      "illformed": 1
+    },
+    "parse_repairs": {
+      "re-listed existing assumption(s)": 159
+    }
+  },
+  "cot": {
+    "n_problems": 103,
+    "n_structures": 83,
+    "n_samples": 309,
+    "valid_at_1": 0.421,
+    "valid_at_k": 0.728,
+    "clean_at_1": 0.372,
+    "clean_at_k": 0.68,
+    "exact_at_1": 0.019,
+    "exact_at_k": 0.058,
+    "ci95": {
+      "valid_at_k": [
+        0.635,
+        0.805
+      ],
+      "clean_at_k": [
+        0.584,
+        0.762
+      ],
+      "exact_at_k": [
+        0.027,
+        0.121
+      ]
+    },
+    "agreement": 0.4153,
+    "parse_rate": 1.0,
+    "truncated_rate": 0.0,
+    "intensional_rate": 0.9385,
+    "r3": {
+      "yes/yes": 249,
+      "no/yes": 60
+    },
+    "r3_balanced": 0.5,
+    "r2_exact": 0.8545,
+    "trace_f1": 0.3301,
+    "errors": {
+      "not_a_solution": 146,
+      "illformed": 39,
+      "ok": 115,
+      "valid_but_degenerate": 8,
+      "self_defeating": 1
+    },
+    "parse_repairs": {
+      "re-listed existing assumption(s)": 223,
+      "skipped 9 line(s) containing '": 1,
+      "output contained 2 'NEW RULES": 1,
+      "skipped 11 line(s) containing '": 2,
+      "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "skipped 10 line(s) containing '": 1
+    }
+  },
+  "guided": {
+    "n_problems": 103,
+    "n_structures": 83,
+    "n_samples": 309,
+    "valid_at_1": 0.479,
+    "valid_at_k": 0.718,
+    "clean_at_1": 0.424,
+    "clean_at_k": 0.65,
+    "exact_at_1": 0.006,
+    "exact_at_k": 0.019,
+    "ci95": {
+      "valid_at_k": [
+        0.625,
+        0.796
+      ],
+      "clean_at_k": [
+        0.554,
+        0.736
+      ],
+      "exact_at_k": [
+        0.005,
+        0.068
+      ]
+    },
+    "agreement": 0.3847,
+    "parse_rate": 1.0,
+    "truncated_rate": 0.0,
+    "intensional_rate": 1.0,
+    "r3": {
+      "yes/yes": 241,
+      "no/yes": 60,
+      "yes/no": 8
+    },
+    "r3_balanced": 0.4839,
+    "r2_exact": 0.9006,
+    "trace_f1": null,
+    "errors": {
+      "not_a_solution": 126,
+      "ok": 131,
+      "illformed": 51,
+      "self_defeating": 1
+    },
+    "parse_repairs": {
+      "re-listed existing assumption(s)": 270,
+      "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "skipped 1 line(s) containing '": 2
+    }
+  },
+  "algorithm": {
+    "n_problems": 103,
+    "n_structures": 83,
+    "n_samples": 309,
+    "valid_at_1": 0.469,
+    "valid_at_k": 0.796,
+    "clean_at_1": 0.366,
+    "clean_at_k": 0.631,
+    "exact_at_1": 0.0,
+    "exact_at_k": 0.0,
+    "ci95": {
+      "valid_at_k": [
+        0.708,
+        0.863
+      ],
+      "clean_at_k": [
+        0.535,
+        0.718
+      ],
+      "exact_at_k": [
+        0.0,
+        0.036
+      ]
+    },
+    "agreement": 0.3653,
+    "parse_rate": 1.0,
+    "truncated_rate": 0.0,
+    "intensional_rate": 0.8069,
+    "r3": {
+      "yes/yes": 243,
+      "yes/no": 6,
+      "no/yes": 59,
+      "no/no": 1
+    },
+    "r3_balanced": 0.4963,
+    "r2_exact": 0.8571,
+    "trace_f1": 0.552,
+    "errors": {
+      "not_a_solution": 138,
+      "valid_but_degenerate": 28,
+      "illformed": 28,
+      "ok": 113,
+      "self_defeating": 2
+    },
+    "parse_repairs": {
+      "skipped 1 line(s) containing '": 10,
+      "re-listed existing assumption(s)": 290,
+      "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 3,
+      "skipped 8 line(s) containing '": 3,
+      "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 3,
+      "skipped 7 line(s) containing '": 1,
+      "recovered 13 rule(s) written under 'NEW ASSUMPTIONS": 3,
+      "skipped 4 line(s) containing '": 2,
+      "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 5,
+      "skipped 3 line(s) containing '": 5,
+      "skipped 6 line(s) containing '": 1,
+      "skipped 14 line(s) containing '": 1,
+      "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "skipped 5 line(s) containing '": 2,
+      "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 3,
+      "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "skipped 2 line(s) containing '": 4,
+      "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "skipped 9 line(s) containing '": 1,
+      "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 1
+    }
+  },
+  "by_tier": {
+    "direct": {
+      "builtin": {
+        "n_problems": 3,
+        "n_structures": 3,
+        "n_samples": 9,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.562
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ],
+          "exact_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": null,
+        "r3": {
+          "yes/yes": 9
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.5,
+        "trace_f1": null,
+        "errors": {
+          "not_a_solution": 9
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 1
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "n_structures": 19,
+        "n_samples": 60,
+        "valid_at_1": 0.367,
+        "valid_at_k": 0.7,
+        "clean_at_1": 0.35,
+        "clean_at_k": 0.7,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.481,
+            0.855
+          ],
+          "clean_at_k": [
+            0.481,
+            0.855
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.3667,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "no/yes": 60
+        },
+        "r3_balanced": null,
+        "r2_exact": 1.0,
+        "trace_f1": null,
+        "errors": {
+          "not_a_solution": 38,
+          "ok": 21,
+          "illformed": 1
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 20
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.833,
+        "valid_at_k": 0.95,
+        "clean_at_1": 0.833,
+        "clean_at_k": 0.95,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.764,
+            0.991
+          ],
+          "clean_at_k": [
+            0.764,
+            0.991
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 60
+        },
+        "r3_balanced": null,
+        "r2_exact": 1.0,
+        "trace_f1": null,
+        "errors": {
+          "ok": 50,
+          "not_a_solution": 10
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 37
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.7,
+        "valid_at_k": 0.95,
+        "clean_at_1": 0.7,
+        "clean_at_k": 0.95,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.764,
+            0.991
+          ],
+          "clean_at_k": [
+            0.764,
+            0.991
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.7,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 60
+        },
+        "r3_balanced": null,
+        "r2_exact": 1.0,
+        "trace_f1": null,
+        "errors": {
+          "not_a_solution": 18,
+          "ok": 42
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 12
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.483,
+        "valid_at_k": 0.75,
+        "clean_at_1": 0.483,
+        "clean_at_k": 0.75,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.531,
+            0.888
+          ],
+          "clean_at_k": [
+            0.531,
+            0.888
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.4833,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 57,
+          "yes/no": 3
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.875,
+        "trace_f1": null,
+        "errors": {
+          "ok": 29,
+          "not_a_solution": 31
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 32
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "n_structures": 1,
+        "n_samples": 60,
+        "valid_at_1": 0.267,
+        "valid_at_k": 0.55,
+        "clean_at_1": 0.267,
+        "clean_at_k": 0.55,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.342,
+            0.742
+          ],
+          "clean_at_k": [
+            0.342,
+            0.742
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 60
+        },
+        "r3_balanced": null,
+        "r2_exact": null,
+        "trace_f1": null,
+        "errors": {
+          "ok": 16,
+          "not_a_solution": 44
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 57
+        }
+      }
+    },
+    "cot": {
+      "builtin": {
+        "n_problems": 3,
+        "n_structures": 3,
+        "n_samples": 9,
+        "valid_at_1": 0.333,
+        "valid_at_k": 0.333,
+        "clean_at_1": 0.333,
+        "clean_at_k": 0.333,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.061,
+            0.792
+          ],
+          "clean_at_k": [
+            0.061,
+            0.792
+          ],
+          "exact_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 9
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.375,
+        "trace_f1": 0.0494,
+        "errors": {
+          "not_a_solution": 5,
+          "illformed": 1,
+          "ok": 3
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 7
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "n_structures": 19,
+        "n_samples": 60,
+        "valid_at_1": 0.217,
+        "valid_at_k": 0.5,
+        "clean_at_1": 0.2,
+        "clean_at_k": 0.45,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.299,
+            0.701
+          ],
+          "clean_at_k": [
+            0.258,
+            0.658
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.1833,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 0.9231,
+        "r3": {
+          "no/yes": 60
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.9038,
+        "trace_f1": 0.4894,
+        "errors": {
+          "not_a_solution": 45,
+          "ok": 12,
+          "illformed": 2,
+          "valid_but_degenerate": 1
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 29,
+          "skipped 9 line(s) containing '": 1
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.517,
+        "valid_at_k": 0.85,
+        "clean_at_1": 0.5,
+        "clean_at_k": 0.85,
+        "exact_at_1": 0.033,
+        "exact_at_k": 0.1,
+        "ci95": {
+          "valid_at_k": [
+            0.64,
+            0.948
+          ],
+          "clean_at_k": [
+            0.64,
+            0.948
+          ],
+          "exact_at_k": [
+            0.028,
+            0.301
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 0.9677,
+        "r3": {
+          "yes/yes": 60
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.8966,
+        "trace_f1": 0.5763,
+        "errors": {
+          "not_a_solution": 29,
+          "ok": 30,
+          "valid_but_degenerate": 1
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 47,
+          "output contained 2 'NEW RULES": 1
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.533,
+        "valid_at_k": 0.85,
+        "clean_at_1": 0.5,
+        "clean_at_k": 0.85,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.64,
+            0.948
+          ],
+          "clean_at_k": [
+            0.64,
+            0.948
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.525,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 0.9688,
+        "r3": {
+          "yes/yes": 60
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.8542,
+        "trace_f1": 0.1382,
+        "errors": {
+          "self_defeating": 1,
+          "ok": 30,
+          "not_a_solution": 28,
+          "valid_but_degenerate": 1
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 38,
+          "skipped 11 line(s) containing '": 1
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.583,
+        "valid_at_k": 0.9,
+        "clean_at_1": 0.5,
+        "clean_at_k": 0.9,
+        "exact_at_1": 0.067,
+        "exact_at_k": 0.2,
+        "ci95": {
+          "valid_at_k": [
+            0.699,
+            0.972
+          ],
+          "clean_at_k": [
+            0.699,
+            0.972
+          ],
+          "exact_at_k": [
+            0.081,
+            0.416
+          ]
+        },
+        "agreement": 0.5375,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 0.8571,
+        "r3": {
+          "yes/yes": 60
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.8298,
+        "trace_f1": 0.436,
+        "errors": {
+          "not_a_solution": 19,
+          "ok": 30,
+          "illformed": 6,
+          "valid_but_degenerate": 5
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 43,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 11 line(s) containing '": 1
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "n_structures": 1,
+        "n_samples": 60,
+        "valid_at_1": 0.267,
+        "valid_at_k": 0.6,
+        "clean_at_1": 0.167,
+        "clean_at_k": 0.4,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.387,
+            0.781
+          ],
+          "clean_at_k": [
+            0.219,
+            0.613
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 60
+        },
+        "r3_balanced": null,
+        "r2_exact": null,
+        "trace_f1": 0.0592,
+        "errors": {
+          "not_a_solution": 20,
+          "illformed": 30,
+          "ok": 10
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 59,
+          "skipped 10 line(s) containing '": 1
+        }
+      }
+    },
+    "guided": {
+      "builtin": {
+        "n_problems": 3,
+        "n_structures": 3,
+        "n_samples": 9,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.562
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ],
+          "exact_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": null,
+        "r3": {
+          "yes/yes": 9
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.5714,
+        "trace_f1": null,
+        "errors": {
+          "not_a_solution": 9
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 6
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "n_structures": 19,
+        "n_samples": 60,
+        "valid_at_1": 0.217,
+        "valid_at_k": 0.5,
+        "clean_at_1": 0.183,
+        "clean_at_k": 0.45,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.299,
+            0.701
+          ],
+          "clean_at_k": [
+            0.258,
+            0.658
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.2,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "no/yes": 60
+        },
+        "r3_balanced": null,
+        "r2_exact": 1.0,
+        "trace_f1": null,
+        "errors": {
+          "not_a_solution": 44,
+          "ok": 11,
+          "illformed": 4,
+          "self_defeating": 1
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 42
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.7,
+        "valid_at_k": 0.85,
+        "clean_at_1": 0.617,
+        "clean_at_k": 0.7,
+        "exact_at_1": 0.017,
+        "exact_at_k": 0.05,
+        "ci95": {
+          "valid_at_k": [
+            0.64,
+            0.948
+          ],
+          "clean_at_k": [
+            0.481,
+            0.855
+          ],
+          "exact_at_k": [
+            0.009,
+            0.236
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 59,
+          "yes/no": 1
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.8679,
+        "trace_f1": null,
+        "errors": {
+          "illformed": 17,
+          "ok": 37,
+          "not_a_solution": 6
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 58
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.667,
+        "valid_at_k": 0.95,
+        "clean_at_1": 0.667,
+        "clean_at_k": 0.95,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.764,
+            0.991
+          ],
+          "clean_at_k": [
+            0.764,
+            0.991
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.6667,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 60
+        },
+        "r3_balanced": null,
+        "r2_exact": 1.0,
+        "trace_f1": null,
+        "errors": {
+          "ok": 40,
+          "not_a_solution": 19,
+          "illformed": 1
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 60,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.3,
+        "valid_at_k": 0.5,
+        "clean_at_1": 0.15,
+        "clean_at_k": 0.35,
+        "exact_at_1": 0.017,
+        "exact_at_k": 0.05,
+        "ci95": {
+          "valid_at_k": [
+            0.299,
+            0.701
+          ],
+          "clean_at_k": [
+            0.181,
+            0.567
+          ],
+          "exact_at_k": [
+            0.009,
+            0.236
+          ]
+        },
+        "agreement": 0.2875,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 60
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.8462,
+        "trace_f1": null,
+        "errors": {
+          "not_a_solution": 27,
+          "illformed": 24,
+          "ok": 9
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 55
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "n_structures": 1,
+        "n_samples": 60,
+        "valid_at_1": 0.583,
+        "valid_at_k": 0.9,
+        "clean_at_1": 0.567,
+        "clean_at_k": 0.9,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.699,
+            0.972
+          ],
+          "clean_at_k": [
+            0.699,
+            0.972
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 53,
+          "yes/no": 7
+        },
+        "r3_balanced": null,
+        "r2_exact": null,
+        "trace_f1": null,
+        "errors": {
+          "illformed": 5,
+          "ok": 34,
+          "not_a_solution": 21
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 49,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 1 line(s) containing '": 2
+        }
+      }
+    },
+    "algorithm": {
+      "builtin": {
+        "n_problems": 3,
+        "n_structures": 3,
+        "n_samples": 9,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.562
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ],
+          "exact_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": null,
+        "r3": {
+          "yes/yes": 8,
+          "yes/no": 1
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.4286,
+        "trace_f1": 0.3111,
+        "errors": {
+          "not_a_solution": 9
+        },
+        "parse_repairs": {
+          "skipped 1 line(s) containing '": 1,
+          "re-listed existing assumption(s)": 5,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 8 line(s) containing '": 1,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 7 line(s) containing '": 1
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "n_structures": 19,
+        "n_samples": 60,
+        "valid_at_1": 0.333,
+        "valid_at_k": 0.65,
+        "clean_at_1": 0.1,
+        "clean_at_k": 0.25,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.433,
+            0.819
+          ],
+          "clean_at_k": [
+            0.112,
+            0.469
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.3167,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 0.4,
+        "r3": {
+          "no/yes": 59,
+          "no/no": 1
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.0,
+        "trace_f1": 0.6786,
+        "errors": {
+          "valid_but_degenerate": 12,
+          "not_a_solution": 33,
+          "illformed": 8,
+          "ok": 6,
+          "self_defeating": 1
+        },
+        "parse_repairs": {
+          "recovered 13 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 4 line(s) containing '": 1,
+          "re-listed existing assumption(s)": 56,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 3 line(s) containing '": 3,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 6 line(s) containing '": 1,
+          "skipped 8 line(s) containing '": 1,
+          "skipped 14 line(s) containing '": 1,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 1 line(s) containing '": 1
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.617,
+        "valid_at_k": 0.95,
+        "clean_at_1": 0.5,
+        "clean_at_k": 0.85,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.764,
+            0.991
+          ],
+          "clean_at_k": [
+            0.64,
+            0.948
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 0.8378,
+        "r3": {
+          "yes/yes": 59,
+          "yes/no": 1
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.9429,
+        "trace_f1": 0.6667,
+        "errors": {
+          "illformed": 3,
+          "ok": 30,
+          "not_a_solution": 20,
+          "valid_but_degenerate": 6,
+          "self_defeating": 1
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 59,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 4 line(s) containing '": 1,
+          "skipped 5 line(s) containing '": 1
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.433,
+        "valid_at_k": 0.8,
+        "clean_at_1": 0.417,
+        "clean_at_k": 0.75,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.584,
+            0.919
+          ],
+          "clean_at_k": [
+            0.531,
+            0.888
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.4333,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 0.9615,
+        "r3": {
+          "yes/yes": 60
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.8621,
+        "trace_f1": 0.4444,
+        "errors": {
+          "not_a_solution": 30,
+          "ok": 25,
+          "illformed": 4,
+          "valid_but_degenerate": 1
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 59,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 1 line(s) containing '": 2,
+          "skipped 3 line(s) containing '": 1,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.367,
+        "valid_at_k": 0.7,
+        "clean_at_1": 0.2,
+        "clean_at_k": 0.4,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.481,
+            0.855
+          ],
+          "clean_at_k": [
+            0.219,
+            0.613
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.3458,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 0.5909,
+        "r3": {
+          "yes/yes": 56,
+          "yes/no": 4
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.8947,
+        "trace_f1": 0.5774,
+        "errors": {
+          "ok": 12,
+          "valid_but_degenerate": 9,
+          "illformed": 13,
+          "not_a_solution": 26
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 51,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 3 line(s) containing '": 1,
+          "recovered 13 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 1 line(s) containing '": 5,
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 2 line(s) containing '": 4,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 8 line(s) containing '": 1,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 9 line(s) containing '": 1,
+          "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 5 line(s) containing '": 1
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "n_structures": 1,
+        "n_samples": 60,
+        "valid_at_1": 0.667,
+        "valid_at_k": 1.0,
+        "clean_at_1": 0.667,
+        "clean_at_k": 1.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.839,
+            1.0
+          ],
+          "clean_at_k": [
+            0.839,
+            1.0
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 60
+        },
+        "r3_balanced": null,
+        "r2_exact": null,
+        "trace_f1": 0.0,
+        "errors": {
+          "ok": 40,
+          "not_a_solution": 20
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 60,
+          "skipped 1 line(s) containing '": 1
+        }
+      }
+    }
+  }
+}

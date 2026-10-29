@@ -1,0 +1,1899 @@
+{
+  "run": {
+    "design": "posed whole: every example is in the prompt and in the scoring",
+    "mode_prompt_version": "v4",
+    "mode_prompt_sha256": {
+      "direct": "47db4a1aaddbcbe6279223a830db376977736e794336172775b099e1355a2fee",
+      "cot": "ba46e34feee7e13b01fe3f15bb84d187bf2444e39ab31750023914fdf9d29445",
+      "guided": "c7e8faf0e928e6cdba2ee2f12ee4347cd2eae83259739890fbbb054f76861821",
+      "algorithm": "9c85a743c6fdffbda0d43f4a7b1f6ef5418c255846fdec2b46d4bbba59406df2"
+    },
+    "scorer": "src.aba_score.score_output",
+    "audit": false,
+    "code_rev": "1eec742-dirty",
+    "command": "python main.py --backend local --model mistral-7b --benchmark 20 --modes direct cot guided algorithm --n-samples 3 --max-tokens 1536 --export --output results/e2e_whole_v4/bench_mistral-7b --load-4bit",
+    "slurm_job_id": "73999",
+    "started": "2026-10-28T21:39:58",
+    "backend": "local",
+    "model": "mistralai/Mistral-7B-Instruct-v0.3",
+    "model_revision": "c170c708c41dac9275d15a8fff4eca08d52bab71",
+    "load_4bit": true,
+    "gpu": "NVIDIA L40",
+    "versions": {
+      "python": "3.13.5",
+      "torch": "2.7.1+cu118",
+      "transformers": "5.17.0",
+      "tokenizers": "0.23.2",
+      "accelerate": "1.15.0",
+      "peft": "0.21.0",
+      "clingo": "5.8.2",
+      "bitsandbytes": "0.50.2"
+    },
+    "decoding": {
+      "temperature": 0.7,
+      "top_p": 0.95,
+      "max_tokens": 1536,
+      "n_samples": 3,
+      "sampling_seed": 0,
+      "seed_derivation": "int(sha256(f'{sampling_seed}:{problem_id}:{mode}:{sample_idx}')[:8], 16) % 2**31"
+    },
+    "dataset": {
+      "benchmark_per_tier": 20,
+      "n_synthetic": 0,
+      "n_complex": 0,
+      "seed": 42,
+      "anonymize": true,
+      "anonymize_scheme": "letters",
+      "n_problems": 103,
+      "problem_ids_sha256": "a3b1aa2fe4d7ffd2badd97771ac09f91f1986a0eac8151d3c9095fc6c26935cd"
+    },
+    "references_sha256": "518603bd2dfc4c131663096e09561f6cf1508085df5d1efb15e85834bd57a228",
+    "excluded": {}
+  },
+  "direct": {
+    "n_problems": 103,
+    "n_structures": 83,
+    "n_samples": 309,
+    "valid_at_1": 0.149,
+    "valid_at_k": 0.32,
+    "clean_at_1": 0.074,
+    "clean_at_k": 0.175,
+    "exact_at_1": 0.0,
+    "exact_at_k": 0.0,
+    "ci95": {
+      "valid_at_k": [
+        0.238,
+        0.416
+      ],
+      "clean_at_k": [
+        0.113,
+        0.259
+      ],
+      "exact_at_k": [
+        0.0,
+        0.036
+      ]
+    },
+    "agreement": 0.1111,
+    "parse_rate": 0.9968,
+    "truncated_rate": 0.0,
+    "intensional_rate": 1.0,
+    "r3": {
+      "yes/yes": 227,
+      "yes/no": 21,
+      "no/yes": 57,
+      "no/no": 3
+    },
+    "r3_balanced": 0.4827,
+    "r2_exact": 0.3266,
+    "trace_f1": null,
+    "errors": {
+      "illformed": 92,
+      "not_a_solution": 172,
+      "ok": 23,
+      "self_defeating": 21,
+      "parse_error": 1
+    },
+    "parse_repairs": {
+      "re-listed existing assumption(s)": 161,
+      "truncated an echoed problem statement": 4,
+      "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 49,
+      "skipped 1 line(s) containing '": 63,
+      "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 35,
+      "skipped 2 line(s) containing '": 15,
+      "output contained 2 'NEW RULES": 16,
+      "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 4,
+      "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 5,
+      "skipped 5 line(s) containing '": 1,
+      "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 4,
+      "skipped 3 line(s) containing '": 3,
+      "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "output contained 3 'NEW RULES": 2,
+      "skipped 6 line(s) containing '": 1
+    }
+  },
+  "cot": {
+    "n_problems": 103,
+    "n_structures": 83,
+    "n_samples": 309,
+    "valid_at_1": 0.084,
+    "valid_at_k": 0.184,
+    "clean_at_1": 0.019,
+    "clean_at_k": 0.058,
+    "exact_at_1": 0.0,
+    "exact_at_k": 0.0,
+    "ci95": {
+      "valid_at_k": [
+        0.121,
+        0.27
+      ],
+      "clean_at_k": [
+        0.027,
+        0.121
+      ],
+      "exact_at_k": [
+        0.0,
+        0.036
+      ]
+    },
+    "agreement": 0.1111,
+    "parse_rate": 1.0,
+    "truncated_rate": 0.0065,
+    "intensional_rate": 0.9615,
+    "r3": {
+      "yes/yes": 196,
+      "no/yes": 51,
+      "no/no": 9,
+      "yes/no": 53
+    },
+    "r3_balanced": 0.4686,
+    "r2_exact": 0.2621,
+    "trace_f1": 0.323,
+    "errors": {
+      "not_a_solution": 128,
+      "illformed": 168,
+      "ok": 6,
+      "valid_but_degenerate": 1,
+      "self_defeating": 6
+    },
+    "parse_repairs": {
+      "output contained 3 'NEW RULES": 20,
+      "output contained 2 'NEW RULES": 205,
+      "skipped 8 line(s) containing '": 10,
+      "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 12,
+      "skipped 9 line(s) containing '": 5,
+      "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 10,
+      "skipped 1 line(s) containing '": 39,
+      "re-listed existing assumption(s)": 66,
+      "truncated an echoed problem statement": 24,
+      "skipped 6 line(s) containing '": 2,
+      "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 36,
+      "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 10,
+      "skipped 13 line(s) containing '": 3,
+      "skipped 2 line(s) containing '": 17,
+      "skipped 3 line(s) containing '": 16,
+      "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 20,
+      "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "skipped 14 line(s) containing '": 3,
+      "skipped 4 line(s) containing '": 9,
+      "skipped 10 line(s) containing '": 7,
+      "skipped 11 line(s) containing '": 2,
+      "skipped 12 line(s) containing '": 3,
+      "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "output contained 4 'NEW RULES": 2,
+      "skipped 7 line(s) containing '": 1,
+      "output contained 5 'NEW RULES": 2,
+      "skipped 5 line(s) containing '": 3,
+      "skipped 16 line(s) containing '": 1,
+      "skipped 15 line(s) containing '": 1
+    }
+  },
+  "guided": {
+    "n_problems": 103,
+    "n_structures": 83,
+    "n_samples": 309,
+    "valid_at_1": 0.039,
+    "valid_at_k": 0.097,
+    "clean_at_1": 0.013,
+    "clean_at_k": 0.039,
+    "exact_at_1": 0.0,
+    "exact_at_k": 0.0,
+    "ci95": {
+      "valid_at_k": [
+        0.054,
+        0.17
+      ],
+      "clean_at_k": [
+        0.015,
+        0.096
+      ],
+      "exact_at_k": [
+        0.0,
+        0.036
+      ]
+    },
+    "agreement": 0.0361,
+    "parse_rate": 1.0,
+    "truncated_rate": 0.0,
+    "intensional_rate": 0.4167,
+    "r3": {
+      "yes/yes": 82,
+      "yes/no": 167,
+      "no/yes": 39,
+      "no/no": 21
+    },
+    "r3_balanced": 0.3397,
+    "r2_exact": 0.1888,
+    "trace_f1": 0.0777,
+    "errors": {
+      "not_a_solution": 262,
+      "illformed": 35,
+      "valid_but_degenerate": 7,
+      "ok": 4,
+      "self_defeating": 1
+    },
+    "parse_repairs": {
+      "skipped 1 line(s) containing '": 50,
+      "re-listed existing assumption(s)": 57,
+      "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 94,
+      "skipped 4 line(s) containing '": 24,
+      "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 19,
+      "skipped 9 line(s) containing '": 1,
+      "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 12,
+      "skipped 5 line(s) containing '": 9,
+      "skipped 2 line(s) containing '": 12,
+      "output contained 2 'NEW RULES": 76,
+      "truncated an echoed problem statement": 32,
+      "skipped 3 line(s) containing '": 23,
+      "skipped 7 line(s) containing '": 6,
+      "skipped 6 line(s) containing '": 4,
+      "output contained 3 'NEW RULES": 5,
+      "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 21,
+      "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "output contained 4 'NEW RULES": 1,
+      "used answer block 1 of 2": 3,
+      "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 3,
+      "output contained 11 'NEW RULES": 1,
+      "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 3,
+      "skipped 8 line(s) containing '": 5,
+      "skipped 12 line(s) containing '": 1,
+      "recovered 12 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "recovered 14 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "recovered 13 rule(s) written under 'NEW ASSUMPTIONS": 1
+    }
+  },
+  "algorithm": {
+    "n_problems": 103,
+    "n_structures": 83,
+    "n_samples": 309,
+    "valid_at_1": 0.019,
+    "valid_at_k": 0.058,
+    "clean_at_1": 0.006,
+    "clean_at_k": 0.019,
+    "exact_at_1": 0.0,
+    "exact_at_k": 0.0,
+    "ci95": {
+      "valid_at_k": [
+        0.027,
+        0.121
+      ],
+      "clean_at_k": [
+        0.005,
+        0.068
+      ],
+      "exact_at_k": [
+        0.0,
+        0.036
+      ]
+    },
+    "agreement": 0.0222,
+    "parse_rate": 1.0,
+    "truncated_rate": 0.2201,
+    "intensional_rate": 0.3333,
+    "r3": {
+      "yes/yes": 131,
+      "yes/no": 118,
+      "no/yes": 33,
+      "no/no": 27
+    },
+    "r3_balanced": 0.4881,
+    "r2_exact": 0.2083,
+    "trace_f1": 0.2463,
+    "errors": {
+      "not_a_solution": 109,
+      "illformed": 197,
+      "ok": 2,
+      "valid_but_degenerate": 1
+    },
+    "parse_repairs": {
+      "recovered 30 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "skipped 6 line(s) containing '": 7,
+      "recovered 14 rule(s) written under 'NEW ASSUMPTIONS": 6,
+      "re-listed existing assumption(s)": 135,
+      "truncated an echoed problem statement": 50,
+      "output contained 2 'NEW RULES": 135,
+      "recovered 26 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "skipped 10 line(s) containing '": 6,
+      "recovered 11 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "skipped 8 line(s) containing '": 4,
+      "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 14,
+      "recovered 16 rule(s) written under 'NEW ASSUMPTIONS": 3,
+      "recovered 25 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "skipped 1 line(s) containing '": 12,
+      "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 14,
+      "skipped 2 line(s) containing '": 3,
+      "output contained 5 'NEW RULES": 1,
+      "skipped 4 line(s) containing '": 6,
+      "skipped 32 line(s) containing '": 5,
+      "recovered 12 rule(s) written under 'NEW ASSUMPTIONS": 4,
+      "skipped 11 line(s) containing '": 3,
+      "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 4,
+      "skipped 28 line(s) containing '": 2,
+      "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 14,
+      "skipped 3 line(s) containing '": 5,
+      "skipped 12 line(s) containing '": 5,
+      "output contained 15 'NEW RULES": 1,
+      "output contained 3 'NEW RULES": 4,
+      "recovered 46 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "skipped 7 line(s) containing '": 2,
+      "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 9,
+      "skipped 27 line(s) containing '": 1,
+      "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 6,
+      "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 11,
+      "recovered 32 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "skipped 19 line(s) containing '": 5,
+      "recovered 29 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "skipped 39 line(s) containing '": 2,
+      "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 5,
+      "recovered 17 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "skipped 13 line(s) containing '": 2,
+      "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 5,
+      "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "output contained 11 'NEW RULES": 1,
+      "used answer block 10 of 11": 1,
+      "recovered 21 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "output contained 8 'NEW RULES": 2,
+      "skipped 21 line(s) containing '": 5,
+      "skipped 35 line(s) containing '": 3,
+      "recovered 24 rule(s) written under 'NEW ASSUMPTIONS": 4,
+      "skipped 23 line(s) containing '": 1,
+      "skipped 52 line(s) containing '": 1,
+      "skipped 14 line(s) containing '": 5,
+      "skipped 40 line(s) containing '": 1,
+      "recovered 13 rule(s) written under 'NEW ASSUMPTIONS": 3,
+      "skipped 16 line(s) containing '": 3,
+      "skipped 42 line(s) containing '": 2,
+      "skipped 18 line(s) containing '": 5,
+      "skipped 44 line(s) containing '": 1,
+      "skipped 5 line(s) containing '": 3,
+      "skipped 43 line(s) containing '": 1,
+      "skipped 17 line(s) containing '": 2,
+      "skipped 38 line(s) containing '": 2,
+      "used answer block 7 of 8": 1,
+      "recovered 18 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "skipped 9 line(s) containing '": 2,
+      "skipped 29 line(s) containing '": 1,
+      "skipped 25 line(s) containing '": 1,
+      "skipped 26 line(s) containing '": 1,
+      "recovered 41 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "recovered 22 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "recovered 19 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "skipped 59 line(s) containing '": 1,
+      "skipped 31 line(s) containing '": 1,
+      "recovered 28 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "skipped 64 line(s) containing '": 1,
+      "recovered 20 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "skipped 33 line(s) containing '": 1,
+      "skipped 77 line(s) containing '": 1,
+      "output contained 6 'NEW RULES": 1,
+      "skipped 15 line(s) containing '": 2,
+      "output contained 7 'NEW RULES": 1,
+      "output contained 12 'NEW RULES": 1,
+      "recovered 15 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "recovered 61 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "recovered 45 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "skipped 34 line(s) containing '": 1
+    }
+  },
+  "by_tier": {
+    "direct": {
+      "builtin": {
+        "n_problems": 3,
+        "n_structures": 3,
+        "n_samples": 9,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.562
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ],
+          "exact_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": null,
+        "r3": {
+          "yes/yes": 7,
+          "yes/no": 2
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.75,
+        "trace_f1": null,
+        "errors": {
+          "illformed": 2,
+          "not_a_solution": 7
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 3,
+          "truncated an echoed problem statement": 1,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "skipped 1 line(s) containing '": 1,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 2 line(s) containing '": 1
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "n_structures": 19,
+        "n_samples": 60,
+        "valid_at_1": 0.3,
+        "valid_at_k": 0.55,
+        "clean_at_1": 0.1,
+        "clean_at_k": 0.2,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.342,
+            0.742
+          ],
+          "clean_at_k": [
+            0.081,
+            0.416
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.1833,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "no/yes": 57,
+          "no/no": 3
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.3684,
+        "trace_f1": null,
+        "errors": {
+          "illformed": 8,
+          "not_a_solution": 34,
+          "ok": 6,
+          "self_defeating": 12
+        },
+        "parse_repairs": {
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 10,
+          "skipped 1 line(s) containing '": 18,
+          "re-listed existing assumption(s)": 23,
+          "skipped 2 line(s) containing '": 4,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 9,
+          "output contained 2 'NEW RULES": 3,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 5 line(s) containing '": 1
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.133,
+        "valid_at_k": 0.35,
+        "clean_at_1": 0.067,
+        "clean_at_k": 0.2,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.181,
+            0.567
+          ],
+          "clean_at_k": [
+            0.081,
+            0.416
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 0.9833,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 53,
+          "yes/no": 6
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.439,
+        "trace_f1": null,
+        "errors": {
+          "illformed": 27,
+          "not_a_solution": 25,
+          "self_defeating": 3,
+          "ok": 4,
+          "parse_error": 1
+        },
+        "parse_repairs": {
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 9,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 10,
+          "skipped 1 line(s) containing '": 14,
+          "truncated an echoed problem statement": 2,
+          "skipped 2 line(s) containing '": 2,
+          "re-listed existing assumption(s)": 24,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "output contained 2 'NEW RULES": 3
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.033,
+        "valid_at_k": 0.1,
+        "clean_at_1": 0.017,
+        "clean_at_k": 0.05,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.028,
+            0.301
+          ],
+          "clean_at_k": [
+            0.009,
+            0.236
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.0333,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 53,
+          "yes/no": 7
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.1509,
+        "trace_f1": null,
+        "errors": {
+          "illformed": 9,
+          "not_a_solution": 49,
+          "ok": 1,
+          "self_defeating": 1
+        },
+        "parse_repairs": {
+          "skipped 1 line(s) containing '": 13,
+          "re-listed existing assumption(s)": 52,
+          "skipped 2 line(s) containing '": 4,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 5,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "skipped 3 line(s) containing '": 2,
+          "output contained 2 'NEW RULES": 3
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.117,
+        "valid_at_k": 0.25,
+        "clean_at_1": 0.017,
+        "clean_at_k": 0.05,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.112,
+            0.469
+          ],
+          "clean_at_k": [
+            0.009,
+            0.236
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.1167,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 55,
+          "yes/no": 5
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.3659,
+        "trace_f1": null,
+        "errors": {
+          "not_a_solution": 20,
+          "illformed": 34,
+          "ok": 1,
+          "self_defeating": 5
+        },
+        "parse_repairs": {
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 6,
+          "re-listed existing assumption(s)": 23,
+          "output contained 2 'NEW RULES": 4,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 6,
+          "skipped 2 line(s) containing '": 2,
+          "skipped 1 line(s) containing '": 8,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "truncated an echoed problem statement": 1
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "n_structures": 1,
+        "n_samples": 60,
+        "valid_at_1": 0.183,
+        "valid_at_k": 0.4,
+        "clean_at_1": 0.183,
+        "clean_at_k": 0.4,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.219,
+            0.613
+          ],
+          "clean_at_k": [
+            0.219,
+            0.613
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 59,
+          "yes/no": 1
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.0,
+        "trace_f1": null,
+        "errors": {
+          "not_a_solution": 37,
+          "illformed": 12,
+          "ok": 11
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 36,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 5,
+          "skipped 1 line(s) containing '": 9,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 17,
+          "output contained 3 'NEW RULES": 2,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 6 line(s) containing '": 1,
+          "skipped 2 line(s) containing '": 2,
+          "output contained 2 'NEW RULES": 3,
+          "skipped 3 line(s) containing '": 1
+        }
+      }
+    },
+    "cot": {
+      "builtin": {
+        "n_problems": 3,
+        "n_structures": 3,
+        "n_samples": 9,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.562
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ],
+          "exact_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": null,
+        "r3": {
+          "yes/yes": 9
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.25,
+        "trace_f1": 0.255,
+        "errors": {
+          "not_a_solution": 7,
+          "illformed": 2
+        },
+        "parse_repairs": {
+          "output contained 3 'NEW RULES": 1,
+          "output contained 2 'NEW RULES": 5,
+          "skipped 8 line(s) containing '": 1,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 9 line(s) containing '": 1,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 1 line(s) containing '": 2,
+          "re-listed existing assumption(s)": 2,
+          "truncated an echoed problem statement": 1,
+          "skipped 6 line(s) containing '": 1
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "n_structures": 19,
+        "n_samples": 60,
+        "valid_at_1": 0.283,
+        "valid_at_k": 0.6,
+        "clean_at_1": 0.067,
+        "clean_at_k": 0.2,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.387,
+            0.781
+          ],
+          "clean_at_k": [
+            0.081,
+            0.416
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.2833,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 0.9412,
+        "r3": {
+          "no/yes": 51,
+          "no/no": 9
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.5333,
+        "trace_f1": 0.4223,
+        "errors": {
+          "illformed": 40,
+          "ok": 4,
+          "not_a_solution": 11,
+          "valid_but_degenerate": 1,
+          "self_defeating": 4
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 34,
+          "skipped 1 line(s) containing '": 9,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 8,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 6,
+          "skipped 13 line(s) containing '": 1,
+          "re-listed existing assumption(s)": 15,
+          "output contained 3 'NEW RULES": 5,
+          "skipped 2 line(s) containing '": 4,
+          "skipped 3 line(s) containing '": 3,
+          "truncated an echoed problem statement": 4,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "skipped 9 line(s) containing '": 3,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 14 line(s) containing '": 1,
+          "skipped 4 line(s) containing '": 2,
+          "skipped 10 line(s) containing '": 2,
+          "skipped 6 line(s) containing '": 1,
+          "skipped 11 line(s) containing '": 1,
+          "skipped 8 line(s) containing '": 1,
+          "skipped 12 line(s) containing '": 1
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.1,
+        "valid_at_k": 0.2,
+        "clean_at_1": 0.017,
+        "clean_at_k": 0.05,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.081,
+            0.416
+          ],
+          "clean_at_k": [
+            0.009,
+            0.236
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0167,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 49,
+          "yes/no": 11
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.3243,
+        "trace_f1": 0.2685,
+        "errors": {
+          "illformed": 43,
+          "not_a_solution": 15,
+          "ok": 1,
+          "self_defeating": 1
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 38,
+          "truncated an echoed problem statement": 2,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 2 line(s) containing '": 3,
+          "output contained 3 'NEW RULES": 7,
+          "skipped 1 line(s) containing '": 7,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 8,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "skipped 8 line(s) containing '": 3,
+          "re-listed existing assumption(s)": 11,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "skipped 10 line(s) containing '": 1,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "output contained 4 'NEW RULES": 1,
+          "skipped 4 line(s) containing '": 1,
+          "skipped 7 line(s) containing '": 1,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 3 line(s) containing '": 3,
+          "output contained 5 'NEW RULES": 1,
+          "skipped 5 line(s) containing '": 2,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 12 line(s) containing '": 1
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.0,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0167,
+        "intensional_rate": null,
+        "r3": {
+          "yes/yes": 35,
+          "yes/no": 25
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.0938,
+        "trace_f1": 0.3607,
+        "errors": {
+          "illformed": 13,
+          "not_a_solution": 47
+        },
+        "parse_repairs": {
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 8 line(s) containing '": 3,
+          "re-listed existing assumption(s)": 11,
+          "output contained 2 'NEW RULES": 46,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 7,
+          "skipped 3 line(s) containing '": 4,
+          "truncated an echoed problem statement": 5,
+          "skipped 1 line(s) containing '": 6,
+          "skipped 2 line(s) containing '": 4,
+          "output contained 5 'NEW RULES": 1,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 10 line(s) containing '": 3,
+          "skipped 4 line(s) containing '": 1,
+          "output contained 4 'NEW RULES": 1
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.05,
+        "valid_at_k": 0.15,
+        "clean_at_1": 0.017,
+        "clean_at_k": 0.05,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.052,
+            0.36
+          ],
+          "clean_at_k": [
+            0.009,
+            0.236
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.05,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 48,
+          "yes/no": 12
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.1538,
+        "trace_f1": 0.2464,
+        "errors": {
+          "illformed": 49,
+          "not_a_solution": 9,
+          "self_defeating": 1,
+          "ok": 1
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 45,
+          "truncated an echoed problem statement": 7,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 7,
+          "output contained 3 'NEW RULES": 4,
+          "skipped 10 line(s) containing '": 1,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "skipped 1 line(s) containing '": 12,
+          "skipped 2 line(s) containing '": 4,
+          "re-listed existing assumption(s)": 7,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 14 line(s) containing '": 1,
+          "skipped 4 line(s) containing '": 3,
+          "skipped 3 line(s) containing '": 1,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 16 line(s) containing '": 1
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "n_structures": 1,
+        "n_samples": 60,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": null,
+        "r3": {
+          "yes/yes": 55,
+          "yes/no": 5
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.0,
+        "trace_f1": 0.3251,
+        "errors": {
+          "not_a_solution": 39,
+          "illformed": 21
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 5,
+          "skipped 13 line(s) containing '": 2,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 12 line(s) containing '": 1,
+          "re-listed existing assumption(s)": 20,
+          "skipped 4 line(s) containing '": 2,
+          "output contained 2 'NEW RULES": 37,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 9,
+          "skipped 1 line(s) containing '": 3,
+          "output contained 3 'NEW RULES": 3,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 6,
+          "skipped 8 line(s) containing '": 2,
+          "skipped 3 line(s) containing '": 5,
+          "skipped 14 line(s) containing '": 1,
+          "skipped 5 line(s) containing '": 1,
+          "skipped 2 line(s) containing '": 2,
+          "skipped 15 line(s) containing '": 1,
+          "skipped 9 line(s) containing '": 1,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 11 line(s) containing '": 1
+        }
+      }
+    },
+    "guided": {
+      "builtin": {
+        "n_problems": 3,
+        "n_structures": 3,
+        "n_samples": 9,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.562
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ],
+          "exact_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": null,
+        "r3": {
+          "yes/yes": 5,
+          "yes/no": 4
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.3333,
+        "trace_f1": 0.0308,
+        "errors": {
+          "not_a_solution": 9
+        },
+        "parse_repairs": {
+          "skipped 1 line(s) containing '": 1,
+          "re-listed existing assumption(s)": 1,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 4 line(s) containing '": 1,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 9 line(s) containing '": 1,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 5 line(s) containing '": 1,
+          "skipped 2 line(s) containing '": 1,
+          "output contained 2 'NEW RULES": 1,
+          "truncated an echoed problem statement": 1,
+          "skipped 3 line(s) containing '": 1
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "n_structures": 19,
+        "n_samples": 60,
+        "valid_at_1": 0.083,
+        "valid_at_k": 0.2,
+        "clean_at_1": 0.05,
+        "clean_at_k": 0.15,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.081,
+            0.416
+          ],
+          "clean_at_k": [
+            0.052,
+            0.36
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.0833,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 0.8,
+        "r3": {
+          "no/yes": 39,
+          "no/no": 21
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.0652,
+        "trace_f1": 0.0438,
+        "errors": {
+          "illformed": 13,
+          "not_a_solution": 42,
+          "valid_but_degenerate": 1,
+          "ok": 3,
+          "self_defeating": 1
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 27,
+          "skipped 1 line(s) containing '": 19,
+          "output contained 2 'NEW RULES": 15,
+          "truncated an echoed problem statement": 6,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "skipped 7 line(s) containing '": 4,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 13,
+          "skipped 3 line(s) containing '": 2,
+          "skipped 5 line(s) containing '": 4,
+          "skipped 2 line(s) containing '": 2,
+          "skipped 4 line(s) containing '": 3,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 6 line(s) containing '": 1,
+          "output contained 3 'NEW RULES": 1
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": null,
+        "r3": {
+          "yes/no": 49,
+          "yes/yes": 11
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.0,
+        "trace_f1": 0.036,
+        "errors": {
+          "not_a_solution": 58,
+          "illformed": 2
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 6,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 27,
+          "output contained 2 'NEW RULES": 19,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 5,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "skipped 4 line(s) containing '": 1,
+          "skipped 2 line(s) containing '": 3,
+          "skipped 1 line(s) containing '": 11,
+          "re-listed existing assumption(s)": 7,
+          "skipped 5 line(s) containing '": 1,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 3 line(s) containing '": 5,
+          "output contained 4 'NEW RULES": 1,
+          "output contained 3 'NEW RULES": 2,
+          "used answer block 1 of 2": 1
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.017,
+        "valid_at_k": 0.05,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.009,
+            0.236
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.0083,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 0.0,
+        "r3": {
+          "yes/yes": 22,
+          "yes/no": 38
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.3922,
+        "trace_f1": 0.105,
+        "errors": {
+          "not_a_solution": 58,
+          "illformed": 1,
+          "valid_but_degenerate": 1
+        },
+        "parse_repairs": {
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 14,
+          "skipped 1 line(s) containing '": 8,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "re-listed existing assumption(s)": 11,
+          "skipped 3 line(s) containing '": 9,
+          "truncated an echoed problem statement": 7,
+          "output contained 2 'NEW RULES": 15,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "output contained 11 'NEW RULES": 1,
+          "skipped 4 line(s) containing '": 4,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "skipped 2 line(s) containing '": 4,
+          "skipped 6 line(s) containing '": 1,
+          "skipped 8 line(s) containing '": 1,
+          "skipped 5 line(s) containing '": 1
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.017,
+        "valid_at_k": 0.05,
+        "clean_at_1": 0.017,
+        "clean_at_k": 0.05,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.009,
+            0.236
+          ],
+          "clean_at_k": [
+            0.009,
+            0.236
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.0167,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 33,
+          "yes/no": 27
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.04,
+        "trace_f1": 0.0933,
+        "errors": {
+          "not_a_solution": 49,
+          "illformed": 10,
+          "ok": 1
+        },
+        "parse_repairs": {
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 30,
+          "skipped 4 line(s) containing '": 8,
+          "truncated an echoed problem statement": 6,
+          "output contained 2 'NEW RULES": 13,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 1 line(s) containing '": 6,
+          "re-listed existing assumption(s)": 9,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "skipped 2 line(s) containing '": 1,
+          "skipped 8 line(s) containing '": 2,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "skipped 3 line(s) containing '": 2,
+          "skipped 6 line(s) containing '": 1,
+          "output contained 3 'NEW RULES": 1,
+          "skipped 5 line(s) containing '": 1,
+          "skipped 7 line(s) containing '": 1
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "n_structures": 1,
+        "n_samples": 60,
+        "valid_at_1": 0.083,
+        "valid_at_k": 0.2,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.081,
+            0.416
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 0.0,
+        "r3": {
+          "yes/no": 49,
+          "yes/yes": 11
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.0,
+        "trace_f1": 0.1094,
+        "errors": {
+          "not_a_solution": 46,
+          "illformed": 9,
+          "valid_but_degenerate": 5
+        },
+        "parse_repairs": {
+          "skipped 7 line(s) containing '": 1,
+          "truncated an echoed problem statement": 6,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 1 line(s) containing '": 5,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 9,
+          "skipped 12 line(s) containing '": 1,
+          "output contained 2 'NEW RULES": 13,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 8,
+          "skipped 4 line(s) containing '": 7,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 7,
+          "used answer block 1 of 2": 2,
+          "skipped 2 line(s) containing '": 1,
+          "output contained 3 'NEW RULES": 1,
+          "skipped 8 line(s) containing '": 2,
+          "recovered 12 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "re-listed existing assumption(s)": 2,
+          "skipped 3 line(s) containing '": 4,
+          "recovered 14 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 6 line(s) containing '": 1,
+          "recovered 13 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 5 line(s) containing '": 1
+        }
+      }
+    },
+    "algorithm": {
+      "builtin": {
+        "n_problems": 3,
+        "n_structures": 3,
+        "n_samples": 9,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.562
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ],
+          "exact_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.1111,
+        "intensional_rate": null,
+        "r3": {
+          "yes/yes": 8,
+          "yes/no": 1
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.0,
+        "trace_f1": 0.1505,
+        "errors": {
+          "not_a_solution": 3,
+          "illformed": 6
+        },
+        "parse_repairs": {
+          "recovered 30 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 6 line(s) containing '": 2,
+          "recovered 14 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "re-listed existing assumption(s)": 3,
+          "truncated an echoed problem statement": 2,
+          "output contained 2 'NEW RULES": 2,
+          "recovered 26 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 10 line(s) containing '": 1,
+          "recovered 11 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 8 line(s) containing '": 1,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 16 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "n_structures": 19,
+        "n_samples": 60,
+        "valid_at_1": 0.017,
+        "valid_at_k": 0.05,
+        "clean_at_1": 0.017,
+        "clean_at_k": 0.05,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.009,
+            0.236
+          ],
+          "clean_at_k": [
+            0.009,
+            0.236
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.0,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.15,
+        "intensional_rate": 1.0,
+        "r3": {
+          "no/yes": 33,
+          "no/no": 27
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.0312,
+        "trace_f1": 0.27,
+        "errors": {
+          "illformed": 39,
+          "ok": 1,
+          "not_a_solution": 20
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 26,
+          "re-listed existing assumption(s)": 32,
+          "recovered 25 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 1 line(s) containing '": 6,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "skipped 6 line(s) containing '": 1,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 2 line(s) containing '": 1,
+          "truncated an echoed problem statement": 11,
+          "output contained 5 'NEW RULES": 1,
+          "skipped 4 line(s) containing '": 1,
+          "skipped 32 line(s) containing '": 1,
+          "recovered 12 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 11 line(s) containing '": 2,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 28 line(s) containing '": 1,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "skipped 3 line(s) containing '": 1,
+          "skipped 12 line(s) containing '": 1,
+          "output contained 15 'NEW RULES": 1,
+          "output contained 3 'NEW RULES": 1,
+          "recovered 46 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 7 line(s) containing '": 1,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "skipped 27 line(s) containing '": 1,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 10 line(s) containing '": 1,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 32 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 19 line(s) containing '": 1,
+          "recovered 29 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 39 line(s) containing '": 1,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 17 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 13 line(s) containing '": 1,
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.2833,
+        "intensional_rate": null,
+        "r3": {
+          "yes/no": 30,
+          "yes/yes": 30
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.2571,
+        "trace_f1": 0.2158,
+        "errors": {
+          "illformed": 40,
+          "not_a_solution": 20
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 32,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "re-listed existing assumption(s)": 30,
+          "recovered 10 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 1 line(s) containing '": 2,
+          "output contained 11 'NEW RULES": 1,
+          "used answer block 10 of 11": 1,
+          "recovered 21 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 4 line(s) containing '": 1,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "truncated an echoed problem statement": 7,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 3 line(s) containing '": 1,
+          "recovered 16 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 11 line(s) containing '": 1,
+          "output contained 8 'NEW RULES": 1,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "skipped 32 line(s) containing '": 1,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "skipped 28 line(s) containing '": 1,
+          "skipped 21 line(s) containing '": 1,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 35 line(s) containing '": 1,
+          "recovered 12 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 10 line(s) containing '": 1,
+          "recovered 24 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 13 line(s) containing '": 1,
+          "skipped 23 line(s) containing '": 1,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 52 line(s) containing '": 1,
+          "recovered 14 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 14 line(s) containing '": 2,
+          "skipped 40 line(s) containing '": 1,
+          "skipped 19 line(s) containing '": 1,
+          "recovered 13 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "output contained 3 'NEW RULES": 1,
+          "skipped 16 line(s) containing '": 1,
+          "skipped 42 line(s) containing '": 1,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 18 line(s) containing '": 1,
+          "skipped 44 line(s) containing '": 1
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.017,
+        "valid_at_k": 0.05,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.009,
+            0.236
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.0167,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.2667,
+        "intensional_rate": 0.0,
+        "r3": {
+          "yes/yes": 27,
+          "yes/no": 33
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.2632,
+        "trace_f1": 0.3148,
+        "errors": {
+          "not_a_solution": 45,
+          "illformed": 14,
+          "valid_but_degenerate": 1
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 26,
+          "truncated an echoed problem statement": 10,
+          "recovered 6 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "skipped 4 line(s) containing '": 3,
+          "re-listed existing assumption(s)": 21,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 5 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 5 line(s) containing '": 1,
+          "recovered 14 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 8 line(s) containing '": 1,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 43 line(s) containing '": 1,
+          "skipped 17 line(s) containing '": 1,
+          "recovered 17 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "skipped 32 line(s) containing '": 2,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 4,
+          "skipped 38 line(s) containing '": 1,
+          "skipped 3 line(s) containing '": 1,
+          "skipped 2 line(s) containing '": 1,
+          "output contained 8 'NEW RULES": 1,
+          "used answer block 7 of 8": 1,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "skipped 42 line(s) containing '": 1,
+          "skipped 39 line(s) containing '": 1,
+          "recovered 24 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "skipped 12 line(s) containing '": 1,
+          "recovered 13 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 1 line(s) containing '": 1,
+          "recovered 18 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 9 line(s) containing '": 1,
+          "skipped 35 line(s) containing '": 1,
+          "recovered 12 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 19 line(s) containing '": 1,
+          "skipped 14 line(s) containing '": 1,
+          "skipped 6 line(s) containing '": 1,
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 10 line(s) containing '": 1,
+          "skipped 29 line(s) containing '": 1,
+          "skipped 25 line(s) containing '": 1,
+          "skipped 26 line(s) containing '": 1
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.05,
+        "valid_at_k": 0.15,
+        "clean_at_1": 0.017,
+        "clean_at_k": 0.05,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.052,
+            0.36
+          ],
+          "clean_at_k": [
+            0.009,
+            0.236
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.05,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.2833,
+        "intensional_rate": 0.3333,
+        "r3": {
+          "yes/no": 23,
+          "yes/yes": 37
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.2778,
+        "trace_f1": 0.1994,
+        "errors": {
+          "illformed": 52,
+          "ok": 1,
+          "not_a_solution": 7
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 24,
+          "skipped 18 line(s) containing '": 3,
+          "re-listed existing assumption(s)": 24,
+          "recovered 41 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 22 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 21 line(s) containing '": 2,
+          "recovered 19 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "truncated an echoed problem statement": 9,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 21 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 59 line(s) containing '": 1,
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 31 line(s) containing '": 1,
+          "output contained 3 'NEW RULES": 2,
+          "recovered 28 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 19 line(s) containing '": 1,
+          "skipped 12 line(s) containing '": 1,
+          "recovered 8 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 2 line(s) containing '": 1,
+          "recovered 14 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 10 line(s) containing '": 1,
+          "skipped 1 line(s) containing '": 1,
+          "recovered 25 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 17 line(s) containing '": 1,
+          "skipped 64 line(s) containing '": 1,
+          "recovered 20 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 3 line(s) containing '": 1,
+          "skipped 35 line(s) containing '": 1,
+          "skipped 33 line(s) containing '": 1,
+          "skipped 5 line(s) containing '": 2,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 8 line(s) containing '": 2,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 12 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 77 line(s) containing '": 1,
+          "skipped 38 line(s) containing '": 1,
+          "output contained 6 'NEW RULES": 1,
+          "recovered 16 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 7 line(s) containing '": 1,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "skipped 15 line(s) containing '": 2
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "n_structures": 1,
+        "n_samples": 60,
+        "valid_at_1": 0.017,
+        "valid_at_k": 0.05,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.009,
+            0.236
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.1333,
+        "intensional_rate": 0.0,
+        "r3": {
+          "yes/no": 31,
+          "yes/yes": 29
+        },
+        "r3_balanced": null,
+        "r2_exact": null,
+        "trace_f1": 0.2367,
+        "errors": {
+          "illformed": 46,
+          "not_a_solution": 14
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 25,
+          "skipped 1 line(s) containing '": 2,
+          "re-listed existing assumption(s)": 25,
+          "truncated an echoed problem statement": 11,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 5,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 5,
+          "skipped 12 line(s) containing '": 2,
+          "output contained 7 'NEW RULES": 1,
+          "recovered 26 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 19 line(s) containing '": 1,
+          "output contained 12 'NEW RULES": 1,
+          "skipped 6 line(s) containing '": 3,
+          "skipped 3 line(s) containing '": 1,
+          "recovered 15 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 9 line(s) containing '": 1,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 3,
+          "recovered 61 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 9 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 10 line(s) containing '": 1,
+          "skipped 14 line(s) containing '": 2,
+          "recovered 13 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 16 line(s) containing '": 2,
+          "recovered 11 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 21 line(s) containing '": 2,
+          "skipped 4 line(s) containing '": 1,
+          "skipped 32 line(s) containing '": 1,
+          "recovered 45 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 14 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 34 line(s) containing '": 1,
+          "skipped 18 line(s) containing '": 1
+        }
+      }
+    }
+  }
+}

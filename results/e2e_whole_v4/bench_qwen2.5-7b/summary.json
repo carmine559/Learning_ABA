@@ -1,0 +1,1405 @@
+{
+  "run": {
+    "design": "posed whole: every example is in the prompt and in the scoring",
+    "mode_prompt_version": "v4",
+    "mode_prompt_sha256": {
+      "direct": "47db4a1aaddbcbe6279223a830db376977736e794336172775b099e1355a2fee",
+      "cot": "ba46e34feee7e13b01fe3f15bb84d187bf2444e39ab31750023914fdf9d29445",
+      "guided": "c7e8faf0e928e6cdba2ee2f12ee4347cd2eae83259739890fbbb054f76861821",
+      "algorithm": "9c85a743c6fdffbda0d43f4a7b1f6ef5418c255846fdec2b46d4bbba59406df2"
+    },
+    "scorer": "src.aba_score.score_output",
+    "audit": false,
+    "code_rev": "80ad57f",
+    "command": "python main.py --backend local --model qwen2.5-7b --benchmark 20 --modes direct cot guided algorithm --n-samples 3 --max-tokens 1536 --export --output results/e2e_whole_v4/bench_qwen2.5-7b --load-4bit",
+    "slurm_job_id": "73998",
+    "started": "2026-10-28T17:32:30",
+    "backend": "local",
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "model_revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+    "load_4bit": true,
+    "gpu": "NVIDIA L40",
+    "versions": {
+      "python": "3.13.5",
+      "torch": "2.7.1+cu118",
+      "transformers": "5.17.0",
+      "tokenizers": "0.23.2",
+      "accelerate": "1.15.0",
+      "peft": "0.21.0",
+      "clingo": "5.8.2",
+      "bitsandbytes": "0.50.2"
+    },
+    "decoding": {
+      "temperature": 0.7,
+      "top_p": 0.95,
+      "max_tokens": 1536,
+      "n_samples": 3,
+      "sampling_seed": 0,
+      "seed_derivation": "int(sha256(f'{sampling_seed}:{problem_id}:{mode}:{sample_idx}')[:8], 16) % 2**31"
+    },
+    "dataset": {
+      "benchmark_per_tier": 20,
+      "n_synthetic": 0,
+      "n_complex": 0,
+      "seed": 42,
+      "anonymize": true,
+      "anonymize_scheme": "letters",
+      "n_problems": 103,
+      "problem_ids_sha256": "a3b1aa2fe4d7ffd2badd97771ac09f91f1986a0eac8151d3c9095fc6c26935cd"
+    },
+    "references_sha256": "518603bd2dfc4c131663096e09561f6cf1508085df5d1efb15e85834bd57a228",
+    "excluded": {}
+  },
+  "direct": {
+    "n_problems": 103,
+    "n_structures": 83,
+    "n_samples": 309,
+    "valid_at_1": 0.188,
+    "valid_at_k": 0.33,
+    "clean_at_1": 0.149,
+    "clean_at_k": 0.252,
+    "exact_at_1": 0.0,
+    "exact_at_k": 0.0,
+    "ci95": {
+      "valid_at_k": [
+        0.247,
+        0.426
+      ],
+      "clean_at_k": [
+        0.178,
+        0.344
+      ],
+      "exact_at_k": [
+        0.0,
+        0.036
+      ]
+    },
+    "agreement": 0.0917,
+    "parse_rate": 1.0,
+    "truncated_rate": 0.0,
+    "intensional_rate": 0.9483,
+    "r3": {
+      "yes/yes": 206,
+      "yes/no": 43,
+      "no/yes": 51,
+      "no/no": 9
+    },
+    "r3_balanced": 0.4887,
+    "r2_exact": 0.2525,
+    "trace_f1": null,
+    "errors": {
+      "not_a_solution": 244,
+      "illformed": 7,
+      "valid_but_degenerate": 3,
+      "ok": 46,
+      "self_defeating": 9
+    },
+    "parse_repairs": {
+      "truncated an echoed problem statement": 154,
+      "re-listed existing assumption(s)": 279,
+      "output contained 2 'NEW RULES": 1,
+      "skipped 1 line(s) containing '": 5
+    }
+  },
+  "cot": {
+    "n_problems": 103,
+    "n_structures": 83,
+    "n_samples": 309,
+    "valid_at_1": 0.087,
+    "valid_at_k": 0.204,
+    "clean_at_1": 0.061,
+    "clean_at_k": 0.155,
+    "exact_at_1": 0.0,
+    "exact_at_k": 0.0,
+    "ci95": {
+      "valid_at_k": [
+        0.137,
+        0.292
+      ],
+      "clean_at_k": [
+        0.098,
+        0.238
+      ],
+      "exact_at_k": [
+        0.0,
+        0.036
+      ]
+    },
+    "agreement": 0.1056,
+    "parse_rate": 1.0,
+    "truncated_rate": 0.0,
+    "intensional_rate": 0.9259,
+    "r3": {
+      "yes/yes": 157,
+      "yes/no": 92,
+      "no/yes": 35,
+      "no/no": 25
+    },
+    "r3_balanced": 0.5236,
+    "r2_exact": 0.2043,
+    "trace_f1": 0.1641,
+    "errors": {
+      "not_a_solution": 253,
+      "self_defeating": 4,
+      "illformed": 31,
+      "ok": 19,
+      "valid_but_degenerate": 2
+    },
+    "parse_repairs": {
+      "truncated an echoed problem statement": 276,
+      "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 19,
+      "output contained 2 'NEW RULES": 65,
+      "re-listed existing assumption(s)": 171,
+      "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "skipped 1 line(s) containing '": 4,
+      "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1
+    }
+  },
+  "guided": {
+    "n_problems": 103,
+    "n_structures": 83,
+    "n_samples": 309,
+    "valid_at_1": 0.023,
+    "valid_at_k": 0.039,
+    "clean_at_1": 0.01,
+    "clean_at_k": 0.029,
+    "exact_at_1": 0.0,
+    "exact_at_k": 0.0,
+    "ci95": {
+      "valid_at_k": [
+        0.015,
+        0.096
+      ],
+      "clean_at_k": [
+        0.01,
+        0.082
+      ],
+      "exact_at_k": [
+        0.0,
+        0.036
+      ]
+    },
+    "agreement": 0.0389,
+    "parse_rate": 1.0,
+    "truncated_rate": 0.0,
+    "intensional_rate": 0.5714,
+    "r3": {
+      "yes/yes": 92,
+      "yes/no": 157,
+      "no/no": 39,
+      "no/yes": 21
+    },
+    "r3_balanced": 0.5097,
+    "r2_exact": 0.0833,
+    "trace_f1": 0.0,
+    "errors": {
+      "illformed": 5,
+      "not_a_solution": 297,
+      "valid_but_degenerate": 3,
+      "ok": 3,
+      "self_defeating": 1
+    },
+    "parse_repairs": {
+      "truncated an echoed problem statement": 301,
+      "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 4,
+      "re-listed existing assumption(s)": 95,
+      "output contained 2 'NEW RULES": 3,
+      "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1
+    }
+  },
+  "algorithm": {
+    "n_problems": 103,
+    "n_structures": 83,
+    "n_samples": 309,
+    "valid_at_1": 0.058,
+    "valid_at_k": 0.146,
+    "clean_at_1": 0.026,
+    "clean_at_k": 0.068,
+    "exact_at_1": 0.003,
+    "exact_at_k": 0.01,
+    "ci95": {
+      "valid_at_k": [
+        0.09,
+        0.226
+      ],
+      "clean_at_k": [
+        0.033,
+        0.134
+      ],
+      "exact_at_k": [
+        0.002,
+        0.053
+      ]
+    },
+    "agreement": 0.0611,
+    "parse_rate": 1.0,
+    "truncated_rate": 0.1489,
+    "intensional_rate": 0.5556,
+    "r3": {
+      "yes/yes": 93,
+      "yes/no": 156,
+      "no/no": 26,
+      "no/yes": 34
+    },
+    "r3_balanced": 0.4034,
+    "r2_exact": 0.2474,
+    "trace_f1": 0.1425,
+    "errors": {
+      "not_a_solution": 238,
+      "illformed": 54,
+      "valid_but_degenerate": 7,
+      "ok": 8,
+      "self_defeating": 2
+    },
+    "parse_repairs": {
+      "truncated an echoed problem statement": 265,
+      "re-listed existing assumption(s)": 237,
+      "output contained 2 'NEW RULES": 127,
+      "output contained 3 'NEW RULES": 10,
+      "empty answer (NONE / NONE)": 8,
+      "output contained 9 'NEW RULES": 1,
+      "skipped 1 line(s) containing '": 1,
+      "used answer block 1 of 2": 2,
+      "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 2,
+      "output contained 4 'NEW RULES": 1,
+      "used answer block 3 of 4": 1,
+      "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "output contained 6 'NEW RULES": 1,
+      "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 1,
+      "skipped 15 line(s) containing '": 1
+    }
+  },
+  "by_tier": {
+    "direct": {
+      "builtin": {
+        "n_problems": 3,
+        "n_structures": 3,
+        "n_samples": 9,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.562
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ],
+          "exact_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": null,
+        "r3": {
+          "yes/yes": 8,
+          "yes/no": 1
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.5714,
+        "trace_f1": null,
+        "errors": {
+          "not_a_solution": 8,
+          "illformed": 1
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 7,
+          "re-listed existing assumption(s)": 8
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "n_structures": 19,
+        "n_samples": 60,
+        "valid_at_1": 0.083,
+        "valid_at_k": 0.25,
+        "clean_at_1": 0.033,
+        "clean_at_k": 0.1,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.112,
+            0.469
+          ],
+          "clean_at_k": [
+            0.028,
+            0.301
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.0667,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 0.6,
+        "r3": {
+          "no/yes": 51,
+          "no/no": 9
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.1522,
+        "trace_f1": null,
+        "errors": {
+          "not_a_solution": 52,
+          "illformed": 3,
+          "valid_but_degenerate": 2,
+          "ok": 2,
+          "self_defeating": 1
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 49,
+          "output contained 2 'NEW RULES": 1,
+          "truncated an echoed problem statement": 27,
+          "skipped 1 line(s) containing '": 2
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.017,
+        "valid_at_k": 0.05,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.009,
+            0.236
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 0.0,
+        "r3": {
+          "yes/yes": 46,
+          "yes/no": 14
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.0,
+        "trace_f1": null,
+        "errors": {
+          "not_a_solution": 56,
+          "illformed": 3,
+          "valid_but_degenerate": 1
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 21,
+          "re-listed existing assumption(s)": 49,
+          "skipped 1 line(s) containing '": 2
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.217,
+        "valid_at_k": 0.45,
+        "clean_at_1": 0.083,
+        "clean_at_k": 0.25,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.258,
+            0.658
+          ],
+          "clean_at_k": [
+            0.112,
+            0.469
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.2083,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 48,
+          "yes/no": 12
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.661,
+        "trace_f1": null,
+        "errors": {
+          "not_a_solution": 47,
+          "self_defeating": 8,
+          "ok": 5
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 34,
+          "re-listed existing assumption(s)": 60
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.0,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": null,
+        "r3": {
+          "yes/yes": 46,
+          "yes/no": 14
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.0,
+        "trace_f1": null,
+        "errors": {
+          "not_a_solution": 60
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 41,
+          "re-listed existing assumption(s)": 55,
+          "skipped 1 line(s) containing '": 1
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "n_structures": 1,
+        "n_samples": 60,
+        "valid_at_1": 0.65,
+        "valid_at_k": 0.95,
+        "clean_at_1": 0.65,
+        "clean_at_k": 0.95,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.764,
+            0.991
+          ],
+          "clean_at_k": [
+            0.764,
+            0.991
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 58,
+          "yes/no": 2
+        },
+        "r3_balanced": null,
+        "r2_exact": null,
+        "trace_f1": null,
+        "errors": {
+          "ok": 39,
+          "not_a_solution": 21
+        },
+        "parse_repairs": {
+          "re-listed existing assumption(s)": 58,
+          "truncated an echoed problem statement": 24
+        }
+      }
+    },
+    "cot": {
+      "builtin": {
+        "n_problems": 3,
+        "n_structures": 3,
+        "n_samples": 9,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.562
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ],
+          "exact_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": null,
+        "r3": {
+          "yes/yes": 6,
+          "yes/no": 3
+        },
+        "r3_balanced": null,
+        "r2_exact": 1.0,
+        "trace_f1": 0.0,
+        "errors": {
+          "not_a_solution": 9
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 9,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "output contained 2 'NEW RULES": 1,
+          "re-listed existing assumption(s)": 3
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "n_structures": 19,
+        "n_samples": 60,
+        "valid_at_1": 0.2,
+        "valid_at_k": 0.45,
+        "clean_at_1": 0.1,
+        "clean_at_k": 0.25,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.258,
+            0.658
+          ],
+          "clean_at_k": [
+            0.112,
+            0.469
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.1667,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 0.8333,
+        "r3": {
+          "no/yes": 35,
+          "no/no": 25
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.2778,
+        "trace_f1": 0.1508,
+        "errors": {
+          "self_defeating": 2,
+          "not_a_solution": 44,
+          "illformed": 6,
+          "ok": 6,
+          "valid_but_degenerate": 2
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 54,
+          "re-listed existing assumption(s)": 30,
+          "output contained 2 'NEW RULES": 15,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 5,
+          "recovered 3 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 1 line(s) containing '": 1
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.017,
+        "valid_at_k": 0.05,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.009,
+            0.236
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 48,
+          "yes/no": 12
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.0556,
+        "trace_f1": 0.1919,
+        "errors": {
+          "illformed": 11,
+          "not_a_solution": 48,
+          "self_defeating": 1
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 51,
+          "output contained 2 'NEW RULES": 17,
+          "re-listed existing assumption(s)": 34,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 5,
+          "skipped 1 line(s) containing '": 2
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.15,
+        "valid_at_k": 0.35,
+        "clean_at_1": 0.133,
+        "clean_at_k": 0.35,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.181,
+            0.567
+          ],
+          "clean_at_k": [
+            0.181,
+            0.567
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.15,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/yes": 29,
+          "yes/no": 31
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.3125,
+        "trace_f1": 0.3234,
+        "errors": {
+          "ok": 8,
+          "not_a_solution": 50,
+          "illformed": 1,
+          "self_defeating": 1
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 6,
+          "re-listed existing assumption(s)": 42,
+          "truncated an echoed problem statement": 56
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.0,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": null,
+        "r3": {
+          "yes/yes": 49,
+          "yes/no": 11
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.0,
+        "trace_f1": 0.3234,
+        "errors": {
+          "illformed": 11,
+          "not_a_solution": 49
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 55,
+          "re-listed existing assumption(s)": 40,
+          "output contained 2 'NEW RULES": 6,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 6,
+          "skipped 1 line(s) containing '": 1
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "n_structures": 1,
+        "n_samples": 60,
+        "valid_at_1": 0.083,
+        "valid_at_k": 0.2,
+        "clean_at_1": 0.083,
+        "clean_at_k": 0.2,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.081,
+            0.416
+          ],
+          "clean_at_k": [
+            0.081,
+            0.416
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/no": 35,
+          "yes/yes": 25
+        },
+        "r3_balanced": null,
+        "r2_exact": null,
+        "trace_f1": 0.0608,
+        "errors": {
+          "not_a_solution": 53,
+          "ok": 5,
+          "illformed": 2
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 51,
+          "re-listed existing assumption(s)": 22,
+          "output contained 2 'NEW RULES": 20,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 2,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      }
+    },
+    "guided": {
+      "builtin": {
+        "n_problems": 3,
+        "n_structures": 3,
+        "n_samples": 9,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.562
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ],
+          "exact_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": null,
+        "r3": {
+          "yes/yes": 5,
+          "yes/no": 4
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.6667,
+        "trace_f1": null,
+        "errors": {
+          "illformed": 3,
+          "not_a_solution": 6
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 9,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "re-listed existing assumption(s)": 2
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "n_structures": 19,
+        "n_samples": 60,
+        "valid_at_1": 0.117,
+        "valid_at_k": 0.2,
+        "clean_at_1": 0.05,
+        "clean_at_k": 0.15,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.081,
+            0.416
+          ],
+          "clean_at_k": [
+            0.052,
+            0.36
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.1167,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": 0.5714,
+        "r3": {
+          "no/no": 39,
+          "no/yes": 21
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.1875,
+        "trace_f1": 0.0,
+        "errors": {
+          "not_a_solution": 53,
+          "valid_but_degenerate": 3,
+          "ok": 3,
+          "self_defeating": 1
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 58,
+          "re-listed existing assumption(s)": 14,
+          "output contained 2 'NEW RULES": 3
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": null,
+        "r3": {
+          "yes/no": 15,
+          "yes/yes": 45
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.0,
+        "trace_f1": null,
+        "errors": {
+          "not_a_solution": 58,
+          "illformed": 2
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 59,
+          "re-listed existing assumption(s)": 34
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.0,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": null,
+        "r3": {
+          "yes/no": 51,
+          "yes/yes": 9
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.087,
+        "trace_f1": null,
+        "errors": {
+          "not_a_solution": 60
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 60,
+          "re-listed existing assumption(s)": 13
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.0,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": null,
+        "r3": {
+          "yes/yes": 32,
+          "yes/no": 28
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.0,
+        "trace_f1": null,
+        "errors": {
+          "not_a_solution": 60
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 55,
+          "re-listed existing assumption(s)": 32,
+          "recovered 2 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "n_structures": 1,
+        "n_samples": 60,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0,
+        "intensional_rate": null,
+        "r3": {
+          "yes/no": 59,
+          "yes/yes": 1
+        },
+        "r3_balanced": null,
+        "r2_exact": null,
+        "trace_f1": null,
+        "errors": {
+          "not_a_solution": 60
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 60,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 3
+        }
+      }
+    },
+    "algorithm": {
+      "builtin": {
+        "n_problems": 3,
+        "n_structures": 3,
+        "n_samples": 9,
+        "valid_at_1": 0.333,
+        "valid_at_k": 0.667,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.208,
+            0.939
+          ],
+          "clean_at_k": [
+            0.0,
+            0.562
+          ],
+          "exact_at_k": [
+            0.0,
+            0.562
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.1111,
+        "intensional_rate": 0.0,
+        "r3": {
+          "yes/yes": 7,
+          "yes/no": 2
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.5,
+        "trace_f1": 0.0667,
+        "errors": {
+          "not_a_solution": 3,
+          "illformed": 3,
+          "valid_but_degenerate": 3
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 6,
+          "re-listed existing assumption(s)": 5,
+          "output contained 2 'NEW RULES": 6,
+          "output contained 3 'NEW RULES": 1
+        }
+      },
+      "t1_mono": {
+        "n_problems": 20,
+        "n_structures": 19,
+        "n_samples": 60,
+        "valid_at_1": 0.033,
+        "valid_at_k": 0.1,
+        "clean_at_1": 0.017,
+        "clean_at_k": 0.05,
+        "exact_at_1": 0.017,
+        "exact_at_k": 0.05,
+        "ci95": {
+          "valid_at_k": [
+            0.028,
+            0.301
+          ],
+          "clean_at_k": [
+            0.009,
+            0.236
+          ],
+          "exact_at_k": [
+            0.009,
+            0.236
+          ]
+        },
+        "agreement": 0.0167,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.1,
+        "intensional_rate": 0.5,
+        "r3": {
+          "no/no": 26,
+          "no/yes": 34
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.037,
+        "trace_f1": 0.2739,
+        "errors": {
+          "valid_but_degenerate": 1,
+          "illformed": 25,
+          "not_a_solution": 33,
+          "ok": 1
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 22,
+          "truncated an echoed problem statement": 50,
+          "re-listed existing assumption(s)": 44,
+          "empty answer (NONE / NONE)": 2,
+          "output contained 9 'NEW RULES": 1,
+          "output contained 3 'NEW RULES": 2,
+          "skipped 1 line(s) containing '": 1
+        }
+      },
+      "t2_defeas": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.033,
+        "valid_at_k": 0.1,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.028,
+            0.301
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.0333,
+        "intensional_rate": 0.0,
+        "r3": {
+          "yes/no": 41,
+          "yes/yes": 19
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.0,
+        "trace_f1": 0.1517,
+        "errors": {
+          "not_a_solution": 55,
+          "illformed": 3,
+          "valid_but_degenerate": 2
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 34,
+          "truncated an echoed problem statement": 48,
+          "re-listed existing assumption(s)": 43,
+          "used answer block 1 of 2": 1,
+          "output contained 3 'NEW RULES": 3
+        }
+      },
+      "t3_noise": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.15,
+        "valid_at_k": 0.35,
+        "clean_at_1": 0.117,
+        "clean_at_k": 0.3,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.181,
+            0.567
+          ],
+          "clean_at_k": [
+            0.145,
+            0.519
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.15,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.1333,
+        "intensional_rate": 1.0,
+        "r3": {
+          "yes/no": 34,
+          "yes/yes": 26
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.5714,
+        "trace_f1": 0.1583,
+        "errors": {
+          "not_a_solution": 47,
+          "self_defeating": 2,
+          "ok": 7,
+          "illformed": 4
+        },
+        "parse_repairs": {
+          "output contained 2 'NEW RULES": 24,
+          "truncated an echoed problem statement": 50,
+          "re-listed existing assumption(s)": 49,
+          "output contained 3 'NEW RULES": 3,
+          "empty answer (NONE / NONE)": 3
+        }
+      },
+      "t4_domain": {
+        "n_problems": 20,
+        "n_structures": 20,
+        "n_samples": 60,
+        "valid_at_1": 0.033,
+        "valid_at_k": 0.1,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.028,
+            0.301
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": 0.0167,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.2333,
+        "intensional_rate": 0.0,
+        "r3": {
+          "yes/yes": 28,
+          "yes/no": 32
+        },
+        "r3_balanced": null,
+        "r2_exact": 0.0833,
+        "trace_f1": 0.0556,
+        "errors": {
+          "not_a_solution": 55,
+          "valid_but_degenerate": 1,
+          "illformed": 4
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 56,
+          "re-listed existing assumption(s)": 51,
+          "output contained 2 'NEW RULES": 19,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "output contained 4 'NEW RULES": 1,
+          "used answer block 3 of 4": 1,
+          "used answer block 1 of 2": 1,
+          "output contained 3 'NEW RULES": 1,
+          "recovered 4 rule(s) written under 'NEW ASSUMPTIONS": 1
+        }
+      },
+      "t5_twopath": {
+        "n_problems": 20,
+        "n_structures": 1,
+        "n_samples": 60,
+        "valid_at_1": 0.0,
+        "valid_at_k": 0.0,
+        "clean_at_1": 0.0,
+        "clean_at_k": 0.0,
+        "exact_at_1": 0.0,
+        "exact_at_k": 0.0,
+        "ci95": {
+          "valid_at_k": [
+            0.0,
+            0.161
+          ],
+          "clean_at_k": [
+            0.0,
+            0.161
+          ],
+          "exact_at_k": [
+            0.0,
+            0.161
+          ]
+        },
+        "agreement": null,
+        "parse_rate": 1.0,
+        "truncated_rate": 0.25,
+        "intensional_rate": null,
+        "r3": {
+          "yes/no": 47,
+          "yes/yes": 13
+        },
+        "r3_balanced": null,
+        "r2_exact": null,
+        "trace_f1": 0.0374,
+        "errors": {
+          "illformed": 15,
+          "not_a_solution": 45
+        },
+        "parse_repairs": {
+          "truncated an echoed problem statement": 55,
+          "re-listed existing assumption(s)": 45,
+          "output contained 6 'NEW RULES": 1,
+          "output contained 2 'NEW RULES": 22,
+          "recovered 1 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "empty answer (NONE / NONE)": 3,
+          "recovered 7 rule(s) written under 'NEW ASSUMPTIONS": 1,
+          "skipped 15 line(s) containing '": 1
+        }
+      }
+    }
+  }
+}
