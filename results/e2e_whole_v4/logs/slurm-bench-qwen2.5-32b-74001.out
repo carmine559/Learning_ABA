@@ -1,0 +1,639 @@
+GPU: NVIDIA L40
+[job 74001] model=qwen2.5-32b bench_n=20 samples=3 modes='direct cot guided algorithm' extra='--load-4bit' probes=0
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+============================================================
+ABA Framework Learning - Thesis Experiments
+============================================================
+
+[1/4] Building dataset...
+  Loaded 3 built-in benchmark problems.
+  tier t1_mono: 20/20 problems (folding only, monotonic rule suffices)
+  tier t2_defeas: 20/20 problems (assumption introduction, one exception)
+  tier t3_noise: 20/20 problems (distractor robustness, extra noise predicates)
+  tier t4_domain: 20/20 problems (domain-size scaling, 12 constants)
+  tier t5_twopath: 20/20 problems (two independent defeasible derivation paths)
+  After benchmark suite: 103 problems.
+  Anonymised all problems (scheme=letters).
+  Anonymisation maps saved to results/e2e_whole_v4/bench_qwen2.5-32b/name_maps.json
+
+[2/4] Symbolic baseline (ASP-ABAlearnB)...
+
+=== Symbolic baseline (ASP-ABAlearnB) ===
+  nixon_diamond_anon: OK intensional
+  flies_anon: OK intensional
+  tax_law_anon: OK intensional
+  t1_mono_0000_anon: OK intensional
+  t1_mono_0001_anon: OK intensional
+  t1_mono_0002_anon: OK intensional
+  t1_mono_0003_anon: OK intensional
+  t1_mono_0004_anon: OK intensional
+  t1_mono_0005_anon: OK intensional
+  t1_mono_0006_anon: OK intensional
+  t1_mono_0007_anon: OK intensional
+  t1_mono_0008_anon: OK intensional
+  t1_mono_0009_anon: OK intensional
+  t1_mono_0010_anon: OK intensional
+  t1_mono_0011_anon: OK intensional
+  t1_mono_0012_anon: OK intensional
+  t1_mono_0013_anon: OK intensional
+  t1_mono_0014_anon: OK intensional
+  t1_mono_0015_anon: OK intensional
+  t1_mono_0016_anon: OK intensional
+  t1_mono_0017_anon: OK intensional
+  t1_mono_0018_anon: OK intensional
+  t1_mono_0019_anon: OK intensional
+  t2_defeas_0000_anon: OK intensional
+  t2_defeas_0001_anon: OK intensional
+  t2_defeas_0002_anon: OK intensional
+  t2_defeas_0003_anon: OK intensional
+  t2_defeas_0004_anon: OK intensional
+  t2_defeas_0005_anon: OK intensional
+  t2_defeas_0006_anon: OK intensional
+  t2_defeas_0007_anon: OK intensional
+  t2_defeas_0008_anon: OK intensional
+  t2_defeas_0009_anon: OK intensional
+  t2_defeas_0010_anon: OK intensional
+  t2_defeas_0011_anon: OK intensional
+  t2_defeas_0012_anon: OK intensional
+  t2_defeas_0013_anon: OK intensional
+  t2_defeas_0014_anon: OK intensional
+  t2_defeas_0015_anon: OK intensional
+  t2_defeas_0016_anon: OK intensional
+  t2_defeas_0017_anon: OK intensional
+  t2_defeas_0018_anon: OK intensional
+  t2_defeas_0019_anon: OK intensional
+  t3_noise_0000_anon: OK intensional
+  t3_noise_0001_anon: OK intensional
+  t3_noise_0002_anon: OK intensional
+  t3_noise_0003_anon: OK intensional
+  t3_noise_0004_anon: OK intensional
+  t3_noise_0005_anon: OK intensional
+  t3_noise_0006_anon: OK intensional
+  t3_noise_0007_anon: OK intensional
+  t3_noise_0008_anon: OK intensional
+  t3_noise_0009_anon: OK intensional
+  t3_noise_0010_anon: OK intensional
+  t3_noise_0011_anon: OK intensional
+  t3_noise_0012_anon: OK intensional
+  t3_noise_0013_anon: OK intensional
+  t3_noise_0014_anon: OK intensional
+  t3_noise_0015_anon: OK intensional
+  t3_noise_0016_anon: OK intensional
+  t3_noise_0017_anon: OK intensional
+  t3_noise_0018_anon: OK intensional
+  t3_noise_0019_anon: OK intensional
+  t4_domain_0000_anon: OK intensional
+  t4_domain_0001_anon: OK intensional
+  t4_domain_0002_anon: OK intensional
+  t4_domain_0003_anon: OK intensional
+  t4_domain_0004_anon: OK intensional
+  t4_domain_0005_anon: OK intensional
+  t4_domain_0006_anon: OK intensional
+  t4_domain_0007_anon: OK intensional
+  t4_domain_0008_anon: OK intensional
+  t4_domain_0009_anon: OK intensional
+  t4_domain_0010_anon: OK intensional
+  t4_domain_0011_anon: OK intensional
+  t4_domain_0012_anon: OK intensional
+  t4_domain_0013_anon: OK intensional
+  t4_domain_0014_anon: OK intensional
+  t4_domain_0015_anon: OK intensional
+  t4_domain_0016_anon: OK intensional
+  t4_domain_0017_anon: OK intensional
+  t4_domain_0018_anon: OK intensional
+  t4_domain_0019_anon: OK intensional
+  t5_twopath_0000_anon: OK intensional
+  t5_twopath_0001_anon: OK intensional
+  t5_twopath_0002_anon: OK intensional
+  t5_twopath_0003_anon: OK intensional
+  t5_twopath_0004_anon: OK intensional
+  t5_twopath_0005_anon: OK intensional
+  t5_twopath_0006_anon: OK intensional
+  t5_twopath_0007_anon: OK intensional
+  t5_twopath_0008_anon: OK intensional
+  t5_twopath_0009_anon: OK intensional
+  t5_twopath_0010_anon: OK intensional
+  t5_twopath_0011_anon: OK intensional
+  t5_twopath_0012_anon: OK intensional
+  t5_twopath_0013_anon: OK intensional
+  t5_twopath_0014_anon: OK intensional
+  t5_twopath_0015_anon: OK intensional
+  t5_twopath_0016_anon: OK intensional
+  t5_twopath_0017_anon: OK intensional
+  t5_twopath_0018_anon: OK intensional
+  t5_twopath_0019_anon: OK intensional
+Symbolic: 103/103 solved, 103/103 intensional
+Symbolic traces saved to results/e2e_whole_v4/bench_qwen2.5-32b/symbolic_traces.jsonl
+
+References (the algorithm's run on every problem, posed whole)...
+  103 references, 0 excluded; control passed on every problem -> results/e2e_whole_v4/bench_qwen2.5-32b/references.jsonl
+
+[3/4] LLM experiments (backend=local, model=qwen2.5-32b)...
+Loading weights:   0%|          | 0/771 [00:00<?, ?it/s]Loading weights:   0%|          | 1/771 [00:13<2:48:38, 13.14s/it]Loading weights:   0%|          | 2/771 [00:23<2:23:43, 11.21s/it]Loading weights:   1%|          | 4/771 [00:25<1:02:47,  4.91s/it]Loading weights:   1%|          | 5/771 [00:26<46:33,  3.65s/it]  Loading weights:   1%|          | 6/771 [00:28<40:01,  3.14s/it]Loading weights:   1%|▏         | 10/771 [00:28<15:10,  1.20s/it]Loading weights:   2%|▏         | 12/771 [00:28<10:41,  1.18it/s]Loading weights:   2%|▏         | 16/771 [00:30<07:43,  1.63it/s]Loading weights:   2%|▏         | 17/771 [00:31<09:33,  1.31it/s]Loading weights:   2%|▏         | 18/771 [00:33<12:45,  1.02s/it]Loading weights:   3%|▎         | 22/771 [00:34<06:50,  1.82it/s]Loading weights:   3%|▎         | 24/771 [00:34<05:15,  2.37it/s]Loading weights:   3%|▎         | 26/771 [00:34<04:00,  3.10it/s]Loading weights:   4%|▎         | 28/771 [00:35<05:19,  2.33it/s]Loading weights:   4%|▍         | 29/771 [00:38<09:15,  1.34it/s]Loading weights:   4%|▍         | 30/771 [00:41<14:13,  1.15s/it]Loading weights:   4%|▍         | 34/771 [00:41<07:51,  1.56it/s]Loading weights:   5%|▍         | 36/771 [00:41<05:57,  2.05it/s]Loading weights:   5%|▌         | 40/771 [00:43<05:13,  2.34it/s]Loading weights:   5%|▌         | 41/771 [00:45<08:19,  1.46it/s]Loading weights:   5%|▌         | 42/771 [00:47<11:33,  1.05it/s]Loading weights:   6%|▌         | 46/771 [00:48<06:51,  1.76it/s]Loading weights:   6%|▌         | 48/771 [00:49<05:52,  2.05it/s]Loading weights:   7%|▋         | 52/771 [00:51<05:57,  2.01it/s]Loading weights:   7%|▋         | 53/771 [00:52<08:04,  1.48it/s]Loading weights:   7%|▋         | 54/771 [00:54<08:55,  1.34it/s]Loading weights:   8%|▊         | 58/771 [00:54<05:09,  2.30it/s]Loading weights:   8%|▊         | 60/771 [00:55<04:46,  2.49it/s]Loading weights:   8%|▊         | 64/771 [00:57<06:10,  1.91it/s]Loading weights:   8%|▊         | 65/771 [00:59<08:24,  1.40it/s]Loading weights:   9%|▊         | 66/771 [01:01<10:31,  1.12it/s]Loading weights:   9%|▉         | 70/771 [01:02<06:27,  1.81it/s]Loading weights:   9%|▉         | 72/771 [01:02<05:26,  2.14it/s]Loading weights:  10%|▉         | 76/771 [01:05<05:58,  1.94it/s]Loading weights:  10%|▉         | 77/771 [01:06<07:42,  1.50it/s]Loading weights:  10%|█         | 78/771 [01:09<10:25,  1.11it/s]Loading weights:  11%|█         | 82/771 [01:09<05:41,  2.02it/s]Loading weights:  11%|█         | 84/771 [01:09<04:30,  2.54it/s]Loading weights:  11%|█▏        | 88/771 [01:12<06:08,  1.86it/s]Loading weights:  12%|█▏        | 89/771 [01:14<08:51,  1.28it/s]Loading weights:  12%|█▏        | 90/771 [01:15<09:22,  1.21it/s]Loading weights:  12%|█▏        | 93/771 [01:15<05:48,  1.95it/s]Loading weights:  12%|█▏        | 94/771 [01:16<05:43,  1.97it/s]Loading weights:  12%|█▏        | 96/771 [01:16<04:43,  2.38it/s]Loading weights:  13%|█▎        | 98/771 [01:16<03:25,  3.27it/s]Loading weights:  13%|█▎        | 100/771 [01:18<05:25,  2.06it/s]Loading weights:  13%|█▎        | 101/771 [01:20<08:16,  1.35it/s]Loading weights:  13%|█▎        | 102/771 [01:22<10:27,  1.07it/s]Loading weights:  14%|█▎        | 106/771 [01:22<05:07,  2.16it/s]Loading weights:  14%|█▍        | 108/771 [01:22<03:57,  2.79it/s]Loading weights:  15%|█▍        | 112/771 [01:24<04:39,  2.36it/s]Loading weights:  15%|█▍        | 113/771 [01:26<06:41,  1.64it/s]Loading weights:  15%|█▍        | 114/771 [01:28<08:44,  1.25it/s]Loading weights:  15%|█▌        | 118/771 [01:28<04:50,  2.25it/s]Loading weights:  16%|█▌        | 120/771 [01:29<04:25,  2.45it/s]Loading weights:  16%|█▌        | 122/771 [01:29<03:34,  3.03it/s]Loading weights:  16%|█▌        | 124/771 [01:32<07:09,  1.51it/s]Loading weights:  16%|█▌        | 125/771 [01:34<08:47,  1.23it/s]Loading weights:  16%|█▋        | 126/771 [01:35<10:33,  1.02it/s]Loading weights:  17%|█▋        | 129/771 [01:35<06:01,  1.78it/s]Loading weights:  17%|█▋        | 130/771 [01:36<06:17,  1.70it/s]Loading weights:  17%|█▋        | 132/771 [01:37<05:06,  2.09it/s]Loading weights:  18%|█▊        | 136/771 [01:39<05:06,  2.07it/s]Loading weights:  18%|█▊        | 137/771 [01:41<07:30,  1.41it/s]Loading weights:  18%|█▊        | 138/771 [01:42<09:35,  1.10it/s]Loading weights:  18%|█▊        | 142/771 [01:43<05:08,  2.04it/s]Loading weights:  19%|█▊        | 144/771 [01:43<04:21,  2.39it/s]Loading weights:  19%|█▉        | 146/771 [01:43<03:21,  3.10it/s]Loading weights:  19%|█▉        | 148/771 [01:46<05:47,  1.79it/s]Loading weights:  19%|█▉        | 149/771 [01:47<06:18,  1.64it/s]Loading weights:  19%|█▉        | 150/771 [01:48<09:03,  1.14it/s]Loading weights:  20%|█▉        | 154/771 [01:49<04:45,  2.16it/s]Loading weights:  20%|██        | 156/771 [01:49<03:44,  2.74it/s]Loading weights:  21%|██        | 160/771 [01:50<03:29,  2.92it/s]Loading weights:  21%|██        | 161/771 [01:52<05:30,  1.85it/s]Loading weights:  21%|██        | 162/771 [01:53<06:46,  1.50it/s]Loading weights:  22%|██▏       | 166/771 [01:54<04:16,  2.36it/s]Loading weights:  22%|██▏       | 168/771 [01:54<03:25,  2.93it/s]Loading weights:  22%|██▏       | 172/771 [01:56<03:39,  2.73it/s]Loading weights:  22%|██▏       | 173/771 [01:59<07:07,  1.40it/s]Loading weights:  23%|██▎       | 174/771 [02:02<11:03,  1.11s/it]Loading weights:  23%|██▎       | 177/771 [02:02<06:42,  1.48it/s]Loading weights:  23%|██▎       | 179/771 [02:03<05:38,  1.75it/s]Loading weights:  23%|██▎       | 180/771 [02:03<05:03,  1.94it/s]Loading weights:  24%|██▍       | 184/771 [02:05<05:20,  1.83it/s]Loading weights:  24%|██▍       | 185/771 [02:07<07:10,  1.36it/s]Loading weights:  24%|██▍       | 186/771 [02:10<10:56,  1.12s/it]Loading weights:  25%|██▍       | 189/771 [02:10<06:22,  1.52it/s]Loading weights:  25%|██▍       | 191/771 [02:11<05:16,  1.83it/s]Loading weights:  25%|██▍       | 192/771 [02:11<05:06,  1.89it/s]Loading weights:  25%|██▌       | 196/771 [02:13<04:06,  2.34it/s]Loading weights:  26%|██▌       | 197/771 [02:14<05:28,  1.74it/s]Loading weights:  26%|██▌       | 198/771 [02:17<09:07,  1.05it/s]Loading weights:  26%|██▌       | 201/771 [02:17<05:21,  1.77it/s]Loading weights:  26%|██▌       | 202/771 [02:18<05:38,  1.68it/s]Loading weights:  26%|██▋       | 204/771 [02:18<04:35,  2.06it/s]Loading weights:  27%|██▋       | 208/771 [02:21<05:05,  1.84it/s]Loading weights:  27%|██▋       | 209/771 [02:22<06:34,  1.43it/s]Loading weights:  27%|██▋       | 210/771 [02:24<08:13,  1.14it/s]Loading weights:  28%|██▊       | 213/771 [02:24<04:49,  1.92it/s]Loading weights:  28%|██▊       | 214/771 [02:25<04:54,  1.89it/s]Loading weights:  28%|██▊       | 216/771 [02:25<04:02,  2.29it/s]Loading weights:  28%|██▊       | 218/771 [02:25<03:04,  3.00it/s]Loading weights:  29%|██▊       | 220/771 [02:28<05:48,  1.58it/s]Loading weights:  29%|██▊       | 221/771 [02:30<08:52,  1.03it/s]Loading weights:  29%|██▉       | 222/771 [02:33<12:14,  1.34s/it]Loading weights:  29%|██▉       | 225/771 [02:33<06:38,  1.37it/s]Loading weights:  29%|██▉       | 226/771 [02:34<06:15,  1.45it/s]Loading weights:  30%|██▉       | 228/771 [02:34<04:39,  1.94it/s]Loading weights:  30%|███       | 232/771 [02:37<05:33,  1.62it/s]Loading weights:  30%|███       | 233/771 [02:39<07:27,  1.20it/s]Loading weights:  30%|███       | 234/771 [02:40<08:20,  1.07it/s]Loading weights:  31%|███       | 237/771 [02:41<04:52,  1.83it/s]Loading weights:  31%|███       | 238/771 [02:41<04:41,  1.90it/s]Loading weights:  31%|███       | 240/771 [02:41<03:28,  2.55it/s]Loading weights:  32%|███▏      | 244/771 [02:43<03:32,  2.48it/s]Loading weights:  32%|███▏      | 245/771 [02:45<05:13,  1.68it/s]Loading weights:  32%|███▏      | 246/771 [02:47<08:44,  1.00it/s]Loading weights:  32%|███▏      | 250/771 [02:48<05:12,  1.67it/s]Loading weights:  33%|███▎      | 252/771 [02:49<04:26,  1.95it/s]Loading weights:  33%|███▎      | 254/771 [02:49<03:22,  2.56it/s]Loading weights:  33%|███▎      | 256/771 [02:51<04:30,  1.90it/s]Loading weights:  33%|███▎      | 257/771 [02:54<07:48,  1.10it/s]Loading weights:  33%|███▎      | 258/771 [02:56<10:49,  1.27s/it]Loading weights:  34%|███▍      | 262/771 [02:56<05:19,  1.59it/s]Loading weights:  34%|███▍      | 264/771 [02:57<04:04,  2.08it/s]Loading weights:  35%|███▍      | 268/771 [03:00<05:33,  1.51it/s]Loading weights:  35%|███▍      | 269/771 [03:03<08:08,  1.03it/s]Loading weights:  35%|███▌      | 270/771 [03:05<09:09,  1.10s/it]Loading weights:  36%|███▌      | 274/771 [03:05<04:54,  1.69it/s]Loading weights:  36%|███▌      | 276/771 [03:06<04:07,  2.00it/s]Loading weights:  36%|███▌      | 278/771 [03:06<03:13,  2.54it/s]Loading weights:  36%|███▋      | 280/771 [03:08<04:35,  1.78it/s]Loading weights:  36%|███▋      | 281/771 [03:10<06:49,  1.20it/s]Loading weights:  37%|███▋      | 282/771 [03:12<08:37,  1.06s/it]Loading weights:  37%|███▋      | 286/771 [03:12<04:28,  1.81it/s]Loading weights:  37%|███▋      | 288/771 [03:13<04:00,  2.01it/s]Loading weights:  38%|███▊      | 290/771 [03:13<02:59,  2.68it/s]Loading weights:  38%|███▊      | 292/771 [03:15<04:17,  1.86it/s]Loading weights:  38%|███▊      | 293/771 [03:18<06:59,  1.14it/s]Loading weights:  38%|███▊      | 294/771 [03:19<07:41,  1.03it/s]Loading weights:  39%|███▊      | 298/771 [03:20<04:11,  1.88it/s]Loading weights:  39%|███▉      | 300/771 [03:20<03:37,  2.16it/s]Loading weights:  39%|███▉      | 302/771 [03:20<02:44,  2.84it/s]Loading weights:  39%|███▉      | 304/771 [03:22<04:26,  1.75it/s]Loading weights:  40%|███▉      | 305/771 [03:24<05:53,  1.32it/s]Loading weights:  40%|███▉      | 306/771 [03:27<08:52,  1.14s/it]Loading weights:  40%|████      | 310/771 [03:27<04:31,  1.70it/s]Loading weights:  40%|████      | 312/771 [03:28<03:39,  2.09it/s]Loading weights:  41%|████      | 316/771 [03:30<04:04,  1.86it/s]Loading weights:  41%|████      | 317/771 [03:32<05:53,  1.29it/s]Loading weights:  41%|████      | 318/771 [03:34<06:50,  1.10it/s]Loading weights:  42%|████▏     | 321/771 [03:34<04:07,  1.82it/s]Loading weights:  42%|████▏     | 322/771 [03:34<03:37,  2.06it/s]Loading weights:  42%|████▏     | 324/771 [03:34<02:43,  2.74it/s]Loading weights:  43%|████▎     | 328/771 [03:37<03:46,  1.95it/s]Loading weights:  43%|████▎     | 329/771 [03:38<04:25,  1.66it/s]Loading weights:  43%|████▎     | 330/771 [03:41<07:24,  1.01s/it]Loading weights:  43%|████▎     | 334/771 [03:42<04:15,  1.71it/s]Loading weights:  44%|████▎     | 336/771 [03:42<03:39,  1.99it/s]Loading weights:  44%|████▍     | 340/771 [03:44<03:16,  2.19it/s]Loading weights:  44%|████▍     | 341/771 [03:46<04:32,  1.58it/s]Loading weights:  44%|████▍     | 342/771 [03:47<05:14,  1.36it/s]Loading weights:  45%|████▍     | 345/771 [03:47<03:12,  2.22it/s]Loading weights:  45%|████▍     | 346/771 [03:48<03:12,  2.21it/s]Loading weights:  45%|████▌     | 348/771 [03:48<02:24,  2.93it/s]Loading weights:  46%|████▌     | 352/771 [03:50<03:03,  2.28it/s]Loading weights:  46%|████▌     | 353/771 [03:52<04:13,  1.65it/s]Loading weights:  46%|████▌     | 354/771 [03:53<05:47,  1.20it/s]Loading weights:  46%|████▋     | 357/771 [03:54<03:30,  1.96it/s]Loading weights:  46%|████▋     | 358/771 [03:54<03:32,  1.94it/s]Loading weights:  47%|████▋     | 360/771 [03:55<02:53,  2.37it/s]Loading weights:  47%|████▋     | 364/771 [03:57<03:26,  1.97it/s]Loading weights:  47%|████▋     | 365/771 [04:00<05:30,  1.23it/s]Loading weights:  47%|████▋     | 366/771 [04:02<07:28,  1.11s/it]Loading weights:  48%|████▊     | 370/771 [04:02<03:53,  1.72it/s]Loading weights:  48%|████▊     | 372/771 [04:03<02:59,  2.22it/s]Loading weights:  49%|████▉     | 376/771 [04:04<03:00,  2.19it/s]Loading weights:  49%|████▉     | 377/771 [04:07<04:58,  1.32it/s]Loading weights:  49%|████▉     | 378/771 [04:09<06:07,  1.07it/s]Loading weights:  50%|████▉     | 382/771 [04:09<03:18,  1.96it/s]Loading weights:  50%|████▉     | 384/771 [04:09<02:37,  2.46it/s]Loading weights:  50%|█████     | 388/771 [04:12<03:04,  2.08it/s]Loading weights:  50%|█████     | 389/771 [04:15<05:17,  1.20it/s]Loading weights:  51%|█████     | 390/771 [04:16<05:58,  1.06it/s]Loading weights:  51%|█████     | 393/771 [04:17<03:39,  1.72it/s]Loading weights:  51%|█████     | 394/771 [04:17<03:32,  1.77it/s]Loading weights:  51%|█████▏    | 396/771 [04:17<02:32,  2.46it/s]Loading weights:  52%|█████▏    | 400/771 [04:19<03:00,  2.06it/s]Loading weights:  52%|█████▏    | 401/771 [04:22<04:31,  1.36it/s]Loading weights:  52%|█████▏    | 402/771 [04:23<04:51,  1.26it/s]Loading weights:  53%|█████▎    | 406/771 [04:23<02:36,  2.33it/s]Loading weights:  53%|█████▎    | 408/771 [04:23<02:01,  2.99it/s]Loading weights:  53%|█████▎    | 412/771 [04:24<01:56,  3.09it/s]Loading weights:  54%|█████▎    | 413/771 [04:26<03:06,  1.91it/s]Loading weights:  54%|█████▎    | 414/771 [04:29<05:17,  1.12it/s]Loading weights:  54%|█████▍    | 418/771 [04:29<02:54,  2.02it/s]Loading weights:  54%|█████▍    | 420/771 [04:29<02:18,  2.54it/s]Loading weights:  55%|█████▍    | 424/771 [04:31<02:06,  2.73it/s]Loading weights:  55%|█████▌    | 425/771 [04:32<03:09,  1.83it/s]Loading weights:  55%|█████▌    | 426/771 [04:35<05:09,  1.11it/s]Loading weights:  56%|█████▌    | 430/771 [04:36<02:58,  1.91it/s]Loading weights:  56%|█████▌    | 432/771 [04:36<02:38,  2.14it/s]Loading weights:  57%|█████▋    | 436/771 [04:38<02:42,  2.06it/s]Loading weights:  57%|█████▋    | 437/771 [04:40<03:49,  1.45it/s]Loading weights:  57%|█████▋    | 438/771 [04:42<04:22,  1.27it/s]Loading weights:  57%|█████▋    | 442/771 [04:42<02:26,  2.24it/s]Loading weights:  58%|█████▊    | 444/771 [04:42<01:55,  2.83it/s]Loading weights:  58%|█████▊    | 448/771 [04:44<02:05,  2.58it/s]Loading weights:  58%|█████▊    | 449/771 [04:46<03:11,  1.68it/s]Loading weights:  58%|█████▊    | 450/771 [04:48<04:18,  1.24it/s]Loading weights:  59%|█████▉    | 453/771 [04:48<02:37,  2.02it/s]Loading weights:  59%|█████▉    | 455/771 [04:48<02:10,  2.42it/s]Loading weights:  59%|█████▉    | 456/771 [04:49<02:15,  2.32it/s]Loading weights:  60%|█████▉    | 460/771 [04:52<03:03,  1.69it/s]Loading weights:  60%|█████▉    | 461/771 [04:53<03:26,  1.50it/s]Loading weights:  60%|█████▉    | 462/771 [04:55<04:55,  1.05it/s]Loading weights:  60%|██████    | 465/771 [04:55<02:53,  1.76it/s]Loading weights:  60%|██████    | 466/771 [04:56<02:37,  1.94it/s]Loading weights:  61%|██████    | 468/771 [04:56<01:53,  2.67it/s]Loading weights:  61%|██████    | 472/771 [04:59<02:39,  1.87it/s]Loading weights:  61%|██████▏   | 473/771 [05:01<03:58,  1.25it/s]Loading weights:  61%|██████▏   | 474/771 [05:02<04:27,  1.11it/s]Loading weights:  62%|██████▏   | 478/771 [05:03<02:36,  1.87it/s]Loading weights:  62%|██████▏   | 480/771 [05:04<02:14,  2.17it/s]Loading weights:  63%|██████▎   | 484/771 [05:06<02:22,  2.01it/s]Loading weights:  63%|██████▎   | 485/771 [05:08<03:31,  1.35it/s]Loading weights:  63%|██████▎   | 486/771 [05:11<05:13,  1.10s/it]Loading weights:  63%|██████▎   | 489/771 [05:11<03:10,  1.48it/s]Loading weights:  64%|██████▎   | 490/771 [05:12<03:01,  1.55it/s]Loading weights:  64%|██████▍   | 492/771 [05:12<02:28,  1.88it/s]Loading weights:  64%|██████▍   | 496/771 [05:14<02:28,  1.85it/s]Loading weights:  64%|██████▍   | 497/771 [05:16<03:07,  1.46it/s]Loading weights:  65%|██████▍   | 498/771 [05:19<04:34,  1.00s/it]Loading weights:  65%|██████▌   | 502/771 [05:19<02:26,  1.84it/s]Loading weights:  65%|██████▌   | 504/771 [05:19<02:01,  2.19it/s]Loading weights:  66%|██████▌   | 508/771 [05:22<02:38,  1.65it/s]Loading weights:  66%|██████▌   | 509/771 [05:24<03:17,  1.33it/s]Loading weights:  66%|██████▌   | 510/771 [05:26<04:06,  1.06it/s]Loading weights:  67%|██████▋   | 514/771 [05:27<02:27,  1.74it/s]Loading weights:  67%|██████▋   | 516/771 [05:27<01:56,  2.18it/s]Loading weights:  67%|██████▋   | 520/771 [05:31<02:46,  1.51it/s]Loading weights:  68%|██████▊   | 521/771 [05:34<03:55,  1.06it/s]Loading weights:  68%|██████▊   | 522/771 [05:35<04:28,  1.08s/it]Loading weights:  68%|██████▊   | 526/771 [05:36<02:34,  1.59it/s]Loading weights:  68%|██████▊   | 528/771 [05:37<02:13,  1.81it/s]Loading weights:  69%|██████▉   | 532/771 [05:40<02:32,  1.57it/s]Loading weights:  69%|██████▉   | 533/771 [05:41<02:59,  1.32it/s]Loading weights:  69%|██████▉   | 534/771 [05:43<03:53,  1.02it/s]Loading weights:  70%|██████▉   | 538/771 [05:44<02:07,  1.83it/s]Loading weights:  70%|███████   | 540/771 [05:44<01:52,  2.05it/s]Loading weights:  71%|███████   | 544/771 [05:47<02:08,  1.77it/s]Loading weights:  71%|███████   | 545/771 [05:48<02:32,  1.49it/s]Loading weights:  71%|███████   | 546/771 [05:51<03:32,  1.06it/s]Loading weights:  71%|███████▏  | 550/771 [05:51<01:59,  1.85it/s]Loading weights:  72%|███████▏  | 552/771 [05:51<01:38,  2.23it/s]Loading weights:  72%|███████▏  | 554/771 [05:52<01:15,  2.89it/s]Loading weights:  72%|███████▏  | 556/771 [05:54<02:15,  1.58it/s]Loading weights:  72%|███████▏  | 557/771 [05:56<02:50,  1.25it/s]Loading weights:  72%|███████▏  | 558/771 [05:58<03:56,  1.11s/it]Loading weights:  73%|███████▎  | 562/771 [05:59<02:08,  1.62it/s]Loading weights:  73%|███████▎  | 564/771 [06:00<01:49,  1.88it/s]Loading weights:  73%|███████▎  | 566/771 [06:00<01:23,  2.45it/s]Loading weights:  74%|███████▎  | 568/771 [06:03<02:42,  1.25it/s]Loading weights:  74%|███████▍  | 569/771 [06:06<03:30,  1.04s/it]Loading weights:  74%|███████▍  | 570/771 [06:08<04:09,  1.24s/it]Loading weights:  74%|███████▍  | 573/771 [06:08<02:18,  1.43it/s]Loading weights:  74%|███████▍  | 574/771 [06:08<02:13,  1.47it/s]Loading weights:  75%|███████▍  | 576/771 [06:09<01:49,  1.78it/s]Loading weights:  75%|███████▍  | 578/771 [06:09<01:17,  2.50it/s]Loading weights:  75%|███████▌  | 580/771 [06:12<02:21,  1.35it/s]Loading weights:  75%|███████▌  | 581/771 [06:14<02:57,  1.07it/s]Loading weights:  75%|███████▌  | 582/771 [06:16<03:34,  1.13s/it]Loading weights:  76%|███████▌  | 586/771 [06:17<01:54,  1.62it/s]Loading weights:  76%|███████▋  | 588/771 [06:17<01:37,  1.88it/s]Loading weights:  77%|███████▋  | 590/771 [06:17<01:13,  2.45it/s]Loading weights:  77%|███████▋  | 592/771 [06:21<02:12,  1.35it/s]Loading weights:  77%|███████▋  | 593/771 [06:23<03:01,  1.02s/it]Loading weights:  77%|███████▋  | 594/771 [06:25<03:21,  1.14s/it]Loading weights:  78%|███████▊  | 598/771 [06:25<01:37,  1.78it/s]Loading weights:  78%|███████▊  | 600/771 [06:25<01:12,  2.35it/s]Loading weights:  78%|███████▊  | 604/771 [06:27<01:11,  2.35it/s]Loading weights:  78%|███████▊  | 605/771 [06:30<02:11,  1.26it/s]Loading weights:  79%|███████▊  | 606/771 [06:31<02:30,  1.10it/s]Loading weights:  79%|███████▉  | 610/771 [06:32<01:29,  1.79it/s]Loading weights:  79%|███████▉  | 612/771 [06:33<01:18,  2.03it/s]Loading weights:  80%|███████▉  | 616/771 [06:36<01:35,  1.63it/s]Loading weights:  80%|████████  | 617/771 [06:38<02:09,  1.19it/s]Loading weights:  80%|████████  | 618/771 [06:40<02:28,  1.03it/s]Loading weights:  81%|████████  | 622/771 [06:40<01:21,  1.82it/s]Loading weights:  81%|████████  | 624/771 [06:41<01:13,  2.00it/s]Loading weights:  81%|████████▏ | 628/771 [06:43<01:14,  1.92it/s]Loading weights:  82%|████████▏ | 629/771 [06:45<01:49,  1.30it/s]Loading weights:  82%|████████▏ | 630/771 [06:48<02:20,  1.00it/s]Loading weights:  82%|████████▏ | 634/771 [06:48<01:18,  1.75it/s]Loading weights:  82%|████████▏ | 636/771 [06:48<01:02,  2.16it/s]Loading weights:  83%|████████▎ | 640/771 [06:51<01:11,  1.83it/s]Loading weights:  83%|████████▎ | 641/771 [06:53<01:30,  1.44it/s]Loading weights:  83%|████████▎ | 642/771 [06:55<02:12,  1.03s/it]Loading weights:  84%|████████▍ | 646/771 [06:56<01:19,  1.58it/s]Loading weights:  84%|████████▍ | 648/771 [06:57<01:07,  1.82it/s]Loading weights:  85%|████████▍ | 652/771 [06:59<01:05,  1.81it/s]Loading weights:  85%|████████▍ | 653/771 [07:01<01:22,  1.43it/s]Loading weights:  85%|████████▍ | 654/771 [07:03<01:46,  1.10it/s]Loading weights:  85%|████████▌ | 657/771 [07:03<01:04,  1.76it/s]Loading weights:  85%|████████▌ | 658/771 [07:03<00:59,  1.91it/s]Loading weights:  86%|████████▌ | 660/771 [07:03<00:42,  2.59it/s]Loading weights:  86%|████████▌ | 664/771 [07:06<00:58,  1.83it/s]Loading weights:  86%|████████▋ | 665/771 [07:07<01:07,  1.58it/s]Loading weights:  86%|████████▋ | 666/771 [07:09<01:30,  1.16it/s]Loading weights:  87%|████████▋ | 669/771 [07:09<00:52,  1.95it/s]Loading weights:  87%|████████▋ | 670/771 [07:10<00:52,  1.93it/s]Loading weights:  87%|████████▋ | 672/771 [07:10<00:39,  2.48it/s]Loading weights:  88%|████████▊ | 676/771 [07:12<00:36,  2.58it/s]Loading weights:  88%|████████▊ | 677/771 [07:14<01:00,  1.55it/s]Loading weights:  88%|████████▊ | 678/771 [07:16<01:23,  1.12it/s]Loading weights:  88%|████████▊ | 682/771 [07:17<00:45,  1.97it/s]Loading weights:  89%|████████▊ | 684/771 [07:17<00:36,  2.38it/s]Loading weights:  89%|████████▉ | 688/771 [07:19<00:42,  1.97it/s]Loading weights:  89%|████████▉ | 689/771 [07:22<01:09,  1.19it/s]Loading weights:  89%|████████▉ | 690/771 [07:24<01:14,  1.09it/s]Loading weights:  90%|█████████ | 694/771 [07:24<00:39,  1.95it/s]Loading weights:  90%|█████████ | 696/771 [07:24<00:29,  2.50it/s]Loading weights:  91%|█████████ | 700/771 [07:27<00:37,  1.91it/s]Loading weights:  91%|█████████ | 701/771 [07:29<00:48,  1.45it/s]Loading weights:  91%|█████████ | 702/771 [07:31<01:02,  1.11it/s]Loading weights:  92%|█████████▏| 706/771 [07:31<00:33,  1.92it/s]Loading weights:  92%|█████████▏| 708/771 [07:31<00:25,  2.45it/s]Loading weights:  92%|█████████▏| 712/771 [07:34<00:31,  1.85it/s]Loading weights:  92%|█████████▏| 713/771 [07:36<00:41,  1.40it/s]Loading weights:  93%|█████████▎| 714/771 [07:39<00:57,  1.00s/it]Loading weights:  93%|█████████▎| 717/771 [07:39<00:33,  1.62it/s]Loading weights:  93%|█████████▎| 718/771 [07:39<00:33,  1.60it/s]Loading weights:  93%|█████████▎| 720/771 [07:40<00:27,  1.84it/s]Loading weights:  94%|█████████▎| 722/771 [07:40<00:19,  2.51it/s]Loading weights:  94%|█████████▍| 724/771 [07:42<00:27,  1.69it/s]Loading weights:  94%|█████████▍| 725/771 [07:45<00:44,  1.04it/s]Loading weights:  94%|█████████▍| 726/771 [07:47<00:55,  1.23s/it]Loading weights:  95%|█████████▍| 730/771 [07:48<00:25,  1.64it/s]Loading weights:  95%|█████████▍| 732/771 [07:48<00:18,  2.10it/s]Loading weights:  95%|█████████▌| 736/771 [07:50<00:16,  2.17it/s]Loading weights:  96%|█████████▌| 737/771 [07:51<00:21,  1.58it/s]Loading weights:  96%|█████████▌| 738/771 [07:54<00:29,  1.12it/s]Loading weights:  96%|█████████▌| 741/771 [07:54<00:16,  1.83it/s]Loading weights:  96%|█████████▌| 742/771 [07:55<00:17,  1.63it/s]Loading weights:  96%|█████████▋| 744/771 [07:55<00:14,  1.91it/s]Loading weights:  97%|█████████▋| 746/771 [07:56<00:10,  2.49it/s]Loading weights:  97%|█████████▋| 748/771 [07:57<00:12,  1.91it/s]Loading weights:  97%|█████████▋| 749/771 [07:59<00:17,  1.28it/s]Loading weights:  97%|█████████▋| 750/771 [08:02<00:27,  1.30s/it]Loading weights:  98%|█████████▊| 754/771 [08:03<00:11,  1.53it/s]Loading weights:  98%|█████████▊| 756/771 [08:03<00:07,  1.99it/s]Loading weights:  99%|█████████▊| 760/771 [08:07<00:08,  1.30it/s]Loading weights:  99%|█████████▊| 761/771 [08:09<00:09,  1.09it/s]Loading weights:  99%|█████████▉| 762/771 [08:11<00:09,  1.05s/it]Loading weights:  99%|█████████▉| 765/771 [08:11<00:03,  1.57it/s]Loading weights:  99%|█████████▉| 766/771 [08:12<00:03,  1.60it/s]Loading weights: 100%|█████████▉| 768/771 [08:12<00:01,  2.15it/s]Loading weights: 100%|██████████| 771/771 [08:12<00:00,  1.57it/s]
+[local] loaded Qwen/Qwen2.5-32B-Instruct (4-bit nf4) on cuda:0
+
+=== Mode: direct ===
+  [1/103] nixon_diamond_anon: clean 0% exact 0% parse 100%
+  [2/103] flies_anon: clean 0% exact 0% parse 100%
+  [3/103] tax_law_anon: clean 0% exact 0% parse 100%
+  [4/103] t1_mono_0000_anon: clean 0% exact 0% parse 100%
+  [5/103] t1_mono_0001_anon: clean 33% exact 0% parse 100%
+  [6/103] t1_mono_0002_anon: clean 0% exact 0% parse 100%
+  [7/103] t1_mono_0003_anon: clean 33% exact 0% parse 100%
+  [8/103] t1_mono_0004_anon: clean 67% exact 0% parse 100%
+  [9/103] t1_mono_0005_anon: clean 0% exact 0% parse 100%
+  [10/103] t1_mono_0006_anon: clean 100% exact 0% parse 100%
+  [11/103] t1_mono_0007_anon: clean 33% exact 0% parse 100%
+  [12/103] t1_mono_0008_anon: clean 67% exact 0% parse 100%
+  [13/103] t1_mono_0009_anon: clean 0% exact 0% parse 100%
+  [14/103] t1_mono_0010_anon: clean 67% exact 0% parse 100%
+  [15/103] t1_mono_0011_anon: clean 0% exact 0% parse 100%
+  [16/103] t1_mono_0012_anon: clean 67% exact 0% parse 100%
+  [17/103] t1_mono_0013_anon: clean 33% exact 0% parse 100%
+  [18/103] t1_mono_0014_anon: clean 33% exact 0% parse 100%
+  [19/103] t1_mono_0015_anon: clean 33% exact 0% parse 100%
+  [20/103] t1_mono_0016_anon: clean 33% exact 0% parse 100%
+  [21/103] t1_mono_0017_anon: clean 67% exact 0% parse 100%
+  [22/103] t1_mono_0018_anon: clean 33% exact 0% parse 100%
+  [23/103] t1_mono_0019_anon: clean 0% exact 0% parse 100%
+  [24/103] t2_defeas_0000_anon: clean 100% exact 0% parse 100%
+  [25/103] t2_defeas_0001_anon: clean 100% exact 0% parse 100%
+  [26/103] t2_defeas_0002_anon: clean 33% exact 0% parse 100%
+  [27/103] t2_defeas_0003_anon: clean 100% exact 0% parse 100%
+  [28/103] t2_defeas_0004_anon: clean 67% exact 0% parse 100%
+  [29/103] t2_defeas_0005_anon: clean 67% exact 0% parse 100%
+  [30/103] t2_defeas_0006_anon: clean 100% exact 0% parse 100%
+  [31/103] t2_defeas_0007_anon: clean 100% exact 0% parse 100%
+  [32/103] t2_defeas_0008_anon: clean 100% exact 0% parse 100%
+  [33/103] t2_defeas_0009_anon: clean 100% exact 0% parse 100%
+  [34/103] t2_defeas_0010_anon: clean 100% exact 0% parse 100%
+  [35/103] t2_defeas_0011_anon: clean 67% exact 0% parse 100%
+  [36/103] t2_defeas_0012_anon: clean 67% exact 0% parse 100%
+  [37/103] t2_defeas_0013_anon: clean 0% exact 0% parse 100%
+  [38/103] t2_defeas_0014_anon: clean 100% exact 0% parse 100%
+  [39/103] t2_defeas_0015_anon: clean 67% exact 0% parse 100%
+  [40/103] t2_defeas_0016_anon: clean 100% exact 0% parse 100%
+  [41/103] t2_defeas_0017_anon: clean 100% exact 0% parse 100%
+  [42/103] t2_defeas_0018_anon: clean 100% exact 0% parse 100%
+  [43/103] t2_defeas_0019_anon: clean 100% exact 0% parse 100%
+  [44/103] t3_noise_0000_anon: clean 33% exact 0% parse 100%
+  [45/103] t3_noise_0001_anon: clean 100% exact 0% parse 100%
+  [46/103] t3_noise_0002_anon: clean 100% exact 0% parse 100%
+  [47/103] t3_noise_0003_anon: clean 0% exact 0% parse 100%
+  [48/103] t3_noise_0004_anon: clean 100% exact 0% parse 100%
+  [49/103] t3_noise_0005_anon: clean 100% exact 0% parse 100%
+  [50/103] t3_noise_0006_anon: clean 67% exact 0% parse 100%
+  [51/103] t3_noise_0007_anon: clean 33% exact 0% parse 100%
+  [52/103] t3_noise_0008_anon: clean 100% exact 0% parse 100%
+  [53/103] t3_noise_0009_anon: clean 67% exact 0% parse 100%
+  [54/103] t3_noise_0010_anon: clean 100% exact 0% parse 100%
+  [55/103] t3_noise_0011_anon: clean 33% exact 0% parse 100%
+  [56/103] t3_noise_0012_anon: clean 67% exact 0% parse 100%
+  [57/103] t3_noise_0013_anon: clean 33% exact 0% parse 100%
+  [58/103] t3_noise_0014_anon: clean 33% exact 0% parse 100%
+  [59/103] t3_noise_0015_anon: clean 100% exact 0% parse 100%
+  [60/103] t3_noise_0016_anon: clean 67% exact 0% parse 100%
+  [61/103] t3_noise_0017_anon: clean 100% exact 0% parse 100%
+  [62/103] t3_noise_0018_anon: clean 67% exact 0% parse 100%
+  [63/103] t3_noise_0019_anon: clean 100% exact 0% parse 100%
+  [64/103] t4_domain_0000_anon: clean 33% exact 0% parse 100%
+  [65/103] t4_domain_0001_anon: clean 0% exact 0% parse 100%
+  [66/103] t4_domain_0002_anon: clean 0% exact 0% parse 100%
+  [67/103] t4_domain_0003_anon: clean 0% exact 0% parse 100%
+  [68/103] t4_domain_0004_anon: clean 67% exact 0% parse 100%
+  [69/103] t4_domain_0005_anon: clean 67% exact 0% parse 100%
+  [70/103] t4_domain_0006_anon: clean 100% exact 0% parse 100%
+  [71/103] t4_domain_0007_anon: clean 0% exact 0% parse 100%
+  [72/103] t4_domain_0008_anon: clean 0% exact 0% parse 100%
+  [73/103] t4_domain_0009_anon: clean 67% exact 0% parse 100%
+  [74/103] t4_domain_0010_anon: clean 33% exact 0% parse 100%
+  [75/103] t4_domain_0011_anon: clean 67% exact 0% parse 100%
+  [76/103] t4_domain_0012_anon: clean 67% exact 0% parse 100%
+  [77/103] t4_domain_0013_anon: clean 67% exact 0% parse 100%
+  [78/103] t4_domain_0014_anon: clean 67% exact 0% parse 100%
+  [79/103] t4_domain_0015_anon: clean 100% exact 0% parse 100%
+  [80/103] t4_domain_0016_anon: clean 33% exact 0% parse 100%
+  [81/103] t4_domain_0017_anon: clean 33% exact 0% parse 100%
+  [82/103] t4_domain_0018_anon: clean 100% exact 0% parse 100%
+  [83/103] t4_domain_0019_anon: clean 67% exact 0% parse 100%
+  [84/103] t5_twopath_0000_anon: clean 67% exact 0% parse 100%
+  [85/103] t5_twopath_0001_anon: clean 33% exact 0% parse 100%
+  [86/103] t5_twopath_0002_anon: clean 100% exact 0% parse 100%
+  [87/103] t5_twopath_0003_anon: clean 33% exact 0% parse 100%
+  [88/103] t5_twopath_0004_anon: clean 33% exact 0% parse 100%
+  [89/103] t5_twopath_0005_anon: clean 0% exact 0% parse 100%
+  [90/103] t5_twopath_0006_anon: clean 0% exact 0% parse 100%
+  [91/103] t5_twopath_0007_anon: clean 0% exact 0% parse 100%
+  [92/103] t5_twopath_0008_anon: clean 33% exact 0% parse 100%
+  [93/103] t5_twopath_0009_anon: clean 0% exact 0% parse 100%
+  [94/103] t5_twopath_0010_anon: clean 0% exact 0% parse 100%
+  [95/103] t5_twopath_0011_anon: clean 0% exact 0% parse 100%
+  [96/103] t5_twopath_0012_anon: clean 67% exact 0% parse 100%
+  [97/103] t5_twopath_0013_anon: clean 0% exact 0% parse 100%
+  [98/103] t5_twopath_0014_anon: clean 67% exact 0% parse 100%
+  [99/103] t5_twopath_0015_anon: clean 0% exact 0% parse 100%
+  [100/103] t5_twopath_0016_anon: clean 33% exact 0% parse 100%
+  [101/103] t5_twopath_0017_anon: clean 33% exact 0% parse 100%
+  [102/103] t5_twopath_0018_anon: clean 0% exact 0% parse 100%
+  [103/103] t5_twopath_0019_anon: clean 33% exact 0% parse 100%
+  -> valid@k=75.7%  clean@k=75.7%  exact@k=0.0%  parse=100.0%
+
+=== Mode: cot ===
+  [1/103] nixon_diamond_anon: clean 0% exact 0% parse 100%
+  [2/103] flies_anon: clean 100% exact 0% parse 100%
+  [3/103] tax_law_anon: clean 0% exact 0% parse 100%
+  [4/103] t1_mono_0000_anon: clean 0% exact 0% parse 100%
+  [5/103] t1_mono_0001_anon: clean 67% exact 0% parse 100%
+  [6/103] t1_mono_0002_anon: clean 0% exact 0% parse 100%
+  [7/103] t1_mono_0003_anon: clean 0% exact 0% parse 100%
+  [8/103] t1_mono_0004_anon: clean 67% exact 0% parse 100%
+  [9/103] t1_mono_0005_anon: clean 33% exact 0% parse 100%
+  [10/103] t1_mono_0006_anon: clean 33% exact 0% parse 100%
+  [11/103] t1_mono_0007_anon: clean 33% exact 0% parse 100%
+  [12/103] t1_mono_0008_anon: clean 33% exact 0% parse 100%
+  [13/103] t1_mono_0009_anon: clean 33% exact 0% parse 100%
+  [14/103] t1_mono_0010_anon: clean 0% exact 0% parse 100%
+  [15/103] t1_mono_0011_anon: clean 33% exact 0% parse 100%
+  [16/103] t1_mono_0012_anon: clean 0% exact 0% parse 100%
+  [17/103] t1_mono_0013_anon: clean 0% exact 0% parse 100%
+  [18/103] t1_mono_0014_anon: clean 0% exact 0% parse 100%
+  [19/103] t1_mono_0015_anon: clean 0% exact 0% parse 100%
+  [20/103] t1_mono_0016_anon: clean 0% exact 0% parse 100%
+  [21/103] t1_mono_0017_anon: clean 67% exact 0% parse 100%
+  [22/103] t1_mono_0018_anon: clean 0% exact 0% parse 100%
+  [23/103] t1_mono_0019_anon: clean 0% exact 0% parse 100%
+  [24/103] t2_defeas_0000_anon: clean 0% exact 0% parse 100%
+  [25/103] t2_defeas_0001_anon: clean 67% exact 0% parse 100%
+  [26/103] t2_defeas_0002_anon: clean 33% exact 0% parse 100%
+  [27/103] t2_defeas_0003_anon: clean 67% exact 0% parse 100%
+  [28/103] t2_defeas_0004_anon: clean 33% exact 0% parse 100%
+  [29/103] t2_defeas_0005_anon: clean 33% exact 0% parse 100%
+  [30/103] t2_defeas_0006_anon: clean 67% exact 0% parse 100%
+  [31/103] t2_defeas_0007_anon: clean 0% exact 0% parse 100%
+  [32/103] t2_defeas_0008_anon: clean 100% exact 33% parse 100%
+  [33/103] t2_defeas_0009_anon: clean 33% exact 0% parse 100%
+  [34/103] t2_defeas_0010_anon: clean 33% exact 0% parse 100%
+  [35/103] t2_defeas_0011_anon: clean 67% exact 0% parse 100%
+  [36/103] t2_defeas_0012_anon: clean 0% exact 0% parse 100%
+  [37/103] t2_defeas_0013_anon: clean 100% exact 0% parse 100%
+  [38/103] t2_defeas_0014_anon: clean 100% exact 0% parse 100%
+  [39/103] t2_defeas_0015_anon: clean 67% exact 0% parse 100%
+  [40/103] t2_defeas_0016_anon: clean 33% exact 0% parse 100%
+  [41/103] t2_defeas_0017_anon: clean 33% exact 0% parse 100%
+  [42/103] t2_defeas_0018_anon: clean 33% exact 0% parse 100%
+  [43/103] t2_defeas_0019_anon: clean 100% exact 33% parse 100%
+  [44/103] t3_noise_0000_anon: clean 67% exact 0% parse 100%
+  [45/103] t3_noise_0001_anon: clean 0% exact 0% parse 100%
+  [46/103] t3_noise_0002_anon: clean 33% exact 0% parse 100%
+  [47/103] t3_noise_0003_anon: clean 33% exact 0% parse 100%
+  [48/103] t3_noise_0004_anon: clean 67% exact 0% parse 100%
+  [49/103] t3_noise_0005_anon: clean 67% exact 0% parse 100%
+  [50/103] t3_noise_0006_anon: clean 33% exact 0% parse 100%
+  [51/103] t3_noise_0007_anon: clean 33% exact 0% parse 100%
+  [52/103] t3_noise_0008_anon: clean 100% exact 0% parse 100%
+  [53/103] t3_noise_0009_anon: clean 33% exact 0% parse 100%
+  [54/103] t3_noise_0010_anon: clean 100% exact 0% parse 100%
+  [55/103] t3_noise_0011_anon: clean 67% exact 0% parse 100%
+  [56/103] t3_noise_0012_anon: clean 0% exact 0% parse 100%
+  [57/103] t3_noise_0013_anon: clean 33% exact 0% parse 100%
+  [58/103] t3_noise_0014_anon: clean 100% exact 0% parse 100%
+  [59/103] t3_noise_0015_anon: clean 67% exact 0% parse 100%
+  [60/103] t3_noise_0016_anon: clean 67% exact 0% parse 100%
+  [61/103] t3_noise_0017_anon: clean 33% exact 0% parse 100%
+  [62/103] t3_noise_0018_anon: clean 67% exact 0% parse 100%
+  [63/103] t3_noise_0019_anon: clean 0% exact 0% parse 100%
+  [64/103] t4_domain_0000_anon: clean 33% exact 0% parse 100%
+  [65/103] t4_domain_0001_anon: clean 100% exact 0% parse 100%
+  [66/103] t4_domain_0002_anon: clean 33% exact 33% parse 100%
+  [67/103] t4_domain_0003_anon: clean 67% exact 0% parse 100%
+  [68/103] t4_domain_0004_anon: clean 33% exact 0% parse 100%
+  [69/103] t4_domain_0005_anon: clean 33% exact 0% parse 100%
+  [70/103] t4_domain_0006_anon: clean 33% exact 0% parse 100%
+  [71/103] t4_domain_0007_anon: clean 0% exact 0% parse 100%
+  [72/103] t4_domain_0008_anon: clean 67% exact 0% parse 100%
+  [73/103] t4_domain_0009_anon: clean 100% exact 0% parse 100%
+  [74/103] t4_domain_0010_anon: clean 67% exact 0% parse 100%
+  [75/103] t4_domain_0011_anon: clean 33% exact 0% parse 100%
+  [76/103] t4_domain_0012_anon: clean 67% exact 33% parse 100%
+  [77/103] t4_domain_0013_anon: clean 100% exact 33% parse 100%
+  [78/103] t4_domain_0014_anon: clean 33% exact 0% parse 100%
+  [79/103] t4_domain_0015_anon: clean 33% exact 0% parse 100%
+  [80/103] t4_domain_0016_anon: clean 67% exact 0% parse 100%
+  [81/103] t4_domain_0017_anon: clean 33% exact 0% parse 100%
+  [82/103] t4_domain_0018_anon: clean 0% exact 0% parse 100%
+  [83/103] t4_domain_0019_anon: clean 67% exact 33% parse 100%
+  [84/103] t5_twopath_0000_anon: clean 0% exact 0% parse 100%
+  [85/103] t5_twopath_0001_anon: clean 0% exact 0% parse 100%
+  [86/103] t5_twopath_0002_anon: clean 0% exact 0% parse 100%
+  [87/103] t5_twopath_0003_anon: clean 67% exact 0% parse 100%
+  [88/103] t5_twopath_0004_anon: clean 33% exact 0% parse 100%
+  [89/103] t5_twopath_0005_anon: clean 0% exact 0% parse 100%
+  [90/103] t5_twopath_0006_anon: clean 33% exact 0% parse 100%
+  [91/103] t5_twopath_0007_anon: clean 0% exact 0% parse 100%
+  [92/103] t5_twopath_0008_anon: clean 67% exact 0% parse 100%
+  [93/103] t5_twopath_0009_anon: clean 0% exact 0% parse 100%
+  [94/103] t5_twopath_0010_anon: clean 0% exact 0% parse 100%
+  [95/103] t5_twopath_0011_anon: clean 0% exact 0% parse 100%
+  [96/103] t5_twopath_0012_anon: clean 0% exact 0% parse 100%
+  [97/103] t5_twopath_0013_anon: clean 33% exact 0% parse 100%
+  [98/103] t5_twopath_0014_anon: clean 0% exact 0% parse 100%
+  [99/103] t5_twopath_0015_anon: clean 0% exact 0% parse 100%
+  [100/103] t5_twopath_0016_anon: clean 33% exact 0% parse 100%
+  [101/103] t5_twopath_0017_anon: clean 0% exact 0% parse 100%
+  [102/103] t5_twopath_0018_anon: clean 33% exact 0% parse 100%
+  [103/103] t5_twopath_0019_anon: clean 33% exact 0% parse 100%
+  -> valid@k=72.8%  clean@k=68.0%  exact@k=5.8%  parse=100.0%
+
+=== Mode: guided ===
+  [1/103] nixon_diamond_anon: clean 0% exact 0% parse 100%
+  [2/103] flies_anon: clean 0% exact 0% parse 100%
+  [3/103] tax_law_anon: clean 0% exact 0% parse 100%
+  [4/103] t1_mono_0000_anon: clean 33% exact 0% parse 100%
+  [5/103] t1_mono_0001_anon: clean 0% exact 0% parse 100%
+  [6/103] t1_mono_0002_anon: clean 33% exact 0% parse 100%
+  [7/103] t1_mono_0003_anon: clean 33% exact 0% parse 100%
+  [8/103] t1_mono_0004_anon: clean 67% exact 0% parse 100%
+  [9/103] t1_mono_0005_anon: clean 0% exact 0% parse 100%
+  [10/103] t1_mono_0006_anon: clean 0% exact 0% parse 100%
+  [11/103] t1_mono_0007_anon: clean 33% exact 0% parse 100%
+  [12/103] t1_mono_0008_anon: clean 67% exact 0% parse 100%
+  [13/103] t1_mono_0009_anon: clean 0% exact 0% parse 100%
+  [14/103] t1_mono_0010_anon: clean 0% exact 0% parse 100%
+  [15/103] t1_mono_0011_anon: clean 33% exact 0% parse 100%
+  [16/103] t1_mono_0012_anon: clean 33% exact 0% parse 100%
+  [17/103] t1_mono_0013_anon: clean 0% exact 0% parse 100%
+  [18/103] t1_mono_0014_anon: clean 0% exact 0% parse 100%
+  [19/103] t1_mono_0015_anon: clean 0% exact 0% parse 100%
+  [20/103] t1_mono_0016_anon: clean 0% exact 0% parse 100%
+  [21/103] t1_mono_0017_anon: clean 33% exact 0% parse 100%
+  [22/103] t1_mono_0018_anon: clean 0% exact 0% parse 100%
+  [23/103] t1_mono_0019_anon: clean 0% exact 0% parse 100%
+  [24/103] t2_defeas_0000_anon: clean 0% exact 0% parse 100%
+  [25/103] t2_defeas_0001_anon: clean 100% exact 0% parse 100%
+  [26/103] t2_defeas_0002_anon: clean 0% exact 0% parse 100%
+  [27/103] t2_defeas_0003_anon: clean 100% exact 0% parse 100%
+  [28/103] t2_defeas_0004_anon: clean 100% exact 0% parse 100%
+  [29/103] t2_defeas_0005_anon: clean 67% exact 0% parse 100%
+  [30/103] t2_defeas_0006_anon: clean 100% exact 0% parse 100%
+  [31/103] t2_defeas_0007_anon: clean 33% exact 0% parse 100%
+  [32/103] t2_defeas_0008_anon: clean 0% exact 0% parse 100%
+  [33/103] t2_defeas_0009_anon: clean 0% exact 0% parse 100%
+  [34/103] t2_defeas_0010_anon: clean 100% exact 0% parse 100%
+  [35/103] t2_defeas_0011_anon: clean 100% exact 33% parse 100%
+  [36/103] t2_defeas_0012_anon: clean 0% exact 0% parse 100%
+  [37/103] t2_defeas_0013_anon: clean 100% exact 0% parse 100%
+  [38/103] t2_defeas_0014_anon: clean 100% exact 0% parse 100%
+  [39/103] t2_defeas_0015_anon: clean 100% exact 0% parse 100%
+  [40/103] t2_defeas_0016_anon: clean 33% exact 0% parse 100%
+  [41/103] t2_defeas_0017_anon: clean 100% exact 0% parse 100%
+  [42/103] t2_defeas_0018_anon: clean 0% exact 0% parse 100%
+  [43/103] t2_defeas_0019_anon: clean 100% exact 0% parse 100%
+  [44/103] t3_noise_0000_anon: clean 100% exact 0% parse 100%
+  [45/103] t3_noise_0001_anon: clean 67% exact 0% parse 100%
+  [46/103] t3_noise_0002_anon: clean 100% exact 0% parse 100%
+  [47/103] t3_noise_0003_anon: clean 33% exact 0% parse 100%
+  [48/103] t3_noise_0004_anon: clean 100% exact 0% parse 100%
+  [49/103] t3_noise_0005_anon: clean 100% exact 0% parse 100%
+  [50/103] t3_noise_0006_anon: clean 100% exact 0% parse 100%
+  [51/103] t3_noise_0007_anon: clean 33% exact 0% parse 100%
+  [52/103] t3_noise_0008_anon: clean 33% exact 0% parse 100%
+  [53/103] t3_noise_0009_anon: clean 33% exact 0% parse 100%
+  [54/103] t3_noise_0010_anon: clean 67% exact 0% parse 100%
+  [55/103] t3_noise_0011_anon: clean 67% exact 0% parse 100%
+  [56/103] t3_noise_0012_anon: clean 67% exact 0% parse 100%
+  [57/103] t3_noise_0013_anon: clean 33% exact 0% parse 100%
+  [58/103] t3_noise_0014_anon: clean 0% exact 0% parse 100%
+  [59/103] t3_noise_0015_anon: clean 67% exact 0% parse 100%
+  [60/103] t3_noise_0016_anon: clean 67% exact 0% parse 100%
+  [61/103] t3_noise_0017_anon: clean 100% exact 0% parse 100%
+  [62/103] t3_noise_0018_anon: clean 100% exact 0% parse 100%
+  [63/103] t3_noise_0019_anon: clean 67% exact 0% parse 100%
+  [64/103] t4_domain_0000_anon: clean 0% exact 0% parse 100%
+  [65/103] t4_domain_0001_anon: clean 0% exact 0% parse 100%
+  [66/103] t4_domain_0002_anon: clean 0% exact 0% parse 100%
+  [67/103] t4_domain_0003_anon: clean 67% exact 0% parse 100%
+  [68/103] t4_domain_0004_anon: clean 33% exact 0% parse 100%
+  [69/103] t4_domain_0005_anon: clean 0% exact 0% parse 100%
+  [70/103] t4_domain_0006_anon: clean 0% exact 0% parse 100%
+  [71/103] t4_domain_0007_anon: clean 0% exact 0% parse 100%
+  [72/103] t4_domain_0008_anon: clean 0% exact 0% parse 100%
+  [73/103] t4_domain_0009_anon: clean 67% exact 0% parse 100%
+  [74/103] t4_domain_0010_anon: clean 33% exact 0% parse 100%
+  [75/103] t4_domain_0011_anon: clean 0% exact 0% parse 100%
+  [76/103] t4_domain_0012_anon: clean 33% exact 0% parse 100%
+  [77/103] t4_domain_0013_anon: clean 33% exact 33% parse 100%
+  [78/103] t4_domain_0014_anon: clean 0% exact 0% parse 100%
+  [79/103] t4_domain_0015_anon: clean 0% exact 0% parse 100%
+  [80/103] t4_domain_0016_anon: clean 0% exact 0% parse 100%
+  [81/103] t4_domain_0017_anon: clean 33% exact 0% parse 100%
+  [82/103] t4_domain_0018_anon: clean 0% exact 0% parse 100%
+  [83/103] t4_domain_0019_anon: clean 0% exact 0% parse 100%
+  [84/103] t5_twopath_0000_anon: clean 67% exact 0% parse 100%
+  [85/103] t5_twopath_0001_anon: clean 33% exact 0% parse 100%
+  [86/103] t5_twopath_0002_anon: clean 67% exact 0% parse 100%
+  [87/103] t5_twopath_0003_anon: clean 100% exact 0% parse 100%
+  [88/103] t5_twopath_0004_anon: clean 100% exact 0% parse 100%
+  [89/103] t5_twopath_0005_anon: clean 33% exact 0% parse 100%
+  [90/103] t5_twopath_0006_anon: clean 0% exact 0% parse 100%
+  [91/103] t5_twopath_0007_anon: clean 33% exact 0% parse 100%
+  [92/103] t5_twopath_0008_anon: clean 67% exact 0% parse 100%
+  [93/103] t5_twopath_0009_anon: clean 0% exact 0% parse 100%
+  [94/103] t5_twopath_0010_anon: clean 67% exact 0% parse 100%
+  [95/103] t5_twopath_0011_anon: clean 67% exact 0% parse 100%
+  [96/103] t5_twopath_0012_anon: clean 33% exact 0% parse 100%
+  [97/103] t5_twopath_0013_anon: clean 67% exact 0% parse 100%
+  [98/103] t5_twopath_0014_anon: clean 67% exact 0% parse 100%
+  [99/103] t5_twopath_0015_anon: clean 67% exact 0% parse 100%
+  [100/103] t5_twopath_0016_anon: clean 100% exact 0% parse 100%
+  [101/103] t5_twopath_0017_anon: clean 67% exact 0% parse 100%
+  [102/103] t5_twopath_0018_anon: clean 33% exact 0% parse 100%
+  [103/103] t5_twopath_0019_anon: clean 67% exact 0% parse 100%
+  -> valid@k=71.8%  clean@k=65.0%  exact@k=1.9%  parse=100.0%
+
+=== Mode: algorithm ===
+  [1/103] nixon_diamond_anon: clean 0% exact 0% parse 100%
+  [2/103] flies_anon: clean 0% exact 0% parse 100%
+  [3/103] tax_law_anon: clean 0% exact 0% parse 100%
+  [4/103] t1_mono_0000_anon: clean 0% exact 0% parse 100%
+  [5/103] t1_mono_0001_anon: clean 0% exact 0% parse 100%
+  [6/103] t1_mono_0002_anon: clean 0% exact 0% parse 100%
+  [7/103] t1_mono_0003_anon: clean 0% exact 0% parse 100%
+  [8/103] t1_mono_0004_anon: clean 0% exact 0% parse 100%
+  [9/103] t1_mono_0005_anon: clean 0% exact 0% parse 100%
+  [10/103] t1_mono_0006_anon: clean 33% exact 0% parse 100%
+  [11/103] t1_mono_0007_anon: clean 0% exact 0% parse 100%
+  [12/103] t1_mono_0008_anon: clean 67% exact 0% parse 100%
+  [13/103] t1_mono_0009_anon: clean 33% exact 0% parse 100%
+  [14/103] t1_mono_0010_anon: clean 0% exact 0% parse 100%
+  [15/103] t1_mono_0011_anon: clean 0% exact 0% parse 100%
+  [16/103] t1_mono_0012_anon: clean 0% exact 0% parse 100%
+  [17/103] t1_mono_0013_anon: clean 0% exact 0% parse 100%
+  [18/103] t1_mono_0014_anon: clean 33% exact 0% parse 100%
+  [19/103] t1_mono_0015_anon: clean 0% exact 0% parse 100%
+  [20/103] t1_mono_0016_anon: clean 0% exact 0% parse 100%
+  [21/103] t1_mono_0017_anon: clean 33% exact 0% parse 100%
+  [22/103] t1_mono_0018_anon: clean 0% exact 0% parse 100%
+  [23/103] t1_mono_0019_anon: clean 0% exact 0% parse 100%
+  [24/103] t2_defeas_0000_anon: clean 33% exact 0% parse 100%
+  [25/103] t2_defeas_0001_anon: clean 67% exact 0% parse 100%
+  [26/103] t2_defeas_0002_anon: clean 67% exact 0% parse 100%
+  [27/103] t2_defeas_0003_anon: clean 33% exact 0% parse 100%
+  [28/103] t2_defeas_0004_anon: clean 0% exact 0% parse 100%
+  [29/103] t2_defeas_0005_anon: clean 33% exact 0% parse 100%
+  [30/103] t2_defeas_0006_anon: clean 100% exact 0% parse 100%
+  [31/103] t2_defeas_0007_anon: clean 67% exact 0% parse 100%
+  [32/103] t2_defeas_0008_anon: clean 33% exact 0% parse 100%
+  [33/103] t2_defeas_0009_anon: clean 67% exact 0% parse 100%
+  [34/103] t2_defeas_0010_anon: clean 33% exact 0% parse 100%
+  [35/103] t2_defeas_0011_anon: clean 67% exact 0% parse 100%
+  [36/103] t2_defeas_0012_anon: clean 100% exact 0% parse 100%
+  [37/103] t2_defeas_0013_anon: clean 100% exact 0% parse 100%
+  [38/103] t2_defeas_0014_anon: clean 67% exact 0% parse 100%
+  [39/103] t2_defeas_0015_anon: clean 33% exact 0% parse 100%
+  [40/103] t2_defeas_0016_anon: clean 0% exact 0% parse 100%
+  [41/103] t2_defeas_0017_anon: clean 67% exact 0% parse 100%
+  [42/103] t2_defeas_0018_anon: clean 0% exact 0% parse 100%
+  [43/103] t2_defeas_0019_anon: clean 33% exact 0% parse 100%
+  [44/103] t3_noise_0000_anon: clean 0% exact 0% parse 100%
+  [45/103] t3_noise_0001_anon: clean 67% exact 0% parse 100%
+  [46/103] t3_noise_0002_anon: clean 33% exact 0% parse 100%
+  [47/103] t3_noise_0003_anon: clean 0% exact 0% parse 100%
+  [48/103] t3_noise_0004_anon: clean 33% exact 0% parse 100%
+  [49/103] t3_noise_0005_anon: clean 67% exact 0% parse 100%
+  [50/103] t3_noise_0006_anon: clean 33% exact 0% parse 100%
+  [51/103] t3_noise_0007_anon: clean 0% exact 0% parse 100%
+  [52/103] t3_noise_0008_anon: clean 100% exact 0% parse 100%
+  [53/103] t3_noise_0009_anon: clean 67% exact 0% parse 100%
+  [54/103] t3_noise_0010_anon: clean 33% exact 0% parse 100%
+  [55/103] t3_noise_0011_anon: clean 0% exact 0% parse 100%
+  [56/103] t3_noise_0012_anon: clean 67% exact 0% parse 100%
+  [57/103] t3_noise_0013_anon: clean 33% exact 0% parse 100%
+  [58/103] t3_noise_0014_anon: clean 0% exact 0% parse 100%
+  [59/103] t3_noise_0015_anon: clean 33% exact 0% parse 100%
+  [60/103] t3_noise_0016_anon: clean 67% exact 0% parse 100%
+  [61/103] t3_noise_0017_anon: clean 100% exact 0% parse 100%
+  [62/103] t3_noise_0018_anon: clean 33% exact 0% parse 100%
+  [63/103] t3_noise_0019_anon: clean 67% exact 0% parse 100%
+  [64/103] t4_domain_0000_anon: clean 67% exact 0% parse 100%
+  [65/103] t4_domain_0001_anon: clean 0% exact 0% parse 100%
+  [66/103] t4_domain_0002_anon: clean 0% exact 0% parse 100%
+  [67/103] t4_domain_0003_anon: clean 0% exact 0% parse 100%
+  [68/103] t4_domain_0004_anon: clean 33% exact 0% parse 100%
+  [69/103] t4_domain_0005_anon: clean 33% exact 0% parse 100%
+  [70/103] t4_domain_0006_anon: clean 0% exact 0% parse 100%
+  [71/103] t4_domain_0007_anon: clean 0% exact 0% parse 100%
+  [72/103] t4_domain_0008_anon: clean 0% exact 0% parse 100%
+  [73/103] t4_domain_0009_anon: clean 33% exact 0% parse 100%
+  [74/103] t4_domain_0010_anon: clean 0% exact 0% parse 100%
+  [75/103] t4_domain_0011_anon: clean 0% exact 0% parse 100%
+  [76/103] t4_domain_0012_anon: clean 67% exact 0% parse 100%
+  [77/103] t4_domain_0013_anon: clean 67% exact 0% parse 100%
+  [78/103] t4_domain_0014_anon: clean 0% exact 0% parse 100%
+  [79/103] t4_domain_0015_anon: clean 0% exact 0% parse 100%
+  [80/103] t4_domain_0016_anon: clean 0% exact 0% parse 100%
+  [81/103] t4_domain_0017_anon: clean 67% exact 0% parse 100%
+  [82/103] t4_domain_0018_anon: clean 0% exact 0% parse 100%
+  [83/103] t4_domain_0019_anon: clean 33% exact 0% parse 100%
+  [84/103] t5_twopath_0000_anon: clean 100% exact 0% parse 100%
+  [85/103] t5_twopath_0001_anon: clean 67% exact 0% parse 100%
+  [86/103] t5_twopath_0002_anon: clean 33% exact 0% parse 100%
+  [87/103] t5_twopath_0003_anon: clean 100% exact 0% parse 100%
+  [88/103] t5_twopath_0004_anon: clean 100% exact 0% parse 100%
+  [89/103] t5_twopath_0005_anon: clean 100% exact 0% parse 100%
+  [90/103] t5_twopath_0006_anon: clean 67% exact 0% parse 100%
+  [91/103] t5_twopath_0007_anon: clean 33% exact 0% parse 100%
+  [92/103] t5_twopath_0008_anon: clean 33% exact 0% parse 100%
+  [93/103] t5_twopath_0009_anon: clean 67% exact 0% parse 100%
+  [94/103] t5_twopath_0010_anon: clean 33% exact 0% parse 100%
+  [95/103] t5_twopath_0011_anon: clean 67% exact 0% parse 100%
+  [96/103] t5_twopath_0012_anon: clean 67% exact 0% parse 100%
+  [97/103] t5_twopath_0013_anon: clean 33% exact 0% parse 100%
+  [98/103] t5_twopath_0014_anon: clean 100% exact 0% parse 100%
+  [99/103] t5_twopath_0015_anon: clean 33% exact 0% parse 100%
+  [100/103] t5_twopath_0016_anon: clean 67% exact 0% parse 100%
+  [101/103] t5_twopath_0017_anon: clean 67% exact 0% parse 100%
+  [102/103] t5_twopath_0018_anon: clean 100% exact 0% parse 100%
+  [103/103] t5_twopath_0019_anon: clean 67% exact 0% parse 100%
+  -> valid@k=79.6%  clean@k=63.1%  exact@k=0.0%  parse=100.0%
+
+[4/4] Generating report and figures...
+
+Summary saved to results/e2e_whole_v4/bench_qwen2.5-32b/summary.json
+Hand-audit sample saved to results/e2e_whole_v4/bench_qwen2.5-32b/sample.md
+
+=== Results (problems posed whole; @k: any of k samples, Wilson 95%) ===
+
+  direct  (103 problems, 83 structures, 309 samples)
+    valid_at_1      0.515
+    valid_at_k      0.757 [0.67, 0.83]
+    clean_at_1      0.511
+    clean_at_k      0.757 [0.67, 0.83]
+    exact_at_1      0.000
+    exact_at_k      0.000 [0.00, 0.04]
+    agreement       0.517
+    parse_rate      1.000
+    truncated_rate  0.000
+    r3_balanced     0.494
+    trace_f1        -
+
+  cot  (103 problems, 83 structures, 309 samples)
+    valid_at_1      0.421
+    valid_at_k      0.728 [0.64, 0.81]
+    clean_at_1      0.372
+    clean_at_k      0.680 [0.58, 0.76]
+    exact_at_1      0.019
+    exact_at_k      0.058 [0.03, 0.12]
+    agreement       0.415
+    parse_rate      1.000
+    truncated_rate  0.000
+    r3_balanced     0.500
+    trace_f1        0.330
+
+  guided  (103 problems, 83 structures, 309 samples)
+    valid_at_1      0.479
+    valid_at_k      0.718 [0.62, 0.80]
+    clean_at_1      0.424
+    clean_at_k      0.650 [0.55, 0.74]
+    exact_at_1      0.006
+    exact_at_k      0.019 [0.01, 0.07]
+    agreement       0.385
+    parse_rate      1.000
+    truncated_rate  0.000
+    r3_balanced     0.484
+    trace_f1        -
+
+  algorithm  (103 problems, 83 structures, 309 samples)
+    valid_at_1      0.469
+    valid_at_k      0.796 [0.71, 0.86]
+    clean_at_1      0.366
+    clean_at_k      0.631 [0.54, 0.72]
+    exact_at_1      0.000
+    exact_at_k      0.000 [0.00, 0.04]
+    agreement       0.365
+    parse_rate      1.000
+    truncated_rate  0.000
+    r3_balanced     0.496
+    trace_f1        0.552
+
+=== Per tier: clean@k / exact@k (structures per tier in brackets) ===
+mode                   builtin (3)          t1_mono (19)        t2_defeas (20)         t3_noise (20)        t4_domain (20)        t5_twopath (1)
+direct                 0.00 / 0.00           0.70 / 0.00           0.95 / 0.00           0.95 / 0.00           0.75 / 0.00           0.55 / 0.00
+cot                    0.33 / 0.00           0.45 / 0.00           0.85 / 0.10           0.85 / 0.00           0.90 / 0.20           0.40 / 0.00
+guided                 0.00 / 0.00           0.45 / 0.00           0.70 / 0.05           0.95 / 0.00           0.35 / 0.05           0.90 / 0.00
+algorithm              0.00 / 0.00           0.25 / 0.00           0.85 / 0.00           0.75 / 0.00           0.40 / 0.00           1.00 / 0.00
+Saved results/e2e_whole_v4/bench_qwen2.5-32b/figures/validity_by_mode.pdf
+Saved results/e2e_whole_v4/bench_qwen2.5-32b/figures/error_breakdown.pdf
+Saved results/e2e_whole_v4/bench_qwen2.5-32b/figures/heatmap.pdf
+Saved results/e2e_whole_v4/bench_qwen2.5-32b/figures/comparison_table.pdf
+Saved results/e2e_whole_v4/bench_qwen2.5-32b/figures/complexity_vs_validity.pdf
+Explanations saved to results/e2e_whole_v4/bench_qwen2.5-32b/explanations.md
+
+[Optional] Exporting frameworks...
+
+=== Exporting 1339 framework record(s) ===
+  jsonl: results/e2e_whole_v4/bench_qwen2.5-32b/frameworks.jsonl
+  md: results/e2e_whole_v4/bench_qwen2.5-32b/frameworks.md
+  csv: results/e2e_whole_v4/bench_qwen2.5-32b/defeasibility.csv
+
+Done.
+DONE qwen2.5-32b -> results/e2e_whole_v4/bench_qwen2.5-32b
